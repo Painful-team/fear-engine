@@ -1,0 +1,4 @@
+add_subdirectory(GLFW)
+add_subdirectory(glm)
+add_subdirectory(imgui)
+add_subdirectory(glad)

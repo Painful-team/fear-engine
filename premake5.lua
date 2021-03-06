@@ -92,6 +92,14 @@ newaction {
 	  os.remove("**Makefile")
 	  os.remove("**.make")
 	  print("done")
+	  
+	  print("Cleaning cmake")
+	  os.rmdir ("**CMakeFiles/")
+	  os.remove ("*CMakeFiles")
+	  os.remove ("*CMakeCache.txt")
+	  os.remove ("**.cmake")
+	  print("done")
+	  
       print("Cleaning done.")
    end
 }
