@@ -12,7 +12,6 @@ include_directories(./include/stb)
 
 set(CMAKE_SUPPRESS_REGENERATION true)
 
-add_compile_definitions(UNICODE 1)
 add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
 
 add_subdirectory(include)
