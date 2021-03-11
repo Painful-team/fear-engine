@@ -1,3 +1,5 @@
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin/GLFW)
+set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin/GLFW)
 
 set(common_HEADERS internal.h mappings.h
                    "${GLFW_BINARY_DIR}/src/glfw_config.h"
@@ -85,7 +87,7 @@ set_target_properties(glfw PROPERTIES
                       VERSION ${GLFW_VERSION_MAJOR}.${GLFW_VERSION_MINOR}
                       SOVERSION ${GLFW_VERSION_MAJOR}
                       POSITION_INDEPENDENT_CODE ON
-                      FOLDER "GLFW3")
+                      FOLDER "Dependencies")
 
 if (${CMAKE_VERSION} VERSION_EQUAL "3.1.0" OR
     ${CMAKE_VERSION} VERSION_GREATER "3.1.0")
