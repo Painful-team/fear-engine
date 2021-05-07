@@ -33,6 +33,7 @@ project "Engine"
 		".editorconfig",
 		"src/**.hpp",
 		"src/**.cpp",
+		"include/containers/*.h",
 		"include/glm/glm/**.*",
 		"include/stb/**.h"
 	}
@@ -40,6 +41,7 @@ project "Engine"
 	includedirs
 	{
 		"src",
+		"include/containers",
        	"include/glad/include",
        	"include/GLFW/include",
        	"include/glm/include",

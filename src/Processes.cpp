@@ -21,7 +21,7 @@ struct A
 
 void test(const char* message)
 {
-	std::cout << "func test" << message << '\n';
+	std::cout << "function test" << message << '\n';
 }
 
 int main()
@@ -30,20 +30,19 @@ int main()
 	auto second = [](const char* message) { std::cout << "second" << message << '\n'; };
 	Observer<decltype(test)> obs = Observer<decltype(test)>();
 
-	obs.attach(first);
-	obs.attach(second);
+	auto res = obs.attach(second);
 	obs.attach([](const char* message) { std::cout << "third" << message << '\n'; });
-	obs.attach(detail::delegate<decltype(test)>::create<&A::test>());
-	obs.attach(detail::delegate<decltype(test)>::create<&test>());
+
+	obs.attach<&A::test>();
+	obs.attach<&test>();
 
 	A a;
-	obs.attach(detail::delegate<decltype(test)>::create<A, &A::another>(&a));
-
+	obs.attach<A, &A::another>(&a);
 	obs.notify(" message received.");
 
 	NamedEvent<decltype(test)> evnt = NamedEvent<decltype(test)>();
 
-	evnt.receive(std::string("test"), first);
+	evnt.receive("test", first);
 
 	evnt.send("test", " message received.");
 

@@ -1,46 +1,66 @@
-#ifndef FEARENGINE_SRC_EVENT_OBSERVER_H__
-#define FEARENGINE_SRC_EVENT_LISTENER_H__
+#ifndef FEARENGINE_EVENT_OBSERVER_H__
+#define FEARENGINE_EVENT_OBSERVER_H__
 
-#include <vector>
+#include <slot_map.h>
 
 #include "detail/Delegate.hpp"
 
 namespace FearEngine::Events
 {
 
-template<class Lambda>
-class Observer
+template <typename T>
+class Observer;
+
+template<typename Return, typename ...Params>
+class Observer<Return(Params...)>
 {
 public:
-	template <typename... Params>
+	using func_handle = detail::delegate<Return(Params...)>;
+
 	void notify(Params... arg) const
 	{
-		for (size_t i = 0; i < subscribers.size(); ++i)
+		for(auto it: subscribers)
 		{
-			subscribers[i](arg...);
+			(it)(arg...);
 		}
 	}
 
 	template<class Lambda>
-	size_t attach(const Lambda& function)
+	auto attach(const Lambda& function)
 	{
-		subscribers.push_back({ function });
-		return subscribers.size() - 1;
+		return subscribers.insert({ function });
 	}
 
-	size_t attach(const detail::delegate<Lambda>& function)
+	template <class T, Return(T::*method)(Params...)>
+	auto attach(T* instance)
 	{
-		subscribers.push_back(function);
-		return subscribers.size() - 1;
+		return subscribers.insert(func_handle::create<T, method>(instance));
 	}
 
-	void detach(uint32_t id)
+	template <class T, Return(T::*method)(Params...) const>
+	auto attach(const T* instance)
 	{
-		subscribers.erase(vec.begin() + id);
+		return subscribers.insert(func_handle::create<T, method>(instance));
+	}
+
+	auto attach(const func_handle& function)
+	{
+		return subscribers.insert(function);
+	}
+
+	template <Return(*function)(Params...)>
+	auto attach()
+	{
+		return subscribers.insert(func_handle::create<function>());
+	}
+
+	void detach(std::pair<uint32_t, uint32_t>& key)
+	{
+		subscribers.erase(key);
 	}
 
 private:
-	std::vector<detail::delegate<Lambda>> subscribers;
+	stdext::slot_map<func_handle> subscribers;
 };
 }
 

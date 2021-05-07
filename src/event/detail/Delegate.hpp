@@ -1,5 +1,5 @@
-#ifndef FEARENGINE_SRC_EVENT_DETAIL_DELEGATE_H__
-#define FEARENGINE_SRC_EVENT_DETAIL_DELEGATE_H__
+#ifndef FEARENGINE_EVENT_DETAIL_DELEGATE_H__
+#define FEARENGINE_EVENT_DETAIL_DELEGATE_H__
 
 namespace FearEngine::Events::detail
 {
@@ -120,8 +120,7 @@ private:
 	template <typename Lambda>
 	static Return lambda_stub(void* this_ptr, Params... arg)
 	{
-		Lambda* p = static_cast<Lambda*>(this_ptr);
-		return (p->operator())(arg...);
+		return (static_cast<Lambda*>(this_ptr)->operator())(arg...);
 	}
 };
 };
