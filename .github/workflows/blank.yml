@@ -5,7 +5,7 @@ jobs:
   style:
     runs-on: [ubuntu-latest]
     container:
-      image: docker://jeez/fear-engine:latest
+      image: docker://painfulteam/fear-engine:latest
     steps:
       - uses: actions/checkout@v2
       - run: sh /usr/src/app/style.sh
@@ -14,7 +14,7 @@ jobs:
     needs: [style]
     runs-on: [ubuntu-latest]
     container:
-      image: docker://jeez/fear-engine:latest
+      image: docker://painfulteam/fear-engine:latest
     steps:
       - uses: actions/checkout@v2
       - run: sh /usr/src/app/build.sh
@@ -22,6 +22,6 @@ jobs:
     needs: [style, build]
     runs-on: [ubuntu-latest]
     container:
-      image: docker://jeez/fear-engine:latest
+      image: docker://painfulteam/fear-engine:latest
     steps:
       - run: echo "UNIT TEST"
