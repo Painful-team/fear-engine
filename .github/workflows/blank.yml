@@ -8,7 +8,7 @@ jobs:
       image: docker://painfulteam/fear-engine:latest
     steps:
       - uses: actions/checkout@v2
-      - run: sh /usr/src/app/style.sh
+      - run: sh /fear-engine-CI/style.sh
             
   build:
     needs: [style]
@@ -17,7 +17,7 @@ jobs:
       image: docker://painfulteam/fear-engine:latest
     steps:
       - uses: actions/checkout@v2
-      - run: sh /usr/src/app/build.sh
+      - run: sh /fear-engine-CI/build.sh
   unit:
     needs: [style, build]
     runs-on: [ubuntu-latest]
