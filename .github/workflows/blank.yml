@@ -1,0 +1,27 @@
+name: CI
+on: [push]
+
+jobs:
+  style:
+    runs-on: [ubuntu-latest]
+    container:
+      image: docker://painfulteam/fear-engine:latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: sh /fear-engine-CI/style.sh
+            
+  build:
+    needs: [style]
+    runs-on: [ubuntu-latest]
+    container:
+      image: docker://painfulteam/fear-engine:latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: echo "/fear-engine-CI/build.sh"
+  unit:
+    needs: [style, build]
+    runs-on: [ubuntu-latest]
+    container:
+      image: docker://painfulteam/fear-engine:latest
+    steps:
+      - run: echo "UNIT TEST"
