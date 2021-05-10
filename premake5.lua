@@ -33,6 +33,7 @@ project "Engine"
 		".editorconfig",
 		"src/**.hpp",
 		"src/**.cpp",
+		"include/containers/*.h",
 		"include/glm/glm/**.*",
 		"include/stb/**.h"
 	}
@@ -40,6 +41,7 @@ project "Engine"
 	includedirs
 	{
 		"src",
+		"include/containers",
        	"include/glad/include",
        	"include/GLFW/include",
        	"include/glm/include",
@@ -79,26 +81,26 @@ newaction {
    trigger     = "clean",
    description = "clean the software",
    execute     = function ()
-      print("clean premakefiles...")
+      print("Clean premakefiles...")
 	  
 	  print("Cleaning vs files")
 	  os.remove ("*.sln")
 	  os.rmdir(".vs")
 	  os.remove ("*.sln")
       os.remove("**.vcxproj*")
-	  print("done")
+	  print("Done")
 	  
 	  print("Cleaning makefiles")
 	  os.remove("**Makefile")
 	  os.remove("**.make")
-	  print("done")
+	  print("Done")
 	  
 	  print("Cleaning cmake")
 	  os.rmdir ("**CMakeFiles/")
 	  os.remove ("*CMakeFiles")
 	  os.remove ("*CMakeCache.txt")
 	  os.remove ("**.cmake")
-	  print("done")
+	  print("Done")
 	  
       print("Cleaning done.")
    end
