@@ -27,12 +27,12 @@ enum class EventType
 
 enum EventCategory
 {
-	invalid			= 0,
-	window			= 1 << 0,
-	input				= 1 << 1,
-	keyboard		= 1 << 2,
-	mouse				= 1 << 3,
-	mouseButton = 1 << 4
+	invalid		= 0,
+	window		= 1 << 0,
+	input		= 1 << 1,
+	keyboard	= 1 << 2,
+	mouse		= 1 << 3,
+	mouseButton 	= 1 << 4
 };
 
 class Event
