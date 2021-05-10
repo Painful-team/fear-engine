@@ -15,7 +15,7 @@ namespace FearEngine::Events
 	class NamedEvent<Return(Params...)>
 	{
 	public:
-		using func_handle = detail::delegate<Return(Params...)>;
+		using func_handle = detail::Delegate<Return(Params...)>;
 
 		template <typename ...Params>
 		void send(const std::string& eventName, Params... arg) const

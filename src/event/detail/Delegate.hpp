@@ -5,31 +5,31 @@ namespace FearEngine::Events::detail
 {
 
 template <typename T>
-class delegate;
+class Delegate;
 
 template<typename Return, typename ...Params>
-class delegate<Return(Params...)>
+class Delegate<Return(Params...)>
 {
 public:
 	using stub_type = Return(*)(void* this_p, Params...);
 
-	delegate():
+	Delegate():
 		object(nullptr),
 		stub(nullptr)
 	{}
 
-	delegate(const delegate& another)
+	Delegate(const Delegate& another)
 	{
 		*this = another;
 	}
 
 	template <typename Lambda>
-	delegate(const Lambda& lambda)
+	Delegate(const Lambda& lambda)
 	{
 		*this = lambda;
 	}
 
-	delegate& operator = (const delegate& another)
+	Delegate& operator = (const Delegate& another)
 	{
 		stub = another.stub;
 		object = another.object;
@@ -38,7 +38,7 @@ public:
 	}
 
 	template <typename Lambda>
-	delegate& operator = (const Lambda& instance)
+	Delegate& operator = (const Lambda& instance)
 	{
 		object = reinterpret_cast<void*>(const_cast<Lambda*>(&instance));
 		stub = lambda_stub<Lambda>;
@@ -46,12 +46,12 @@ public:
 		return *this;
 	}
 
-	bool operator == (const delegate& another) const
+	bool operator == (const Delegate& another) const
 	{
 		return this->object == another.object && this->stub == another.stub;
 	}
 
-	bool operator != (const delegate& another) const
+	bool operator != (const Delegate& another) const
 	{
 		return !(*this == another);
 	}
@@ -62,25 +62,25 @@ public:
 	}
 
 	template <class T, Return(T::*method)(Params...)>
-	static delegate create(T* instance)
+	static Delegate create(T* instance)
 	{
 		return { instance, method_stub<T, method> };
 	}
 
 	template <class T, Return(T::*method)(Params...) const>
-	static delegate create(const T* instance)
+	static Delegate create(const T* instance)
 	{
 		return { const_cast<T*>(instance), const_method_stub<T, method> };
 	}
 
 	template <Return(*function)(Params...)>
-	static delegate create()
+	static Delegate create()
 	{
 		return { nullptr, function_stub<function> };
 	}
 
 	template <typename Lambda>
-	static delegate create(const Lambda& instance)
+	static Delegate create(const Lambda& instance)
 	{
 		return { reinterpret_cast<void*>(const_cast<Lambda*>(&instance)), lambda_stub<Lambda> };
 	}
@@ -94,7 +94,7 @@ private:
 	void* object;
 	stub_type stub;
 
-	delegate(void* object, stub_type stub):
+	Delegate(void* object, stub_type stub):
 		object(object),
 		stub(stub)
 	{}

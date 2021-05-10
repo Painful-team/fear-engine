@@ -7,15 +7,22 @@
 
 namespace FearEngine::Events
 {
+class ObserverBase
+{
+public:
+	ObserverBase() {};
+};
 
-template <typename T>
+template<typename T>
 class Observer;
 
 template<typename Return, typename ...Params>
-class Observer<Return(Params...)>
+class Observer<Return(Params...)>: public ObserverBase
 {
 public:
-	using func_handle = detail::delegate<Return(Params...)>;
+	Observer() {};
+
+	using func_handle = detail::Delegate<Return(Params...)>;
 
 	void notify(Params... arg) const
 	{
