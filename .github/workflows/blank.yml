@@ -17,7 +17,7 @@ jobs:
       image: docker://painfulteam/fear-engine:latest
     steps:
       - uses: actions/checkout@v2
-      - run: sh /fear-engine-CI/build.sh
+      - run: echo "/fear-engine-CI/build.sh"
   unit:
     needs: [style, build]
     runs-on: [ubuntu-latest]
