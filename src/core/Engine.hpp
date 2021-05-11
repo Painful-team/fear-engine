@@ -12,20 +12,21 @@ namespace FearEngine
 class Engine
 {
 public:
-	Events::Dispatcher eventDispatcher;
 
 	Engine() = default;
 
 	static Render::Renderer* getRender();
 	static Window* getWindow();
+	static Events::Dispatcher* getDispatcher();
 
-	static void provide(Render::Renderer* renderer);
-	static void provide(Window* window);
+	static void provide(Events::Dispatcher* newDispatcher);
+	static void provide(Render::Renderer* newRenderer);
+	static void provide(Window* newWindow);
 
 	int init();
 	void run();
 
-	void onEvent(Events::Event* event);
+	static void onEvent(Events::Event* event);
 	void onResize(Events::WindowResize* event);
 	void onClose(Events::WindowClose* event);
 
@@ -35,6 +36,7 @@ private:
 	bool running = true;
 	bool minimized = false;
 
+	static Events::Dispatcher* eventDispatcher;
 	static Render::Renderer* renderer;
 	static Window* window;
 };
