@@ -12,6 +12,8 @@ enum class EventType
 	windowFocus,
 	windowLostFocus,
 	windowMoved,
+	
+	guiUpdate,
 
 	keyPressed,
 	keyReleased,
