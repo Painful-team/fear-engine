@@ -1,5 +1,5 @@
-#ifndef FEARENGINE_UI_WINDOWS_HELP_H__
-#define FEARENGINE_UI_WINDOWS_HELP_H__
+#ifndef FEARENGINE_GUI_WINDOWS_HELP_H__
+#define FEARENGINE_GUI_WINDOWS_HELP_H__
 
 #include "GuiWindow.hpp"
 

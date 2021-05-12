@@ -1,5 +1,5 @@
-#ifndef FEARENGINE_UI_GUI_H__
-#define FEARENGINE_UI_GUI_H__
+#ifndef FEARENGINE_GUI_GUI_H__
+#define FEARENGINE_GUI_GUI_H__
 
 #include <unordered_map>
 
