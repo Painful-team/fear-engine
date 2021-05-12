@@ -53,11 +53,7 @@ void Gui::onGui()
 	showMainMenuBar();
 	showBottomPanel();
 
-	UI::windows::WindowSettings settings;
-	settings.maxWindowSize = ImVec2(static_cast<float>(Engine::getWindow()->getWidth()),
-			static_cast<float>(Engine::getWindow()->getHeigth()));
-
-	windows_.showAllWindows(&settings);
+	windows_.showAllWindows();
 
 	ImGui::Render();
 

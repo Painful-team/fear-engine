@@ -3,6 +3,8 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 
+#include <core/Engine.hpp>
+
 namespace FearEngine::UI::windows
 {
 SceneWindow::SceneWindow():
@@ -11,21 +13,17 @@ SceneWindow::SceneWindow():
 	isScenePaused_(false)
 {}
 
-void SceneWindow::showWindow(const WindowSettings* settings)
+void SceneWindow::showWindow()
 {
 	const ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_MenuBar;
 
 	const ImVec2 minWindowSize = ImVec2(200.0f, 200.0f);
-	if (!settings)
-	{
-		ImGui::SetNextWindowSizeConstraints(minWindowSize, minWindowSize);
-	}
-	else
-	{
-		ImGui::SetNextWindowSizeConstraints(minWindowSize, settings->maxWindowSize);
-	}
+	const ImVec2 maxWindowSize = ImVec2(static_cast<float>(Engine::getWindow()->getWidth()),
+			static_cast<float>(Engine::getWindow()->getHeigth()));
 
+	ImGui::SetNextWindowSizeConstraints(minWindowSize, maxWindowSize);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+
 	ImGui::Begin("Scene", &isWindowOpen_, windowFlags);
 	{
 		if (ImGui::BeginMenuBar())

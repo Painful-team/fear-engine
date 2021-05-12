@@ -1,25 +1,22 @@
 #include "ProjectWindow.hpp"
 
+#include <core/Engine.hpp>
+
 namespace FearEngine::UI::windows
 {
 ProjectWindow::ProjectWindow() :
 	isWindowOpen_(true)
 {}
 
-void ProjectWindow::showWindow(const WindowSettings* settings)
+void ProjectWindow::showWindow()
 {
 	const ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_MenuBar;
 
 	const ImVec2 minWindowSize = ImVec2(200.0f, 200.0f);
-	if (!settings)
-	{
-		ImGui::SetNextWindowSizeConstraints(minWindowSize, minWindowSize);
-	}
-	else
-	{
-		ImGui::SetNextWindowSizeConstraints(minWindowSize, settings->maxWindowSize);
-	}
+	const ImVec2 maxWindowSize = ImVec2(static_cast<float>(Engine::getWindow()->getWidth()),
+		static_cast<float>(Engine::getWindow()->getHeigth()));
 
+	ImGui::SetNextWindowSizeConstraints(minWindowSize, maxWindowSize);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 	if (ImGui::Begin("Project", &isWindowOpen_, windowFlags))
 	{

@@ -10,7 +10,7 @@ class HelpWindow final : public GuiWindow
 public:
 	HelpWindow();
 		
-	void showWindow(const WindowSettings* settings = nullptr) final;
+	void showWindow() final;
 
 	bool isWindowOpen() const;
 	void toggleWindow(const bool openWindow);

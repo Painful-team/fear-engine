@@ -13,7 +13,7 @@ class InspectorWindow final : public GuiWindow
 public:
 	InspectorWindow();
 
-	void showWindow(const WindowSettings* settings = nullptr) final;
+	void showWindow() final;
 
 	bool isWindowOpen() const;
 	void toggleWindow(const bool openWindow);

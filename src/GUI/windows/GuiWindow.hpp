@@ -6,15 +6,10 @@
 
 namespace FearEngine::UI::windows
 {
-struct WindowSettings
-{
-	ImVec2 maxWindowSize;
-};
-
 class GuiWindow
 {
 public:
-	virtual void showWindow(const WindowSettings* settings) = 0;
+	virtual void showWindow() = 0;
 
 };
 }

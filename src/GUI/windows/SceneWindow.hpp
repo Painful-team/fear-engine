@@ -10,7 +10,7 @@ class SceneWindow final : public GuiWindow
 public:
 	SceneWindow();
 
-	void showWindow(const WindowSettings* settings = nullptr) final;
+	void showWindow() final;
 
 	bool isWindowOpen() const;
 	void toggleWindow(const bool openWindow);

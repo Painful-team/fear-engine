@@ -16,13 +16,13 @@ namespace FearEngine
 {
 struct GuiMainWindows
 {
-	void showAllWindows(const UI::windows::WindowSettings* settings = nullptr)
+	void showAllWindows()
 	{
-		sceneWindow.showWindow(settings);
-		hierarchyWindow.showWindow(settings);
-		projectWindow.showWindow(settings);
-		inspectorWindow.showWindow(settings);
-		helpWindow.showWindow(settings);
+		sceneWindow.showWindow();
+		hierarchyWindow.showWindow();
+		projectWindow.showWindow();
+		inspectorWindow.showWindow();
+		helpWindow.showWindow();
 	}
 
 	UI::windows::SceneWindow sceneWindow;

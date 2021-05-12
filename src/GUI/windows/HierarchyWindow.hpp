@@ -10,7 +10,7 @@ class HierarchyWindow final : public GuiWindow
 public:
 	HierarchyWindow();
 
-	void showWindow(const WindowSettings* settings = nullptr) final;
+	void showWindow() final;
 
 	bool isWindowOpen() const;
 	void toggleWindow(const bool openWindow);
