@@ -30,8 +30,6 @@ public:
 
 	Window(const std::string& title = "FearEngine", const uint32_t width = 1920, const uint32_t heigth = 1080, bool vsync = false);
 
-	const std::string& getTitle() const;
-
 	uint32_t getWidth() const;
 	uint32_t getHeigth() const;
 

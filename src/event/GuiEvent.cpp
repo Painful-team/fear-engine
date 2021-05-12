@@ -1,4 +1,4 @@
-#include "GuiUpdate.hpp"
+#include "GuiEvent.hpp"
 
 namespace FearEngine::Events
 {

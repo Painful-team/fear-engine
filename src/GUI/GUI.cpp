@@ -1,60 +1,22 @@
 #include "Gui.hpp"
 
+#include <iostream>
+
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 #include <imgui_internal.h>
 
+#include <event/GuiEvent.hpp>
+
 namespace FearEngine
 {
-// Main windows trackers
-static bool ShowScene = true;
-static bool ShowHierarchy = true;
-static bool ShowProject = true;
-static bool ShowInspector = true;
-static bool ShowHelp = false;
-
-// Scene window start, pause, stop trackers
-static bool isSceneStarted = false;
-static bool isScenePaused = false;
-
-// Inspector components flags
-static bool InspectorTransformComponent = true;
-static bool InspectorColorComponent = true;
-static bool InspectorMeshComponent = true;
-static bool InspectorInteractionComponent = true;
-static bool InspectorShaderComponent = true;
-
-const int nInspectorComponents = 5;
-
-// 0 - Transform, 1 - Color, 2 - Mesh, 3 - Interaction, 4 - Shader
-static bool InspectorComponents[nInspectorComponents] = { true, true, true, true, true };
-const char* ComponentsNames[nInspectorComponents] = { "Transform", "Color", "Mesh", "Interaction", "Shader" };
-
-// Stubs for Inspector showing simple GUI logic
-static bool ShowPickedInspectorObject = false;
-static char ObjectInspectorName[32] = "Cube";
-
-static float ObjectInspectorPositionX = 0.0f;
-static float ObjectInspectorPositionY = 0.0f;
-static float ObjectInspectorPositionZ = 0.0f;
-
-static float ObjectInspectorRotationX = 0.0f;
-static float ObjectInspectorRotationY = 0.0f;
-static float ObjectInspectorRotationZ = 0.0f;
-
-static float ObjectInspectorScaleX = 0.0f;
-static float ObjectInspectorScaleY = 0.0f;
-static float ObjectInspectorScaleZ = 0.0f;
-
-static float ObjectInspectorColor[4] = { 0.4f, 0.7f, 0.0f, 0.5f };
-
 void Gui::init()
 {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
-	(void)io;
+	static_cast<void>(io);
 
 	ImGui_ImplGlfw_InitForOpenGL(Engine::getWindow()->window, true);
 	ImGui_ImplOpenGL3_Init();
@@ -69,10 +31,12 @@ void Gui::run()
 		glfwPollEvents();
 
 		onGui();
+
+		Engine::getDispatcher()->notify(&Events::GuiUpdate());
 	}
 }
 
-FearEngine::Gui::~Gui()
+Gui::~Gui()
 {
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
@@ -89,11 +53,11 @@ void Gui::onGui()
 	showMainMenuBar();
 	showBottomPanel();
 
-	if (ShowScene)			showSceneWindow(&ShowScene);
-	if (ShowHierarchy)	showHierarchyWindow(&ShowHierarchy);
-	if (ShowProject)		showProjectWindow(&ShowProject);
-	if (ShowInspector)	showInspectorWindow(&ShowInspector, true);
-	if (ShowHelp)				showHelpWindow(&ShowHelp);
+	UI::windows::WindowSettings settings;
+	settings.maxWindowSize = ImVec2(static_cast<float>(Engine::getWindow()->getWidth()),
+			static_cast<float>(Engine::getWindow()->getHeigth()));
+
+	windows_.showAllWindows(&settings);
 
 	ImGui::Render();
 
@@ -134,7 +98,7 @@ void Gui::setMainWindowFlags()
 
 void Gui::setFonts()
 {
-	ImFont* mainMenuFont = ImGui::GetIO().Fonts->AddFontFromFileTTF("./resources/fonts/Roboto-Regular.ttf", 20.0f);
+	const ImFont* mainMenuFont = ImGui::GetIO().Fonts->AddFontFromFileTTF("./resources/fonts/Roboto-Regular.ttf", 20.0f);
 	IM_ASSERT(mainMenuFont != NULL);
 }
 
@@ -200,7 +164,9 @@ void Gui::showDockingArea()
 	const float bottomPanelHeight = 30.0f;
 
 	static ImGuiDockNodeFlags dockspaceFlags = ImGuiDockNodeFlags_None;
-	ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoDocking;
+	const ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse
+			| ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus
+			| ImGuiWindowFlags_NoBackground;
 
 	ImGuiViewport* viewport = ImGui::GetMainViewport();
 	const ImVec2 dockingAreaSize = ImVec2(viewport->GetWorkSize().x, viewport->GetWorkSize().y - bottomPanelHeight);
@@ -211,9 +177,6 @@ void Gui::showDockingArea()
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
 
-	windowFlags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-	windowFlags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoBackground;
-
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 	ImGui::Begin("docker window", &enableDocking, windowFlags);
 
@@ -221,12 +184,10 @@ void Gui::showDockingArea()
 
 	ImGui::PopStyleVar(2);
 
-	// DockSpace
 	ImGuiIO& io = ImGui::GetIO();
 	if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
 	{
-		ImGuiID dockspaceId = ImGui::GetID("MyDockSpace");
-		ImGui::DockSpace(dockspaceId, ImVec2(0.0f, 0.0f), dockspaceFlags);
+		ImGui::DockSpace(ImGui::GetID("MyDockSpace"), ImVec2(0.0f, 0.0f), dockspaceFlags);
 	}
 
 	ImGui::End();
@@ -234,10 +195,9 @@ void Gui::showDockingArea()
 
 void Gui::showMainMenuBar()
 {
-	// Set menu bar background color - #4F4F4FFF
+	// color - #4F4F4FFF
 	ImGui::PushStyleColor(ImGuiCol_MenuBarBg, ImVec4(0.31f, 0.31f, 0.31f, 1.0f));
 
-	// Set menu bar height and width
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 5.0f));
 
 	if (ImGui::BeginMainMenuBar())
@@ -271,7 +231,8 @@ void Gui::showMainMenuBar()
 		if (ImGui::BeginMenu("Edit"))
 		{
 			if (ImGui::MenuItem("Undo", "CTRL+Z")) {}
-			if (ImGui::MenuItem("Redo", "CTRL+Y", false, false)) {}  // Disabled item
+			// Disabled item
+			if (ImGui::MenuItem("Redo", "CTRL+Y", false, false)) {}
 
 			ImGui::Separator();
 
@@ -291,19 +252,19 @@ void Gui::showMainMenuBar()
 		{
 			if (ImGui::MenuItem("Scene"))
 			{
-				ShowScene = true;
+				windows_.sceneWindow.toggleWindow(true);
 			}
 			if (ImGui::MenuItem("Project"))
 			{
-				ShowProject = true;
+				windows_.projectWindow.toggleWindow(true);
 			}
 			if (ImGui::MenuItem("Hierarchy"))
 			{
-				ShowHierarchy = true;
+				windows_.hierarchyWindow.toggleWindow(true);
 			}
 			if (ImGui::MenuItem("Inspector"))
 			{
-				ShowInspector = true;
+				windows_.inspectorWindow.toggleWindow(true);
 			}
 			if (ImGui::MenuItem("Debug (console)"))
 			{
@@ -317,7 +278,7 @@ void Gui::showMainMenuBar()
 		{
 			if (ImGui::MenuItem("Guide"))
 			{
-				ShowHelp = true;
+				windows_.helpWindow.toggleWindow(true);
 			}
 
 			ImGui::EndMenu();
@@ -346,7 +307,8 @@ void Gui::showBottomPanel()
 			| ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoSavedSettings
 			| ImGuiWindowFlags_NoInputs;
 
-	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 1.0f)); // #FFFFFFFF
+	// color - #FFFFFFFF
+	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 1.0f));
 
 	ImGui::Begin("Bottom panel", &showBottomPanel, windowFlags);
 	{
@@ -361,617 +323,5 @@ void Gui::showBottomPanel()
 	ImGui::End();
 
 	ImGui::PopStyleColor();
-}
-
-void Gui::showSceneWindow(bool* windowOpen)
-{
-	ImGuiWindowFlags windowFlags = 0;
-
-	windowFlags |= ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_MenuBar;
-
-	ImVec2 minWindowSize = ImVec2(200.0f, 200.0f);
-	ImVec2 maxWindowSize = ImVec2(Engine::getWindow()->getWidth(), Engine::getWindow()->getHeigth());
-
-	ImGui::SetNextWindowSizeConstraints(minWindowSize, maxWindowSize);
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-
-	ImGui::Begin("Scene", windowOpen, windowFlags);
-	{
-		if (ImGui::BeginMenuBar())
-		{
-			if (ImGui::BeginMenu("Stats"))
-			{
-				showStatsDialog();
-				ImGui::EndMenu();
-			}
-
-			{
-				const float btnOffset = 5.0f;
-				const ImVec2 btnSize = ImVec2(24.0f, 24.0f);
-
-				const ImVec4 btnOnColor = ImVec4(0.227, 0.227, 0.227, 1.0); // color - #3A3A3AFF
-				const ImVec4 btnOffColor = ImVec4(0.151, 0.157, 0.157, 1.0); // color - #292828FF
-
-				ImGui::SameLine(ImGui::GetWindowWidth() / 2.0f - btnSize.x - btnOffset);
-
-				if (isSceneStarted && !isScenePaused)
-				{
-					ImGui::PushStyleColor(ImGuiCol_Button, btnOffColor);
-					ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-				}
-				else
-				{
-					ImGui::PushStyleColor(ImGuiCol_Button, btnOnColor);
-					ImGui::PushItemFlag(ImGuiItemFlags_Disabled, false);
-				}
-
-				if (ImGui::Button("|>", btnSize))
-				{
-					// Start scene
-					isSceneStarted = true;
-					isScenePaused = false;
-				}
-
-				ImGui::SameLine(ImGui::GetWindowWidth() / 2.0f);
-
-				if (!isSceneStarted || isScenePaused)
-				{
-					ImGui::PushStyleColor(ImGuiCol_Button, btnOffColor);
-					ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-				}
-				else
-				{
-					ImGui::PushStyleColor(ImGuiCol_Button, btnOnColor);
-					ImGui::PushItemFlag(ImGuiItemFlags_Disabled, false);
-				}
-
-				if (ImGui::Button("||", btnSize))
-				{
-					// Pause scene
-					isScenePaused = true;
-				}
-
-				ImGui::SameLine(ImGui::GetWindowWidth() / 2.0f + btnSize.x + btnOffset);
-
-				if (!isSceneStarted)
-				{
-					ImGui::PushStyleColor(ImGuiCol_Button, btnOffColor);
-					ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-				}
-				else
-				{
-					ImGui::PushStyleColor(ImGuiCol_Button, btnOnColor);
-					ImGui::PushItemFlag(ImGuiItemFlags_Disabled, false);
-				}
-
-				if (ImGui::Button("|=|", btnSize))
-				{
-					// Stop scene
-					isSceneStarted = false;
-					isScenePaused = false;
-				}
-				ImGui::PopStyleColor(3);
-
-				ImGui::PopItemFlag();
-				ImGui::PopItemFlag();
-				ImGui::PopItemFlag();
-			}
-			ImGui::EndMenuBar();
-		}
-		ImGui::End();
-	}
-
-	ImGui::PopStyleVar();
-}
-
-void Gui::showHierarchyWindow(bool* windowOpen)
-{
-	ImGuiWindowFlags windowFlags = 0;
-
-	windowFlags |= ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_MenuBar;
-
-	ImVec2 minWindowSize = ImVec2(200.0f, 200.0f);
-	ImVec2 maxWindowSize = ImVec2(Engine::getWindow()->getWidth(), Engine::getWindow()->getHeigth());
-
-	ImGui::SetNextWindowSizeConstraints(minWindowSize, maxWindowSize);
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-
-	if (ImGui::Begin("Hierarchy", windowOpen, windowFlags))
-	{
-		const float childOffsetX = 32.0f;
-		const float childOffsetBottomY = 55.0f;
-		const float childOffsetTopY = 2.0f;
-
-		const float nextNodeOffsetX = 18.0f;
-
-		if (ImGui::BeginMenuBar())
-		{
-			if (ImGui::BeginMenu("Add"))
-			{
-				// #TODO: Implement '+' to adding new figures in Hierarchy and scene
-
-				ImGui::EndMenu();
-			}
-
-			{
-				ImGuiTextFilter filter;
-				const float filterWidth = 160.0f;
-
-				const float addMenuItemWidth = 40.0f;
-				const float filterRightOffset = 125.0f;
-
-				const float filterSameLineOffset = ImGui::GetWindowWidth() - addMenuItemWidth - filterRightOffset;
-
-				ImGui::SameLine(filterSameLineOffset);
-
-				ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 16.0f);
-				filter.Draw("", filterWidth);
-				ImGui::PopStyleVar();
-			}
-
-			ImGui::EndMenuBar();
-		}
-
-		ImVec2 childSize = ImVec2(ImGui::GetWindowWidth() - childOffsetX, ImGui::GetWindowHeight() - childOffsetBottomY);
-		ImGuiWindowFlags childFlags = ImGuiWindowFlags_NoScrollbar;
-		ImGuiTreeNodeFlags treeFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick
-				| ImGuiTreeNodeFlags_SpanAvailWidth;
-
-		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + childOffsetX);
-		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + childOffsetTopY);
-
-		ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(67, 67, 67, 100));
-
-		if (ImGui::BeginChild("Hierarchy area", childSize, false, childFlags))
-		{
-			const int nCubes = 200;
-
-			ImGui::PushStyleColor(ImGuiCol_Header, IM_COL32(67, 67, 67, 100));
-
-			if (ImGui::CollapsingHeader("Scene name"))
-			{
-				static int selection_mask = (1 << 2);
-				int nodeClicked = -1;
-
-				for (int i = 0; i < nCubes; i++)
-				{
-					ImGuiTreeNodeFlags nodeFlags = treeFlags;
-					const bool isSelected = (selection_mask & (1 << i)) != 0;
-					bool nodeOpen = false;
-
-					if (isSelected)
-					{
-						nodeFlags |= ImGuiTreeNodeFlags_Selected;
-					}
-
-					if (i < 199)
-					{
-						nodeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
-						ImGui::TreeNodeEx((void*)(intptr_t)i, nodeFlags, "Cube - %d", i + 1);
-						if (ImGui::IsItemClicked())
-						{
-							nodeClicked = i;
-						}
-						if (ImGui::BeginDragDropSource())
-						{
-							ImGui::SetDragDropPayload("_TREENODE", NULL, 0);
-							ImGui::Text("drag and drop");
-							ImGui::EndDragDropSource();
-						}
-					}
-					else
-					{
-						ImGui::SetCursorPosX(ImGui::GetCursorPosX() + nextNodeOffsetX);
-
-						nodeFlags |= ImGuiTreeNodeFlags_SpanFullWidth;
-
-						nodeOpen = ImGui::TreeNodeEx((void*)(intptr_t)i, nodeFlags, "Collection");
-						if (ImGui::IsItemClicked())
-						{
-							nodeClicked = i;
-						}
-						if (ImGui::BeginDragDropSource())
-						{
-							ImGui::SetDragDropPayload("_TREENODE", NULL, 0);
-							ImGui::Text("drag and drop");
-							ImGui::EndDragDropSource();
-						}
-						if (nodeOpen)
-						{
-							if ((selection_mask & (1 << ++i)) != 0)
-							{
-								nodeFlags |= ImGuiTreeNodeFlags_Selected;
-							}
-
-							nodeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
-							ImGui::TreeNodeEx((void*)(intptr_t)i, nodeFlags, "Cube - %d", i);
-							if (ImGui::IsItemClicked())
-							{
-								nodeClicked = i;
-							}
-							if (ImGui::BeginDragDropSource())
-							{
-								ImGui::SetDragDropPayload("_TREENODE", NULL, 0);
-								ImGui::Text("drag and drop");
-								ImGui::EndDragDropSource();
-							}
-							ImGui::TreePop();
-						}
-					}
-				}
-				if (nodeClicked != -1)
-				{
-					if (ImGui::GetIO().KeyCtrl)
-					{
-						selection_mask ^= (1 << nodeClicked);
-					}
-					else
-					{
-						selection_mask = (1 << nodeClicked);
-					}
-				}
-				else if (ImGui::IsMouseClicked(0))
-				{
-					selection_mask = (1 << 8);
-				}
-			}
-			ImGui::PopStyleColor();
-		}
-		ImGui::EndChild();
-
-		ImGui::PopStyleColor();
-	}
-
-	ImGui::End();
-
-	ImGui::PopStyleVar();
-}
-
-void Gui::showProjectWindow(bool* windowOpen)
-{
-	ImGuiWindowFlags windowFlags = 0;
-
-	windowFlags |= ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_MenuBar;
-
-	ImVec2 minWindowSize = ImVec2(200.0f, 200.0f);
-	ImVec2 maxWindowSize = ImVec2(ImVec2(Engine::getWindow()->getWidth(), Engine::getWindow()->getHeigth()));
-
-	ImGui::SetNextWindowSizeConstraints(minWindowSize, maxWindowSize);
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-
-	if (ImGui::Begin("Project", windowOpen, windowFlags))
-	{
-		const float mainAreaWidthX = 175.0f;
-		const float barAreaOffsetLeftX = 3.0f;
-		const float barAreaWidthX = ImGui::GetWindowWidth() - mainAreaWidthX - barAreaOffsetLeftX;
-		const float mainAreaOffsetBottomY = 55.0f;
-		const float barAreaHeight = 26.0f;
-
-		const float startPosY = ImGui::GetCursorPosY();
-
-		ImVec2 fileMainAreaSize = ImVec2(mainAreaWidthX, ImGui::GetWindowHeight() - mainAreaOffsetBottomY);
-
-		ImVec2 fileBarAreaSize = ImVec2(barAreaWidthX, barAreaHeight);
-
-		if (ImGui::BeginMenuBar())
-		{
-			if (ImGui::BeginMenu("Add"))
-			{
-				// #TODO: Implement '+' to adding new figures in Hierarchy and scene
-				ImGui::EndMenu();
-			}
-
-			{
-				ImGuiTextFilter filter;
-				const float filterWidth = 160.0f;
-
-				const float addMenuItemWidth = 40.0f;
-				const float filterRightOffset = 125.0f;
-
-				const float filterSameLineOffset = ImGui::GetWindowWidth() - addMenuItemWidth - filterRightOffset;
-
-				ImGui::SameLine(filterSameLineOffset);
-
-				ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 16.0f);
-				filter.Draw("", filterWidth);
-				ImGui::PopStyleVar();
-			}
-
-			ImGui::EndMenuBar();
-		}
-
-		// File main (left) area
-		{
-			const float childOffsetTopY = 2.0f;
-			const float nextNodeOffsetX = 18.0f;
-
-			ImGuiWindowFlags childFlags = ImGuiWindowFlags_NoScrollbar;
-			ImGuiTreeNodeFlags treeFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick
-				| ImGuiTreeNodeFlags_SpanAvailWidth;
-
-			ImGui::SetCursorPosX(ImGui::GetCursorPosX());
-			ImGui::SetCursorPosY(startPosY + childOffsetTopY);
-
-			ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(67, 67, 67, 100));
-
-			if (ImGui::BeginChild("FileMainArea", fileMainAreaSize, false, childFlags))
-			{
-				const int nElems = 2;
-
-				ImGui::PushStyleColor(ImGuiCol_Header, IM_COL32(67, 67, 67, 100));
-
-				if (ImGui::CollapsingHeader("Assets"))
-				{
-
-				}
-				ImGui::PopStyleColor();
-			}
-			ImGui::EndChild();
-
-			ImGui::PopStyleColor();
-		}
-
-		// File bar (top) area
-		{
-			const float childOffsetTopY = 2.0f;
-
-			ImGuiWindowFlags childFlags = ImGuiWindowFlags_NoScrollbar;
-			ImGuiTreeNodeFlags treeFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick
-				| ImGuiTreeNodeFlags_SpanAvailWidth;
-
-			ImGui::SetCursorPosX(mainAreaWidthX + barAreaOffsetLeftX);
-			ImGui::SetCursorPosY(startPosY + childOffsetTopY);
-
-			ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(67, 67, 67, 100));
-
-			if (ImGui::BeginChild("FileBarArea", fileBarAreaSize, false, childFlags))
-			{
-				std::string text = "Assets >\0";
-
-				const float startTextOffsetX = 3.0f;
-				const float startTextOffsetY = 3.0f;
-
-				ImGui::SetCursorPosX(startTextOffsetX);
-				ImGui::SetCursorPosY(startTextOffsetY);
-
-				ImGui::Text(text.c_str());
-
-				// #TODO: Implement file header system
-			}
-			ImGui::EndChild();
-
-			ImGui::PopStyleColor();
-		}
-	}
-	ImGui::End();
-
-	ImGui::PopStyleVar();
-}
-
-void Gui::showInspectorWindow(bool* windowOpen, bool isObjectPicked = false)
-{
-	ImGuiWindowFlags windowFlags = 0;
-
-	windowFlags |= ImGuiWindowFlags_NoCollapse;
-
-	ImVec2 minWindowSize = ImVec2(410.0f, 250.0f);
-	ImVec2 maxWindowSize = ImVec2(ImVec2(Engine::getWindow()->getWidth(), Engine::getWindow()->getHeigth()));
-
-	ImGui::SetNextWindowSizeConstraints(minWindowSize, maxWindowSize);
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-
-	ImGui::Begin("Inspector", windowOpen, windowFlags);
-	{
-		if (isObjectPicked)
-		{
-			{
-				const float childOffsetTopY = 2.0f;
-				const float nextNodeOffsetX = 18.0f;
-
-				ImGuiWindowFlags childFlags = ImGuiWindowFlags_NoScrollbar;
-				ImGuiTreeNodeFlags treeFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick
-						| ImGuiTreeNodeFlags_SpanAvailWidth;
-
-				ImGui::SetCursorPosX(ImGui::GetCursorPosX());
-				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + childOffsetTopY);
-
-				ImVec2 childSize = ImVec2(ImGui::GetWindowWidth(), 40.0f);
-
-				ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(67, 67, 67, 100));
-
-				if (ImGui::BeginChild("Object name area", childSize))
-				{
-					const float childObjectOffsetLeftX = 8.0f;
-					const float childObjectOffsetTopY = 8.0f;
-
-					const float inputTextCustomWidth = 130.0f;
-
-					ImGui::SetCursorPosX(ImGui::GetCursorPosX() + childObjectOffsetLeftX);
-					ImGui::SetCursorPosY(ImGui::GetCursorPosY() + childObjectOffsetTopY);
-
-					ImGui::Button("Tag");
-					if (ImGui::BeginPopupContextItem(0, ImGuiPopupFlags_MouseButtonLeft))
-					{
-						ImGui::Text("Select icon");
-
-						ImGui::EndPopup();
-					}
-					ImGui::SameLine(65.0f);
-
-					ImGui::PushItemWidth(1.0f);
-					ImGui::Checkbox("", &ShowPickedInspectorObject);
-					ImGui::PopItemWidth();
-
-					ImGui::SameLine(115.0f);
-
-					ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 6.0f);
-					ImGui::PushItemWidth(inputTextCustomWidth);
-
-					ImGui::InputText("##edit", ObjectInspectorName, IM_ARRAYSIZE(ObjectInspectorName));
-
-					ImGui::PopStyleVar();
-					ImGui::PopItemWidth();
-				}
-				ImGui::EndChild();
-
-				ImGui::PopStyleColor();
-			}
-
-			if (ImGui::CollapsingHeader("Transform", &InspectorComponents[0]))
-			{
-				const float childObjectOffsetLeftX = 8.0f;
-				const float inputFloatCustomWidth = 70.0f;
-
-				const float inputFloatOffsetCoeff = 60.0f;
-				const float inputSameLineOffset = ImGui::GetWindowWidth() - childObjectOffsetLeftX
-					- inputFloatCustomWidth * 3.0f - inputFloatOffsetCoeff;
-
-				ImGui::SetCursorPosX(ImGui::GetCursorPosX() + childObjectOffsetLeftX);
-
-				ImGui::Text("Position");
-				ImGui::SameLine(inputSameLineOffset);
-
-				{
-					ImGui::PushItemWidth(inputFloatCustomWidth);
-					ImGui::InputFloat("X##PositionX", &ObjectInspectorPositionX, 0.0f, 0.0f, "%.2f"); ImGui::SameLine();
-					ImGui::InputFloat("Y##PositionY", &ObjectInspectorPositionY, 0.0f, 0.0f, "%.2f"); ImGui::SameLine();
-					ImGui::InputFloat("Z##PositionZ", &ObjectInspectorPositionZ, 0.0f, 0.0f, "%.2f");
-					ImGui::PopItemWidth();
-				}
-
-				ImGui::SetCursorPosX(ImGui::GetCursorPosX() + childObjectOffsetLeftX);
-
-				ImGui::Text("Rotation");
-				ImGui::SameLine(inputSameLineOffset);
-
-				{
-					ImGui::PushItemWidth(inputFloatCustomWidth);
-					ImGui::InputFloat("X##RotateX", &ObjectInspectorRotationX, 0.0f, 0.0f, "%.2f"); ImGui::SameLine();
-					ImGui::InputFloat("Y##RotateY", &ObjectInspectorRotationY, 0.0f, 0.0f, "%.2f"); ImGui::SameLine();
-					ImGui::InputFloat("Z##RotateZ", &ObjectInspectorRotationZ, 0.0f, 0.0f, "%.2f");
-					ImGui::PopItemWidth();
-				}
-
-				ImGui::SetCursorPosX(ImGui::GetCursorPosX() + childObjectOffsetLeftX);
-
-				ImGui::Text("Scale");
-				ImGui::SameLine(inputSameLineOffset);
-
-				{
-					ImGui::PushItemWidth(inputFloatCustomWidth);
-					ImGui::InputFloat("X##ScaleX", &ObjectInspectorScaleX, 0.0f, 0.0f, "%.2f"); ImGui::SameLine();
-					ImGui::InputFloat("Y##ScaleY", &ObjectInspectorScaleY, 0.0f, 0.0f, "%.2f"); ImGui::SameLine();
-					ImGui::InputFloat("Z##ScaleZ", &ObjectInspectorScaleZ, 0.0f, 0.0f, "%.2f");
-					ImGui::PopItemWidth();
-				}
-			}
-
-			if (ImGui::CollapsingHeader("Color", &InspectorComponents[1]))
-			{
-				const float childObjectOffsetLeftX = 70.0f;
-
-				ImGui::SetCursorPosX(ImGui::GetCursorPosX() + childObjectOffsetLeftX);
-
-				ImGui::ColorPicker4("color", ObjectInspectorColor);
-			}
-
-			if (ImGui::CollapsingHeader("Mesh", &InspectorComponents[2]))
-			{
-
-			}
-
-			if (ImGui::CollapsingHeader("Interaction", &InspectorComponents[3]))
-			{
-
-			}
-
-			if (ImGui::CollapsingHeader("Shader", &InspectorComponents[4]))
-			{
-
-			}
-
-			{
-				const float btnOffsetRightX = 75.0f;
-				const float btnOffsetTopY = 15.0f;
-
-				ImVec2 addComponentBtnSize = ImVec2(150.0f, 35.0f);
-
-				ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetWindowWidth() / 2.0f - btnOffsetRightX);
-				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + btnOffsetTopY);
-
-				ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 250.0f);
-				ImGui::Button("Add component", addComponentBtnSize);
-				{
-					if (ImGui::BeginPopupContextItem(0, ImGuiPopupFlags_MouseButtonLeft))
-					{
-						for (int i = 0; i < IM_ARRAYSIZE(ComponentsNames); i++)
-						{
-							if (ImGui::Selectable(ComponentsNames[i]))
-							{
-								InspectorComponents[i] = true;
-							}
-						}
-						ImGui::EndPopup();
-					}
-				}
-				ImGui::PopStyleVar();
-			}
-		}
-	}
-	ImGui::End();
-
-	ImGui::PopStyleVar();
-}
-
-void Gui::showHelpWindow(bool* windowOpen)
-{
-	ImGuiWindowFlags windowFlags = 0;
-
-	windowFlags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize;
-
-	ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-	ImVec2 popupSize = ImVec2(500.0f, 300.0f);
-
-	ImGui::OpenPopup("Help");
-
-	ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-	ImGui::SetNextWindowSize(popupSize);
-
-	if (ImGui::BeginPopupModal("Help", windowOpen, windowFlags))
-	{
-		const float buttonOffsetBottomY = 35.0f;
-
-		ImGui::Text("There should be some helping guide ^_*");
-
-		ImGui::SetCursorPosY(popupSize.y - buttonOffsetBottomY);
-		if (ImGui::Button("Close"))
-		{
-			ImGui::CloseCurrentPopup();
-			*windowOpen = false;
-		}
-
-		ImGui::SameLine(popupSize.x);
-
-		if (ImGui::Button("Next"))
-		{
-		}
-
-		ImGui::EndPopup();
-	}
-}
-
-void Gui::showStatsDialog()
-{
-	ImGuiWindowFlags childFlags = 0;
-
-	childFlags |= ImGuiWindowFlags_NoBackground;
-
-	ImGui::BeginChild("child", ImVec2(263.0f, 152.0f), false, childFlags);
-	{
-		ImGui::Text("Polygons: %d");
-		ImGui::Text("Objects: %d");
-		ImGui::Text("Screen: %d");
-	}
-	ImGui::EndChild();
 }
 }

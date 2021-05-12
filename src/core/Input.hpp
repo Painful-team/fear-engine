@@ -1,13 +1,11 @@
-#ifndef FEARENGINE_INPUT_H__
-#define FEARENGINE_INPUT_H__
+#ifndef FEARENGINE_CORE_INPUT_H__
+#define FEARENGINE_CORE_INPUT_H__
 
 #include <glm/glm.hpp>
 #include <event/keyCodes.hpp>
 #include <event/MouseCodes.hpp>
 
-namespace FearEngine
-{
-class Input
+namespace FearEngine::Input
 {
 	bool isKeyPressed(const Events::keys key);
 	bool isKeyReleased(const Events::keys key);
@@ -18,8 +16,6 @@ class Input
 	glm::vec2 getMousePos();
 	double getMouseX();
 	double getMouseY();
-
-};
 }
 
 #endif
