@@ -15,7 +15,8 @@ InspectorWindow::InspectorWindow():
 	rotateVec3({ 0.0f, 0.0f, 0.0f }),
 	scaleVec3({ 0.0f, 0.0f, 0.0f })
 {
-	for (int i = 0; i < IM_ARRAYSIZE(pickedObjectColor); ++i)
+	const int nPickedObjectColor = 4;
+	for (int i = 0; i < nPickedObjectColor; ++i)
 	{
 		pickedObjectColor[i] = 0.0f;
 	}
