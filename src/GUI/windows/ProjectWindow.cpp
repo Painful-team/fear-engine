@@ -4,21 +4,20 @@
 
 namespace FearEngine::UI::windows
 {
-ProjectWindow::ProjectWindow() :
-	isWindowOpen_(true)
+ProjectWindow::ProjectWindow():
+	windowOpen(true),
+	filterItemEnabled(true)
 {}
 
 void ProjectWindow::showWindow()
 {
-	const ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_MenuBar;
-
 	const ImVec2 minWindowSize = ImVec2(200.0f, 200.0f);
 	const ImVec2 maxWindowSize = ImVec2(static_cast<float>(Engine::getWindow()->getWidth()),
-		static_cast<float>(Engine::getWindow()->getHeigth()));
+			static_cast<float>(Engine::getWindow()->getHeigth()));
 
 	ImGui::SetNextWindowSizeConstraints(minWindowSize, maxWindowSize);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-	if (ImGui::Begin("Project", &isWindowOpen_, windowFlags))
+	if (ImGui::Begin("Project", &windowOpen, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_MenuBar))
 	{
 		const float mainAreaWidthX = 175.0f;
 		const float barAreaOffsetLeftX = 3.0f;
@@ -35,25 +34,10 @@ void ProjectWindow::showWindow()
 		{
 			if (ImGui::BeginMenu("Add"))
 			{
-				// #TODO: Implement '+' to adding new figures in Hierarchy and scene
 				ImGui::EndMenu();
 			}
 
-			{
-				ImGuiTextFilter filter;
-				const float filterWidth = 160.0f;
-
-				const float addMenuItemWidth = 40.0f;
-				const float filterRightOffset = 125.0f;
-
-				const float filterSameLineOffset = ImGui::GetWindowWidth() - addMenuItemWidth - filterRightOffset;
-
-				ImGui::SameLine(filterSameLineOffset);
-
-				ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 16.0f);
-				filter.Draw("", filterWidth);
-				ImGui::PopStyleVar();
-			}
+			showFilterMenuItem();
 
 			ImGui::EndMenuBar();
 		}
@@ -79,7 +63,7 @@ void ProjectWindow::showWindow()
 
 				if (ImGui::CollapsingHeader("Assets"))
 				{
-					// TODO: implement project files parsing
+
 				}
 				ImGui::PopStyleColor();
 			}
@@ -126,11 +110,41 @@ void ProjectWindow::showWindow()
 
 bool ProjectWindow::isWindowOpen() const
 {
-	return isWindowOpen_;
+	return windowOpen;
 }
 
 void ProjectWindow::toggleWindow(const bool openWindow)
 {
-	isWindowOpen_ = openWindow;
+	windowOpen = openWindow;
+}
+
+bool ProjectWindow::isFilterEnabled() const
+{
+	return filterItemEnabled;
+}
+
+void ProjectWindow::toggleFilterItem(const bool enableFilter)
+{
+	filterItemEnabled = enableFilter;
+}
+
+void ProjectWindow::showFilterMenuItem() const
+{
+	if (filterItemEnabled)
+	{
+		ImGuiTextFilter filter;
+		const float filterWidth = 160.0f;
+
+		const float addMenuItemWidth = 40.0f;
+		const float filterRightOffset = 125.0f;
+
+		const float filterSameLineOffset = ImGui::GetWindowWidth() - addMenuItemWidth - filterRightOffset;
+
+		ImGui::SameLine(filterSameLineOffset);
+
+		ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 16.0f);
+		filter.Draw("FilterMenuItemProject", filterWidth);
+		ImGui::PopStyleVar();
+	}
 }
 }

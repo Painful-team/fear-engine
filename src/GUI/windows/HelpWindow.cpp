@@ -4,8 +4,8 @@
 
 namespace FearEngine::UI::windows
 {
-HelpWindow::HelpWindow() :
-	isWindowOpen_(true)
+HelpWindow::HelpWindow():
+	windowOpen(true)
 {}
 
 void HelpWindow::showWindow()
@@ -21,7 +21,7 @@ void HelpWindow::showWindow()
 	ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 	ImGui::SetNextWindowSize(popupSize);
 
-	if (ImGui::BeginPopupModal("Help", &isWindowOpen_, windowFlags))
+	if (ImGui::BeginPopupModal("Help", &windowOpen, windowFlags))
 	{
 		const float buttonOffsetBottomY = 35.0f;
 
@@ -31,7 +31,7 @@ void HelpWindow::showWindow()
 		if (ImGui::Button("Close"))
 		{
 			ImGui::CloseCurrentPopup();
-			isWindowOpen_ = false;
+			windowOpen = false;
 		}
 
 		ImGui::SameLine(popupSize.x);
@@ -46,11 +46,11 @@ void HelpWindow::showWindow()
 
 bool HelpWindow::isWindowOpen() const
 {
-	return isWindowOpen_;
+	return windowOpen;
 }
 
 void HelpWindow::toggleWindow(const bool openWindow)
 {
-	isWindowOpen_ = openWindow;
+	windowOpen = openWindow;
 }
 }

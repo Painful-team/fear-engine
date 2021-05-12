@@ -20,20 +20,8 @@ void Gui::init()
 
 	ImGui_ImplGlfw_InitForOpenGL(Engine::getWindow()->window, true);
 	ImGui_ImplOpenGL3_Init();
-}
 
-void Gui::run()
-{
 	applyInitialSettings();
-
-	while (!glfwWindowShouldClose(Engine::getWindow()->window))
-	{
-		glfwPollEvents();
-
-		onGui();
-
-		Engine::getDispatcher()->notify(&Events::GuiUpdate());
-	}
 }
 
 Gui::~Gui()
@@ -49,15 +37,14 @@ void Gui::onGui()
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
 
-	showDockingArea();
 	showMainMenuBar();
-	showBottomPanel();
-
-	windows_.showAllWindows();
+	windows.showAllWindows();
 
 	ImGui::Render();
 
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+	Engine::getDispatcher()->notify(&Events::GuiUpdate());
 }
 
 void Gui::applyInitialSettings()
@@ -102,98 +89,108 @@ void Gui::setMainColors()
 {
 	ImVec4* colors = ImGui::GetStyle().Colors;
 
-	colors[ImGuiCol_Text]										= ImVec4(0.95f, 0.95f, 0.95f, 1.00f);
+	// color - #F2F2F2FF
+	colors[ImGuiCol_Text]								= ImVec4(0.95f, 0.95f, 0.95f, 1.00f);
+	// color - #4A4A4AFF
 	colors[ImGuiCol_TextDisabled]						= ImVec4(0.29f, 0.29f, 0.29f, 1.00f);
-	colors[ImGuiCol_WindowBg]								= ImVec4(0.20f, 0.20f, 0.20f, 1.00f);
-	colors[ImGuiCol_ChildBg]								= ImVec4(0.15f, 0.15f, 0.15f, 1.00f);
-	colors[ImGuiCol_PopupBg]								= ImVec4(0.15f, 0.15f, 0.15f, 1.00f);
-	colors[ImGuiCol_Border]									= ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
+	// color - #333333FF
+	colors[ImGuiCol_WindowBg]							= ImVec4(0.20f, 0.20f, 0.20f, 1.00f);
+	// color - #262626FF
+	colors[ImGuiCol_ChildBg]							= ImVec4(0.15f, 0.15f, 0.15f, 1.00f);
+	// color - #262626FF
+	colors[ImGuiCol_PopupBg]							= ImVec4(0.15f, 0.15f, 0.15f, 1.00f);
+	// color - #000000FF
+	colors[ImGuiCol_Border]								= ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
+	// color - #000000FF
 	colors[ImGuiCol_BorderShadow]						= ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
-	colors[ImGuiCol_FrameBg]								= ImVec4(0.12f, 0.12f, 0.12f, 1.00f);
-	colors[ImGuiCol_FrameBgHovered]					= ImVec4(0.26f, 0.26f, 0.26f, 1.00f);
-	colors[ImGuiCol_FrameBgActive]					= ImVec4(0.38f, 0.38f, 0.38f, 1.00f);
-	colors[ImGuiCol_TitleBg]								= ImVec4(0.26f, 0.26f, 0.26f, 1.00f);
-	colors[ImGuiCol_TitleBgActive]					= ImVec4(0.20f, 0.20f, 0.20f, 1.00f);
-	colors[ImGuiCol_TitleBgCollapsed]				= ImVec4(0.20f, 0.20f, 0.20f, 1.00f);
+	// color - #1F1F1FFF
+	colors[ImGuiCol_FrameBg]							= ImVec4(0.12f, 0.12f, 0.12f, 1.00f);
+	// color - #424242FF
+	colors[ImGuiCol_FrameBgHovered]						= ImVec4(0.26f, 0.26f, 0.26f, 1.00f);
+	// color - #616161FF
+	colors[ImGuiCol_FrameBgActive]						= ImVec4(0.38f, 0.38f, 0.38f, 1.00f);
+	// color - #424242FF
+	colors[ImGuiCol_TitleBg]							= ImVec4(0.26f, 0.26f, 0.26f, 1.00f);
+	// color - #333333FF
+	colors[ImGuiCol_TitleBgActive]						= ImVec4(0.20f, 0.20f, 0.20f, 1.00f);
+	// color - #333333FF
+	colors[ImGuiCol_TitleBgCollapsed]					= ImVec4(0.20f, 0.20f, 0.20f, 1.00f);
+	// color - #424242FF
 	colors[ImGuiCol_MenuBarBg]							= ImVec4(0.26f, 0.26f, 0.26f, 1.00f);
+	// color - #0F0F0FFF
 	colors[ImGuiCol_ScrollbarBg]						= ImVec4(0.06f, 0.06f, 0.06f, 1.00f);
-	colors[ImGuiCol_ScrollbarGrab]					= ImVec4(0.26f, 0.26f, 0.26f, 1.00f);
-	colors[ImGuiCol_ScrollbarGrabHovered]		= ImVec4(0.31f, 0.31f, 0.31f, 1.00f);
-	colors[ImGuiCol_ScrollbarGrabActive]		= ImVec4(0.37f, 0.37f, 0.37f, 1.00f);
+	// color - #424242FF
+	colors[ImGuiCol_ScrollbarGrab]						= ImVec4(0.26f, 0.26f, 0.26f, 1.00f);
+	// color - #4F4F4FFF
+	colors[ImGuiCol_ScrollbarGrabHovered]				= ImVec4(0.31f, 0.31f, 0.31f, 1.00f);
+	// color - #5E5E5EFF
+	colors[ImGuiCol_ScrollbarGrabActive]				= ImVec4(0.37f, 0.37f, 0.37f, 1.00f);
+	// color - #7A7A7AFF
 	colors[ImGuiCol_CheckMark]							= ImVec4(0.48f, 0.48f, 0.48f, 1.00f);
+	// color - #424242FF
 	colors[ImGuiCol_SliderGrab]							= ImVec4(0.26f, 0.26f, 0.26f, 1.00f);
-	colors[ImGuiCol_SliderGrabActive]				= ImVec4(0.48f, 0.48f, 0.48f, 1.00f);
-	colors[ImGuiCol_Button]									= ImVec4(0.26f, 0.26f, 0.26f, 1.00f);
-	colors[ImGuiCol_ButtonHovered]					= ImVec4(0.32f, 0.32f, 0.32f, 1.00f);
+	// color - #7A7A7AFF
+	colors[ImGuiCol_SliderGrabActive]					= ImVec4(0.48f, 0.48f, 0.48f, 1.00f);
+	// color - #424242FF
+	colors[ImGuiCol_Button]								= ImVec4(0.26f, 0.26f, 0.26f, 1.00f);
+	// color - #525252FF
+	colors[ImGuiCol_ButtonHovered]						= ImVec4(0.32f, 0.32f, 0.32f, 1.00f);
+	// color - #2B5C87FF
 	colors[ImGuiCol_ButtonActive]						= ImVec4(0.17f, 0.36f, 0.53f, 1.00f);
-	colors[ImGuiCol_Header]									= ImVec4(0.26f, 0.26f, 0.26f, 1.00f);
-	colors[ImGuiCol_HeaderHovered]					= ImVec4(0.29f, 0.29f, 0.29f, 1.00f);
+	// color - #424242FF
+	colors[ImGuiCol_Header]								= ImVec4(0.26f, 0.26f, 0.26f, 1.00f);
+	// color - #4A4A4AFF
+	colors[ImGuiCol_HeaderHovered]						= ImVec4(0.29f, 0.29f, 0.29f, 1.00f);
+	// color - #575757FF
 	colors[ImGuiCol_HeaderActive]						= ImVec4(0.34f, 0.34f, 0.34f, 1.00f);
+	// color - #0A0A0AFF
 	colors[ImGuiCol_Separator]							= ImVec4(0.04f, 0.04f, 0.04f, 1.00f);
-	colors[ImGuiCol_SeparatorHovered]				= ImVec4(0.04f, 0.04f, 0.04f, 1.00f);
-	colors[ImGuiCol_SeparatorActive]				= ImVec4(0.04f, 0.04f, 0.04f, 1.00f);
+	// color - #0A0A0AFF
+	colors[ImGuiCol_SeparatorHovered]					= ImVec4(0.04f, 0.04f, 0.04f, 1.00f);
+	// color - #0A0A0AFF
+	colors[ImGuiCol_SeparatorActive]					= ImVec4(0.04f, 0.04f, 0.04f, 1.00f);
+	// color - #424242FF
 	colors[ImGuiCol_ResizeGrip]							= ImVec4(0.26f, 0.26f, 0.26f, 1.00f);
-	colors[ImGuiCol_ResizeGripHovered]			= ImVec4(0.33f, 0.33f, 0.33f, 1.00f);
-	colors[ImGuiCol_ResizeGripActive]				= ImVec4(0.38f, 0.38f, 0.38f, 1.00f);
-	colors[ImGuiCol_Tab]										= ImVec4(0.26f, 0.26f, 0.26f, 1.00f);
+	// color - #545454FF
+	colors[ImGuiCol_ResizeGripHovered]					= ImVec4(0.33f, 0.33f, 0.33f, 1.00f);
+	// color - #616161FF
+	colors[ImGuiCol_ResizeGripActive]					= ImVec4(0.38f, 0.38f, 0.38f, 1.00f);
+	// color - #424242FF
+	colors[ImGuiCol_Tab]								= ImVec4(0.26f, 0.26f, 0.26f, 1.00f);
+	// color - #545454FF
 	colors[ImGuiCol_TabHovered]							= ImVec4(0.33f, 0.33f, 0.33f, 1.00f);
+	// color - #636363FF
 	colors[ImGuiCol_TabActive]							= ImVec4(0.39f, 0.39f, 0.39f, 1.00f);
+	// color - #424242FF
 	colors[ImGuiCol_TabUnfocused]						= ImVec4(0.26f, 0.26f, 0.26f, 1.00f);
-	colors[ImGuiCol_TabUnfocusedActive]			= ImVec4(0.26f, 0.26f, 0.26f, 1.00f);
-	colors[ImGuiCol_DockingPreview]					= ImVec4(0.17f, 0.36f, 0.53f, 1.00f);
-	colors[ImGuiCol_DockingEmptyBg]					= ImVec4(0.20f, 0.20f, 0.20f, 1.00f);
+	// color - #424242FF
+	colors[ImGuiCol_TabUnfocusedActive]					= ImVec4(0.26f, 0.26f, 0.26f, 1.00f);
+	// color - #2B5C87FF
+	colors[ImGuiCol_DockingPreview]						= ImVec4(0.17f, 0.36f, 0.53f, 1.00f);
+	// color - #333333FF
+	colors[ImGuiCol_DockingEmptyBg]						= ImVec4(0.20f, 0.20f, 0.20f, 1.00f);
+	// color - #5E5E5EFF
 	colors[ImGuiCol_PlotLines]							= ImVec4(0.37f, 0.37f, 0.37f, 1.00f);
-	colors[ImGuiCol_PlotLinesHovered]				= ImVec4(1.00f, 0.43f, 0.35f, 1.00f);
-	colors[ImGuiCol_PlotHistogram]					= ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
-	colors[ImGuiCol_PlotHistogramHovered]		= ImVec4(1.00f, 0.60f, 0.00f, 1.00f);
-	colors[ImGuiCol_TextSelectedBg]					= ImVec4(0.26f, 0.59f, 0.98f, 0.35f);
-	colors[ImGuiCol_DragDropTarget]					= ImVec4(1.00f, 1.00f, 0.00f, 0.90f);
+	// color - #4296FA59
+	colors[ImGuiCol_TextSelectedBg]						= ImVec4(0.26f, 0.59f, 0.98f, 0.35f);
+	// color - #FFFF00E6
+	colors[ImGuiCol_DragDropTarget]						= ImVec4(1.00f, 1.00f, 0.00f, 0.90f);
+	// color - #4296FAFF
 	colors[ImGuiCol_NavHighlight]						= ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
-	colors[ImGuiCol_NavWindowingHighlight]	= ImVec4(0.95f, 0.95f, 0.95f, 1.00f);
-	colors[ImGuiCol_NavWindowingDimBg]			= ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
-	colors[ImGuiCol_ModalWindowDimBg]				= ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
-}
-
-void Gui::showDockingArea()
-{
-	bool enableDocking = true;
-	const float bottomPanelHeight = 30.0f;
-
-	static ImGuiDockNodeFlags dockspaceFlags = ImGuiDockNodeFlags_None;
-	const ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse
-			| ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus
-			| ImGuiWindowFlags_NoBackground;
-
-	ImGuiViewport* viewport = ImGui::GetMainViewport();
-	const ImVec2 dockingAreaSize = ImVec2(viewport->GetWorkSize().x, viewport->GetWorkSize().y - bottomPanelHeight);
-
-	ImGui::SetNextWindowPos(viewport->GetWorkPos());
-	ImGui::SetNextWindowSize(dockingAreaSize);
-	ImGui::SetNextWindowViewport(viewport->ID);
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-	ImGui::Begin("docker window", &enableDocking, windowFlags);
-
-	ImGui::PopStyleVar();
-
-	ImGui::PopStyleVar(2);
-
-	ImGuiIO& io = ImGui::GetIO();
-	if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
-	{
-		ImGui::DockSpace(ImGui::GetID("MyDockSpace"), ImVec2(0.0f, 0.0f), dockspaceFlags);
-	}
-
-	ImGui::End();
+	// color - #F2F2F2FF
+	colors[ImGuiCol_NavWindowingHighlight]				= ImVec4(0.95f, 0.95f, 0.95f, 1.00f);
+	// color - #CCCCCC33
+	colors[ImGuiCol_NavWindowingDimBg]					= ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
+	// color - #CCCCCC59
+	colors[ImGuiCol_ModalWindowDimBg]					= ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
 }
 
 void Gui::showMainMenuBar()
 {
-	// color - #4F4F4FFF
+	// Set menu bar background color - #4F4F4FFF
 	ImGui::PushStyleColor(ImGuiCol_MenuBarBg, ImVec4(0.31f, 0.31f, 0.31f, 1.0f));
 
+	// Set menu bar height and width
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 5.0f));
 
 	if (ImGui::BeginMainMenuBar())
@@ -227,8 +224,7 @@ void Gui::showMainMenuBar()
 		if (ImGui::BeginMenu("Edit"))
 		{
 			if (ImGui::MenuItem("Undo", "CTRL+Z")) {}
-			// Disabled item
-			if (ImGui::MenuItem("Redo", "CTRL+Y", false, false)) {}
+			if (ImGui::MenuItem("Redo", "CTRL+Y", false, false)) {}  // Disabled item
 
 			ImGui::Separator();
 
@@ -248,19 +244,19 @@ void Gui::showMainMenuBar()
 		{
 			if (ImGui::MenuItem("Scene"))
 			{
-				windows_.sceneWindow.toggleWindow(true);
+				windows.sceneWindow.toggleWindow(true);
 			}
 			if (ImGui::MenuItem("Project"))
 			{
-				windows_.projectWindow.toggleWindow(true);
+				windows.projectWindow.toggleWindow(true);
 			}
 			if (ImGui::MenuItem("Hierarchy"))
 			{
-				windows_.hierarchyWindow.toggleWindow(true);
+				windows.hierarchyWindow.toggleWindow(true);
 			}
 			if (ImGui::MenuItem("Inspector"))
 			{
-				windows_.inspectorWindow.toggleWindow(true);
+				windows.inspectorWindow.toggleWindow(true);
 			}
 			if (ImGui::MenuItem("Debug (console)"))
 			{
@@ -274,7 +270,7 @@ void Gui::showMainMenuBar()
 		{
 			if (ImGui::MenuItem("Guide"))
 			{
-				windows_.helpWindow.toggleWindow(true);
+				windows.helpWindow.toggleWindow(true);
 			}
 
 			ImGui::EndMenu();
@@ -285,39 +281,5 @@ void Gui::showMainMenuBar()
 
 		ImGui::EndMainMenuBar();
 	}
-}
-
-void Gui::showBottomPanel()
-{
-	bool showBottomPanel = true;
-	const float panelHeight = 30.0f;
-
-	ImGuiViewport* mainViewport = ImGui::GetMainViewport();
-	ImGui::SetNextWindowPos(ImVec2(mainViewport->GetWorkPos().x, static_cast<float>(Engine::getWindow()->getHeigth())
-			- panelHeight), ImGuiCond_Always);
-	ImGui::SetNextWindowSize(ImVec2(static_cast<float>(Engine::getWindow()->getWidth()), panelHeight), ImGuiCond_Always);
-
-	ImGuiWindowFlags windowFlags = 0;
-
-	windowFlags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse
-			| ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoSavedSettings
-			| ImGuiWindowFlags_NoInputs;
-
-	// color - #FFFFFFFF
-	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 1.0f));
-
-	ImGui::Begin("Bottom panel", &showBottomPanel, windowFlags);
-	{
-		std::string text = "dev";
-
-		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetColumnWidth() - ImGui::CalcTextSize(text.c_str()).x
-				- 2 * ImGui::GetStyle().ItemSpacing.x);
-		ImGui::SetCursorPosY(ImGui::GetCursorPosY() - ImGui::GetStyle().ItemSpacing.y);
-
-		ImGui::Text(text.c_str());
-	}
-	ImGui::End();
-
-	ImGui::PopStyleColor();
 }
 }

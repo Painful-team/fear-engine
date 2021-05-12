@@ -5,21 +5,20 @@
 
 namespace FearEngine::UI::windows
 {
-HierarchyWindow::HierarchyWindow() :
-	isWindowOpen_(true)
+HierarchyWindow::HierarchyWindow():
+	windowOpen(true),
+	filterItemEnabled(true)
 {}
 
 void HierarchyWindow::showWindow()
 {
-	const ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_MenuBar;
-
 	const ImVec2 minWindowSize = ImVec2(200.0f, 200.0f);
 	const ImVec2 maxWindowSize = ImVec2(static_cast<float>(Engine::getWindow()->getWidth()),
-		static_cast<float>(Engine::getWindow()->getHeigth()));
+			static_cast<float>(Engine::getWindow()->getHeigth()));
 
 	ImGui::SetNextWindowSizeConstraints(minWindowSize, maxWindowSize);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-	if (ImGui::Begin("Hierarchy", &isWindowOpen_, windowFlags))
+	if (ImGui::Begin("Hierarchy", &windowOpen, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_MenuBar))
 	{
 		const float childOffsetX = 32.0f;
 		const float childOffsetBottomY = 55.0f;
@@ -31,26 +30,10 @@ void HierarchyWindow::showWindow()
 		{
 			if (ImGui::BeginMenu("Add"))
 			{
-				// #TODO: Implement '+' to adding new figures in Hierarchy and scene
-
 				ImGui::EndMenu();
 			}
 
-			{
-				ImGuiTextFilter filter;
-				const float filterWidth = 160.0f;
-
-				const float addMenuItemWidth = 40.0f;
-				const float filterRightOffset = 125.0f;
-
-				const float filterSameLineOffset = ImGui::GetWindowWidth() - addMenuItemWidth - filterRightOffset;
-
-				ImGui::SameLine(filterSameLineOffset);
-
-				ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 16.0f);
-				filter.Draw("", filterWidth);
-				ImGui::PopStyleVar();
-			}
+			showFilterMenuItem();
 
 			ImGui::EndMenuBar();
 		}
@@ -173,11 +156,41 @@ void HierarchyWindow::showWindow()
 
 bool HierarchyWindow::isWindowOpen() const
 {
-	return isWindowOpen_;
+	return windowOpen;
 }
 
 void HierarchyWindow::toggleWindow(const bool openWindow)
 {
-	isWindowOpen_ = openWindow;
+	windowOpen = openWindow;
+}
+
+bool HierarchyWindow::isFilterEnabled() const
+{
+	return filterItemEnabled;
+}
+
+void HierarchyWindow::toggleFilterItem(const bool enableFilter)
+{
+	filterItemEnabled = enableFilter;
+}
+
+void HierarchyWindow::showFilterMenuItem() const
+{
+	if (filterItemEnabled)
+	{
+		ImGuiTextFilter filter;
+		const float filterWidth = 160.0f;
+
+		const float addMenuItemWidth = 40.0f;
+		const float filterRightOffset = 125.0f;
+
+		const float filterSameLineOffset = ImGui::GetWindowWidth() - addMenuItemWidth - filterRightOffset;
+
+		ImGui::SameLine(filterSameLineOffset);
+
+		ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 16.0f);
+		filter.Draw("##FilterMenuItemHierarchy", filterWidth);
+		ImGui::PopStyleVar();
+	}
 }
 }

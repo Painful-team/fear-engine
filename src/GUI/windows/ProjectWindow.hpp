@@ -15,9 +15,14 @@ public:
 	bool isWindowOpen() const;
 	void toggleWindow(const bool openWindow);
 
-private:
-	bool isWindowOpen_;
+	bool isFilterEnabled() const;
+	void toggleFilterItem(const bool enableFilter);
 
+private:
+	bool windowOpen;
+	bool filterItemEnabled;
+
+	void showFilterMenuItem() const;
 };
 }
 #endif

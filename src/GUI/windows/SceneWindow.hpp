@@ -15,10 +15,14 @@ public:
 	bool isWindowOpen() const;
 	void toggleWindow(const bool openWindow);
 
+	void setStatsItemSize(const ImVec2 newSize);
+
 private:
-	bool isWindowOpen_;
-	bool isSceneStarted_;
-	bool isScenePaused_;
+	bool windowOpen;
+	bool isSceneStarted;
+	bool isScenePaused;
+
+	ImVec2 statsItemSize;
 
 	void showStatsDialog();
 

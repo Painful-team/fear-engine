@@ -4,6 +4,8 @@
 #include <vector>
 #include <string>
 
+#include <glm/glm.hpp>
+
 #include "GuiWindow.hpp"
 
 namespace FearEngine::UI::windows
@@ -31,31 +33,22 @@ private:
 		Shader							= 4
 	};
 
-	enum TransformValues
-	{
-		ObjectPositionX			= 0,
-		ObjectPositionY			= 1,
-		ObjectPositionZ			= 2,
-
-		ObjectRotationX			= 3,
-		ObjectRotationY			= 4,
-		ObjectRotationZ			= 5,
-
-		ObjectScaleX				= 6,
-		ObjectScaleY				= 7,
-		ObjectScaleZ				= 8
-	};
-
-	bool isWindowOpen_;
-	bool isObjectPicked_;
+	bool windowOpen;
+	bool isObjectPicked;
 	
-	bool showPickedObject_;
+	bool showPickedObject;
 
-	std::string pickedObjectName_;
+	std::string pickedObjectName;
+	float pickedObjectColor[4];
 
-	std::vector<bool> componentsOpen_;
-	std::vector<std::string> componentsNames_;
-	std::vector<float> transformValues_;
+	std::vector<bool> componentsOpen;
+	std::vector<std::string> componentsNames;
+
+	glm::vec3 positionVec3;
+	glm::vec3 rotateVec3;
+	glm::vec3 scaleVec3;
+
+	void showAddComponentBtn();
 
 };
 }

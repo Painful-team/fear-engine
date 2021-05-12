@@ -16,7 +16,7 @@ public:
 	void toggleWindow(const bool openWindow);
 
 private:
-	bool isWindowOpen_;
+	bool windowOpen;
 
 };
 }

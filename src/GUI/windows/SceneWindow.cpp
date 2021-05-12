@@ -8,15 +8,14 @@
 namespace FearEngine::UI::windows
 {
 SceneWindow::SceneWindow():
-	isWindowOpen_(true),
-	isSceneStarted_(false),
-	isScenePaused_(false)
+	windowOpen(true),
+	isSceneStarted(false),
+	isScenePaused(false),
+	statsItemSize(260.0f, 150.0f)
 {}
 
 void SceneWindow::showWindow()
 {
-	const ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_MenuBar;
-
 	const ImVec2 minWindowSize = ImVec2(200.0f, 200.0f);
 	const ImVec2 maxWindowSize = ImVec2(static_cast<float>(Engine::getWindow()->getWidth()),
 			static_cast<float>(Engine::getWindow()->getHeigth()));
@@ -24,7 +23,7 @@ void SceneWindow::showWindow()
 	ImGui::SetNextWindowSizeConstraints(minWindowSize, maxWindowSize);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 
-	ImGui::Begin("Scene", &isWindowOpen_, windowFlags);
+	ImGui::Begin("Scene", &windowOpen, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_MenuBar);
 	{
 		if (ImGui::BeginMenuBar())
 		{
@@ -44,7 +43,7 @@ void SceneWindow::showWindow()
 
 				ImGui::SameLine(ImGui::GetWindowWidth() / 2.0f - btnSize.x - btnOffset);
 
-				if (isSceneStarted_ && !isScenePaused_)
+				if (isSceneStarted && !isScenePaused)
 				{
 					ImGui::PushStyleColor(ImGuiCol_Button, btnOffColor);
 					ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
@@ -57,14 +56,13 @@ void SceneWindow::showWindow()
 
 				if (ImGui::Button("|>", btnSize))
 				{
-					// Start scene
-					isSceneStarted_ = true;
-					isScenePaused_ = false;
+					isSceneStarted = true;
+					isScenePaused = false;
 				}
 
 				ImGui::SameLine(ImGui::GetWindowWidth() / 2.0f);
 
-				if (!isSceneStarted_ || isScenePaused_)
+				if (!isSceneStarted || isScenePaused)
 				{
 					ImGui::PushStyleColor(ImGuiCol_Button, btnOffColor);
 					ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
@@ -77,13 +75,12 @@ void SceneWindow::showWindow()
 
 				if (ImGui::Button("||", btnSize))
 				{
-					// Pause scene
-					isScenePaused_ = true;
+					isScenePaused = true;
 				}
 
 				ImGui::SameLine(ImGui::GetWindowWidth() / 2.0f + btnSize.x + btnOffset);
 
-				if (!isSceneStarted_)
+				if (!isSceneStarted)
 				{
 					ImGui::PushStyleColor(ImGuiCol_Button, btnOffColor);
 					ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
@@ -96,12 +93,10 @@ void SceneWindow::showWindow()
 
 				if (ImGui::Button("|=|", btnSize))
 				{
-					// Stop scene
-					isSceneStarted_ = false;
-					isScenePaused_ = false;
+					isSceneStarted = false;
+					isScenePaused = false;
 				}
 				ImGui::PopStyleColor(3);
-
 				ImGui::PopItemFlag();
 				ImGui::PopItemFlag();
 				ImGui::PopItemFlag();
@@ -116,17 +111,22 @@ void SceneWindow::showWindow()
 
 bool SceneWindow::isWindowOpen() const
 {
-	return isWindowOpen_;
+	return windowOpen;
 }
 
 void SceneWindow::toggleWindow(const bool openWindow)
 {
-	isWindowOpen_ = openWindow;
+	windowOpen = openWindow;
+}
+
+void SceneWindow::setStatsItemSize(const ImVec2 newSize)
+{
+	statsItemSize = newSize;
 }
 
 void SceneWindow::showStatsDialog()
 {
-	ImGui::BeginChild("child", ImVec2(263.0f, 152.0f), false, ImGuiWindowFlags_NoBackground);
+	ImGui::BeginChild("child", statsItemSize, false, ImGuiWindowFlags_NoBackground);
 	{
 		ImGui::Text("Polygons: %d");
 		ImGui::Text("Objects: %d");

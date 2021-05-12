@@ -3,7 +3,7 @@
 #include "WindowEvent.hpp"
 #include "KeyEvent.hpp"
 #include "MouseEvent.hpp"
-#include "GuiUpdate.hpp"
+#include "GuiEvent.hpp"
 #include "Event.hpp"
 #include "Observer.hpp"
 

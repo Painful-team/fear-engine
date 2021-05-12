@@ -1,8 +1,6 @@
 #ifndef FEARENGINE_GUI_GUI_H__
 #define FEARENGINE_GUI_GUI_H__
 
-#include <unordered_map>
-
 #include <core/Engine.hpp>
 
 #include "windows/GuiWindow.hpp"
@@ -11,6 +9,9 @@
 #include "windows/ProjectWindow.hpp"
 #include "windows/InspectorWindow.hpp"
 #include "windows/HelpWindow.hpp"
+
+#include "windows/BottomPanel.hpp"
+#include "windows/DockingArea.hpp"
 
 namespace FearEngine
 {
@@ -23,6 +24,9 @@ struct GuiMainWindows
 		projectWindow.showWindow();
 		inspectorWindow.showWindow();
 		helpWindow.showWindow();
+
+		bottomPanel.showWindow();
+		dockingArea.showWindow();
 	}
 
 	UI::windows::SceneWindow sceneWindow;
@@ -30,20 +34,22 @@ struct GuiMainWindows
 	UI::windows::ProjectWindow projectWindow;
 	UI::windows::InspectorWindow inspectorWindow;
 	UI::windows::HelpWindow helpWindow;
+
+	UI::windows::BottomPanel bottomPanel;
+	UI::windows::DockingArea dockingArea;
 };
 
 class Gui
 {
 public:
 	void init();
-	void run();
+
+	void onGui();
 
 	~Gui();
 
 private:
-	GuiMainWindows windows_;
-
-	void onGui();
+	GuiMainWindows windows;
 
 	void applyInitialSettings();
 
@@ -52,9 +58,7 @@ private:
 	void setFonts();
 	void setMainColors();
 
-	void showDockingArea();
 	void showMainMenuBar();
-	void showBottomPanel();
 
 };
 }

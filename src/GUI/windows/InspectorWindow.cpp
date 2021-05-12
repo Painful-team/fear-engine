@@ -1,32 +1,37 @@
 #include "InspectorWindow.hpp"
 
-#include <imgui_stdlib.h>
-
 #include <core/Engine.hpp>
 
 namespace FearEngine::UI::windows
 {
-InspectorWindow::InspectorWindow() :
-	isWindowOpen_(true),
-	isObjectPicked_(false),
-	showPickedObject_(true),
-	pickedObjectName_(""),
-	componentsOpen_({ true, true, true, true, true }),
-	componentsNames_({ "Transform", "Color", "Mesh", "Interaction", "Shader" }),
-	transformValues_({ 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f })
-{}
+InspectorWindow::InspectorWindow():
+	windowOpen(true),
+	isObjectPicked(false),
+	showPickedObject(true),
+	pickedObjectName(""),
+	componentsOpen({ true, true, true, true, true }),
+	componentsNames({ "Transform", "Color", "Mesh", "Interaction", "Shader" }),
+	positionVec3({0.0f, 0.0f, 0.0f}),
+	rotateVec3({ 0.0f, 0.0f, 0.0f }),
+	scaleVec3({ 0.0f, 0.0f, 0.0f })
+{
+	for (int i = 0; i < IM_ARRAYSIZE(pickedObjectColor); ++i)
+	{
+		pickedObjectColor[i] = 0.0f;
+	}
+}
 
 void InspectorWindow::showWindow()
 {
 	const ImVec2 minWindowSize = ImVec2(200.0f, 200.0f);
 	const ImVec2 maxWindowSize = ImVec2(static_cast<float>(Engine::getWindow()->getWidth()),
-		static_cast<float>(Engine::getWindow()->getHeigth()));
+			static_cast<float>(Engine::getWindow()->getHeigth()));
 
 	ImGui::SetNextWindowSizeConstraints(minWindowSize, maxWindowSize);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-	ImGui::Begin("Inspector", &isWindowOpen_, ImGuiWindowFlags_NoCollapse);
+	ImGui::Begin("Inspector", &windowOpen, ImGuiWindowFlags_NoCollapse);
 	{
-		if (isObjectPicked_)
+		if (isObjectPicked)
 		{
 			{
 				const float childOffsetTopY = 2.0f;
@@ -40,6 +45,7 @@ void InspectorWindow::showWindow()
 
 				const ImVec2 childSize = ImVec2(ImGui::GetWindowWidth(), 40.0f);
 
+				// color - #676767FF
 				ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(67, 67, 67, 100));
 
 				if (ImGui::BeginChild("Object name area", childSize))
@@ -62,7 +68,7 @@ void InspectorWindow::showWindow()
 					ImGui::SameLine(65.0f);
 
 					ImGui::PushItemWidth(1.0f);
-					ImGui::Checkbox("##ShowPickedInspectorCheckbox", &showPickedObject_);
+					ImGui::Checkbox("##ShowPickedInspectorCheckbox", &showPickedObject);
 					ImGui::PopItemWidth();
 
 					ImGui::SameLine(115.0f);
@@ -70,7 +76,7 @@ void InspectorWindow::showWindow()
 					ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 6.0f);
 					ImGui::PushItemWidth(inputTextCustomWidth);
 
-					ImGui::InputText("##ObjectNameEditor", &pickedObjectName_);
+					ImGui::InputText("##ObjectNameEditor", pickedObjectName.data(), pickedObjectName.size());
 					ImGui::PopStyleVar();
 					ImGui::PopItemWidth();
 				}
@@ -79,27 +85,28 @@ void InspectorWindow::showWindow()
 				ImGui::PopStyleColor();
 			}
 
-			if (ImGui::CollapsingHeader("Transform", componentsOpen_[InspectorComponents::Transform]))
+			if (ImGui::CollapsingHeader("Transform", componentsOpen[InspectorComponents::Transform]))
 			{
 				const float childObjectOffsetLeftX = 8.0f;
 				const float inputFloatCustomWidth = 70.0f;
 
 				const float inputFloatOffsetCoeff = 60.0f;
 				const float inputSameLineOffset = ImGui::GetWindowWidth() - childObjectOffsetLeftX
-					- inputFloatCustomWidth * 3.0f - inputFloatOffsetCoeff;
+						- inputFloatCustomWidth * 3.0f - inputFloatOffsetCoeff;
 
 				ImGui::SetCursorPosX(ImGui::GetCursorPosX() + childObjectOffsetLeftX);
 
 				ImGui::Text("Position");
 				ImGui::SameLine(inputSameLineOffset);
 
+				// Transform position value windows
 				{
 					ImGui::PushItemWidth(inputFloatCustomWidth);
-					ImGui::InputFloat("X##PositionInspectorX", &transformValues_[TransformValues::ObjectPositionX], 0.0f, 0.0f, "%.2f");
+					ImGui::InputFloat("X##PositionInspectorX", &positionVec3.x, 0.0f, 0.0f, "%.2f");
 					ImGui::SameLine();
-					ImGui::InputFloat("Y##PositionInspectorY", &transformValues_[TransformValues::ObjectPositionY], 0.0f, 0.0f, "%.2f");
+					ImGui::InputFloat("Y##PositionInspectorY", &positionVec3.y, 0.0f, 0.0f, "%.2f");
 					ImGui::SameLine();
-					ImGui::InputFloat("Z##PositionInspectorZ", &transformValues_[TransformValues::ObjectPositionZ], 0.0f, 0.0f, "%.2f");
+					ImGui::InputFloat("Z##PositionInspectorZ", &positionVec3.z, 0.0f, 0.0f, "%.2f");
 					ImGui::PopItemWidth();
 				}
 
@@ -108,13 +115,14 @@ void InspectorWindow::showWindow()
 				ImGui::Text("Rotation");
 				ImGui::SameLine(inputSameLineOffset);
 
+				// Transform rotate value windows
 				{
 					ImGui::PushItemWidth(inputFloatCustomWidth);
-					ImGui::InputFloat("X##RotateInspectorX", &transformValues_[TransformValues::ObjectRotationX], 0.0f, 0.0f, "%.2f");
+					ImGui::InputFloat("X##RotateInspectorX", &rotateVec3.x, 0.0f, 0.0f, "%.2f");
 					ImGui::SameLine();
-					ImGui::InputFloat("Y##RotateInspectorY", &transformValues_[TransformValues::ObjectRotationY], 0.0f, 0.0f, "%.2f");
+					ImGui::InputFloat("Y##RotateInspectorY", &rotateVec3.y, 0.0f, 0.0f, "%.2f");
 					ImGui::SameLine();
-					ImGui::InputFloat("Z##RotateInspectorZ", &transformValues_[TransformValues::ObjectRotationZ], 0.0f, 0.0f, "%.2f");
+					ImGui::InputFloat("Z##RotateInspectorZ", &rotateVec3.z, 0.0f, 0.0f, "%.2f");
 					ImGui::PopItemWidth();
 				}
 
@@ -123,69 +131,43 @@ void InspectorWindow::showWindow()
 				ImGui::Text("Scale");
 				ImGui::SameLine(inputSameLineOffset);
 
+				// Transform scale value windows
 				{
 					ImGui::PushItemWidth(inputFloatCustomWidth);
-					ImGui::InputFloat("X##ScaleInspectorX", &transformValues_[TransformValues::ObjectScaleX], 0.0f, 0.0f, "%.2f");
+					ImGui::InputFloat("X##ScaleInspectorX", &rotateVec3.x, 0.0f, 0.0f, "%.2f");
 					ImGui::SameLine();
-					ImGui::InputFloat("Y##ScaleInspectorY", &transformValues_[TransformValues::ObjectScaleY], 0.0f, 0.0f, "%.2f");
+					ImGui::InputFloat("Y##ScaleInspectorY", &rotateVec3.y, 0.0f, 0.0f, "%.2f");
 					ImGui::SameLine();
-					ImGui::InputFloat("Z##ScaleInspectorZ", &transformValues_[TransformValues::ObjectScaleZ], 0.0f, 0.0f, "%.2f");
+					ImGui::InputFloat("Z##ScaleInspectorZ", &rotateVec3.z, 0.0f, 0.0f, "%.2f");
 					ImGui::PopItemWidth();
 				}
 			}
 
-			if (ImGui::CollapsingHeader("Color", componentsOpen_[InspectorComponents::Color]))
+			if (ImGui::CollapsingHeader("Color", componentsOpen[InspectorComponents::Color]))
 			{
 				const float childObjectOffsetLeftX = 70.0f;
 
 				ImGui::SetCursorPosX(ImGui::GetCursorPosX() + childObjectOffsetLeftX);
 
-				float pickedObjectColor[] = { 0.4f, 0.7f, 0.0f, 0.5f };
-
 				ImGui::ColorPicker4("color", pickedObjectColor);
 			}
 
-			if (ImGui::CollapsingHeader("Mesh", componentsOpen_[InspectorComponents::Mesh]))
+			if (ImGui::CollapsingHeader("Mesh", componentsOpen[InspectorComponents::Mesh]))
 			{
 
 			}
 
-			if (ImGui::CollapsingHeader("Interaction", componentsOpen_[InspectorComponents::Interaction]))
+			if (ImGui::CollapsingHeader("Interaction", componentsOpen[InspectorComponents::Interaction]))
 			{
 
 			}
 
-			if (ImGui::CollapsingHeader("Shader", componentsOpen_[InspectorComponents::Shader]))
+			if (ImGui::CollapsingHeader("Shader", componentsOpen[InspectorComponents::Shader]))
 			{
 
 			}
 
-			{
-				const float btnOffsetRightX = 75.0f;
-				const float btnOffsetTopY = 15.0f;
-
-				const ImVec2 addComponentBtnSize = ImVec2(150.0f, 35.0f);
-
-				ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetWindowWidth() / 2.0f - btnOffsetRightX);
-				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + btnOffsetTopY);
-
-				ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 250.0f);
-				ImGui::Button("Add component", addComponentBtnSize);
-				{
-					if (ImGui::BeginPopupContextItem(0, ImGuiPopupFlags_MouseButtonLeft))
-					{
-						for (int i = 0; i < componentsNames_.size(); ++i)
-						{
-							if (ImGui::Selectable(componentsNames_[i].c_str()))
-							{
-								componentsOpen_[i] = true;
-							}
-						}
-						ImGui::EndPopup();
-					}
-				}
-				ImGui::PopStyleVar();
-			}
+			showAddComponentBtn();
 		}
 	}
 	ImGui::End();
@@ -195,20 +177,48 @@ void InspectorWindow::showWindow()
 
 bool InspectorWindow::isWindowOpen() const
 {
-	return isWindowOpen_;
+	return windowOpen;
 }
 
 void InspectorWindow::toggleWindow(const bool openWindow)
 {
-	isWindowOpen_ = openWindow;
+	windowOpen = openWindow;
 }
 void InspectorWindow::updateObjectPicked(const bool objectPicked)
 {
-	isObjectPicked_ = objectPicked;
+	isObjectPicked = objectPicked;
 }
 
 void InspectorWindow::updateShowPickedObject(const bool showPicked)
 {
-	showPickedObject_ = showPicked;
+	showPickedObject = showPicked;
+}
+
+void InspectorWindow::showAddComponentBtn()
+{
+	const float btnOffsetRightX = 75.0f;
+	const float btnOffsetTopY = 15.0f;
+
+	const ImVec2 addComponentBtnSize = ImVec2(150.0f, 35.0f);
+
+	ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetWindowWidth() / 2.0f - btnOffsetRightX);
+	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + btnOffsetTopY);
+
+	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 250.0f);
+	ImGui::Button("Add component", addComponentBtnSize);
+	{
+		if (ImGui::BeginPopupContextItem(0, ImGuiPopupFlags_MouseButtonLeft))
+		{
+			for (int i = 0; i < componentsNames.size(); ++i)
+			{
+				if (ImGui::Selectable(componentsNames[i].c_str()))
+				{
+					componentsOpen[i] = true;
+				}
+			}
+			ImGui::EndPopup();
+		}
+	}
+	ImGui::PopStyleVar();
 }
 }
