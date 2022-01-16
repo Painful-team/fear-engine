@@ -3,6 +3,7 @@
 #include "WindowEvent.hpp"
 #include "KeyEvent.hpp"
 #include "MouseEvent.hpp"
+#include "GuiEvent.hpp"
 #include "Event.hpp"
 #include "Observer.hpp"
 
@@ -30,6 +31,8 @@ switch (type)									\
 	cases(windowLostFocus,				WindowLostFocus, func)	\
 	cases(windowMoved,				WindowMoved, func)	\
 										\
+	cases(guiUpdate,				GuiUpdate, func)	\
+										\
 	cases(keyPressed,				KeyPressed, func)	\
 	cases(keyReleased,				KeyReleased, func)	\
 	cases(keyTyped,					KeyTyped, func)		\
@@ -47,6 +50,8 @@ Dispatcher::Dispatcher()
 	events[INDEX(windowFocus)]					= new OBS(WindowFocus);
 	events[INDEX(windowLostFocus)]					= new OBS(WindowLostFocus);
 	events[INDEX(windowMoved)]					= new OBS(WindowMoved);
+
+	events[INDEX(guiUpdate)] = new OBS(GuiUpdate);
 
 	events[INDEX(keyPressed)]					= new OBS(KeyPressed);
 	events[INDEX(keyReleased)]					= new OBS(KeyReleased);
