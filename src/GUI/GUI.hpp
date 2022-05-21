@@ -1,7 +1,9 @@
 #ifndef FEARENGINE_GUI_GUI_H__
 #define FEARENGINE_GUI_GUI_H__
 
-#include <core/Engine.hpp>
+#include <core/events.hpp>
+
+#include <render/Layer.hpp>
 
 #include "windows/GuiWindow.hpp"
 #include "windows/SceneWindow.hpp"
@@ -19,14 +21,35 @@ struct GuiMainWindows
 {
 	void showAllWindows()
 	{
-		sceneWindow.showWindow();
-		hierarchyWindow.showWindow();
-		projectWindow.showWindow();
-		inspectorWindow.showWindow();
-		helpWindow.showWindow();
+		if (sceneWindow.isWindowOpen())
+		{
+			sceneWindow.showWindow();
+		}
 
-		bottomPanel.showWindow();
-		dockingArea.showWindow();
+		if (hierarchyWindow.isWindowOpen())
+		{
+			hierarchyWindow.showWindow();
+		}
+
+		if (projectWindow.isWindowOpen())
+		{
+			projectWindow.showWindow();
+		}
+
+		if (inspectorWindow.isWindowOpen())
+		{
+			inspectorWindow.showWindow();
+		}
+
+		if (helpWindow.isWindowOpen())
+		{
+			helpWindow.showWindow();
+		}
+
+		if (bottomPanel.isPanelEnabled())
+		{
+			bottomPanel.showWindow();
+		}
 	}
 
 	UI::windows::SceneWindow sceneWindow;
@@ -39,12 +62,23 @@ struct GuiMainWindows
 	UI::windows::DockingArea dockingArea;
 };
 
-class Gui
+class Gui: public Render::Layer
 {
 public:
 	void init();
 
-	void onGui();
+	void update();
+
+	bool onMouseMoved(Events::MouseMoved* e);
+	bool onMousePressed(Events::MouseButtonPressed* e);
+	bool onMouseReleased(Events::MouseButtonReleased* e);
+	bool onScroll(Events::MouseScrolled* e);
+
+	bool onKeyPressed(Events::KeyPressed* e);
+	bool onKeyReleased(Events::KeyReleased* e);
+	bool onKeyTyped(Events::KeyTyped* e);
+
+	bool onResize(Events::WindowResize* e);
 
 	~Gui();
 
@@ -54,7 +88,6 @@ private:
 	void applyInitialSettings();
 
 	void setWindowStyles();
-	void setMainWindowFlags();
 	void setFonts();
 	void setMainColors();
 

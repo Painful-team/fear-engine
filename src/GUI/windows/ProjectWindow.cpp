@@ -13,7 +13,7 @@ void ProjectWindow::showWindow()
 {
 	const ImVec2 minWindowSize = ImVec2(200.0f, 200.0f);
 	const ImVec2 maxWindowSize = ImVec2(static_cast<float>(Engine::getWindow()->getWidth()),
-			static_cast<float>(Engine::getWindow()->getHeigth()));
+			static_cast<float>(Engine::getWindow()->getHeight()));
 
 	ImGui::SetNextWindowSizeConstraints(minWindowSize, maxWindowSize);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));

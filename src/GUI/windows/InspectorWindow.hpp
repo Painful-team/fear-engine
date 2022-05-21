@@ -47,6 +47,7 @@ private:
 	glm::vec3 positionVec3;
 	glm::vec3 rotateVec3;
 	glm::vec3 scaleVec3;
+	std::string modelPath;
 
 	void showAddComponentBtn();
 

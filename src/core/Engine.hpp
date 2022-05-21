@@ -15,30 +15,26 @@ public:
 
 	Engine() = default;
 
-	static Render::Renderer* getRender();
-	static Window* getWindow();
-	static Events::Dispatcher* getDispatcher();
-
-	static void provide(Events::Dispatcher* newDispatcher);
-	static void provide(Render::Renderer* newRenderer);
-	static void provide(Window* newWindow);
+	static std::unique_ptr<Renderer>& getRender();
+	static std::unique_ptr<Window>& getWindow();
+	static std::unique_ptr<Events::Dispatcher>& getDispatcher();
 
 	int init();
 	void run();
 
 	static void onEvent(Events::Event* event);
-	void onResize(Events::WindowResize* event);
-	void onClose(Events::WindowClose* event);
-
-	~Engine();
+	bool onResize(Events::WindowResize* event);
+	bool onClose(Events::WindowClose* event);
+	bool onMinimized(Events::WindowMinimized* event);
+	bool onRestore(Events::WindowRestored* event);
 
 private:
 	bool running = true;
 	bool minimized = false;
 
-	static Events::Dispatcher* eventDispatcher;
-	static Render::Renderer* renderer;
-	static Window* window;
+	static std::unique_ptr<Events::Dispatcher> eventDispatcher;
+	static std::unique_ptr<Renderer> renderer;
+	static std::unique_ptr<Window> window;
 };
 }
 

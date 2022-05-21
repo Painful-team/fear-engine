@@ -5,26 +5,27 @@
 
 namespace FearEngine::Events
 {
-MouseScrolled::MouseScrolled(const double offsetX, const double offsetY):
-	offsetX(offsetX),
-	offsetY(offsetY),
-	Event(EventType::mouseScrolled, EventCategory::mouse | EventCategory::input)
+MouseButtonPressed::MouseButtonPressed(const mouseCode button):
+	button(button)
 {}
 
-double MouseScrolled::getXoffset() const
+mouseCode MouseButtonPressed::getButton() const
 {
-	return offsetX;
+	return button;
 }
 
-double MouseScrolled::getYoffset() const
+MouseButtonReleased::MouseButtonReleased(const mouseCode button):
+	button(button)
+{}
+
+mouseCode MouseButtonReleased::getButton() const
 {
-	return offsetY;
+	return button;
 }
 
 MouseMoved::MouseMoved(const double x, const double y):
 	x(x),
-	y(y),
-	Event(EventType::mouseMoved, EventCategory::mouse | EventCategory::input)
+	y(y)
 {}
 
 double MouseMoved::getX() const
@@ -37,23 +38,18 @@ double MouseMoved::getY() const
 	return y;
 }
 
-MouseButtonReleased::MouseButtonReleased(const mouseCode button):
-	button(button),
-	Event(EventType::mouseButtonReleased, EventCategory::mouse | EventCategory::mouseButton | EventCategory::input)
+MouseScrolled::MouseScrolled(const double offsetX, const double offsetY):
+	offsetX(offsetX),
+	offsetY(offsetY)
 {}
 
-mouseCode MouseButtonReleased::getButton() const
+double MouseScrolled::getXoffset() const
 {
-	return button;
+	return offsetX;
 }
 
-MouseButtonPressed::MouseButtonPressed(const mouseCode button):
-	button(button),
-	Event(EventType::mouseButtonPressed, EventCategory::mouse | EventCategory::mouseButton | EventCategory::input)
-{}
-
-mouseCode MouseButtonPressed::getButton() const
+double MouseScrolled::getYoffset() const
 {
-	return button;
+	return offsetY;
 }
 }

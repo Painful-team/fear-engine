@@ -19,27 +19,29 @@ public:
 	{
 		std::string title;
 		uint32_t width;
-		uint32_t heigth;
+		uint32_t height;
 		bool vsync;
 
 		handle_type eventHandler;
 	};
 
-	WindowData data;
-	GLFWwindow* window;
-
 	Window(const std::string& title = "FearEngine", const uint32_t width = 1920, const uint32_t heigth = 1080, bool vsync = false);
 
 	uint32_t getWidth() const;
-	uint32_t getHeigth() const;
+	uint32_t getHeight() const;
 
-	void setEventHandler(handle_type& handler);
+	void setEventHandler(handle_type handler);
 
 	bool isVsync() const;
 	void setVsync(const bool vsync);
 
 	int init(const bool resizeAble);
 
+	void onUpdate();
+
+	GLFWwindow* window;
+private:
+	WindowData data;
 };
 }
 

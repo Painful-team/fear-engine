@@ -5,7 +5,7 @@
 namespace FearEngine::UI::windows
 {
 HelpWindow::HelpWindow():
-	windowOpen(true)
+	windowOpen(false)
 {}
 
 void HelpWindow::showWindow()
@@ -13,7 +13,7 @@ void HelpWindow::showWindow()
 	const ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize;
 
 	const ImVec2 center = ImVec2(static_cast<float>(Engine::getWindow()->getWidth()) / 2.0f,
-			static_cast<float>(Engine::getWindow()->getHeigth()) / 2.0f);
+			static_cast<float>(Engine::getWindow()->getHeight()) / 2.0f);
 	const ImVec2 popupSize = ImVec2(500.0f, 300.0f);
 
 	ImGui::OpenPopup("Help");

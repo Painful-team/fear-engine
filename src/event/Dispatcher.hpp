@@ -8,7 +8,6 @@
 
 namespace FearEngine::Events
 {
-
 class Dispatcher
 {
 public:
@@ -17,9 +16,9 @@ public:
 	void notify(Event* event);
 
 	template<class T>
-	Observer<void(T*)>* get(EventType type)
+	auto get()
 	{
-		return reinterpret_cast<Observer<void(T*)>*>(events[static_cast<int>(type)]);
+		return reinterpret_cast<Observer<bool(T*)>*>(events[static_cast<int>(T::staticType())]);
 	}
 
 	void detach(EventType type, std::pair<uint32_t, uint32_t>& key);
@@ -27,6 +26,15 @@ public:
 	~Dispatcher();
 
 private:
+
+	constexpr int getIndex(EventType type);
+
+	template<typename T>
+	constexpr void registerEvent()
+	{
+		events[getIndex(T::staticType())] = new Observer<bool(T*)>;
+	}
+
 	std::array<ObserverBase*, static_cast<int>(EventType::invalid)> events;
 };
 }

@@ -9,6 +9,8 @@ class GuiUpdate: public Event
 {
 public:
 	GuiUpdate();
+
+	GENCLASSESSETIALS(guiUpdate, window)
 };
 }
 #endif

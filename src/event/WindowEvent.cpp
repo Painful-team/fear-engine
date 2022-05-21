@@ -6,8 +6,7 @@ namespace FearEngine::Events
 {
 WindowResize::WindowResize(const int width, const int heigth):
 	width(width),
-	heigth(heigth),
-	Event(EventType::windowResize, EventCategory::window)
+	heigth(heigth)
 {}
 
 uint32_t WindowResize::getWidth() const
@@ -15,27 +14,23 @@ uint32_t WindowResize::getWidth() const
 	return width;
 }
 
-uint32_t WindowResize::getHeigth() const
+uint32_t WindowResize::getHeight() const
 {
 	return heigth;
 }
 
-WindowClose::WindowClose():
-	Event(EventType::windowClose, EventCategory::window)
+WindowClose::WindowClose()
 {}
 
-WindowFocus::WindowFocus():
-	Event(EventType::windowFocus, EventCategory::window)
+WindowFocus::WindowFocus()
 {}
 
-WindowLostFocus::WindowLostFocus():
-	Event(EventType::windowLostFocus, EventCategory::window)
+WindowLostFocus::WindowLostFocus()
 {}
 
 WindowMoved::WindowMoved(const int x, const int y):
 	offsetX(x),
-	offsetY(x),
-	Event(EventType::windowMoved, EventCategory::window)
+	offsetY(x)
 {}
 
 int WindowMoved::getX() const
@@ -47,4 +42,10 @@ int WindowMoved::getY() const
 {
 	return offsetY;
 }
+
+WindowMinimized::WindowMinimized()
+{}
+
+WindowRestored::WindowRestored()
+{}
 }

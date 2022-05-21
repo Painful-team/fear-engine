@@ -2,7 +2,6 @@
 
 namespace FearEngine::Events
 {
-FearEngine::Events::GuiUpdate::GuiUpdate():
-	Event(EventType::guiUpdate, EventCategory::window)
+FearEngine::Events::GuiUpdate::GuiUpdate()
 {}
 }

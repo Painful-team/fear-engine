@@ -12,7 +12,9 @@ enum class EventType
 	windowFocus,
 	windowLostFocus,
 	windowMoved,
-	
+	windowIconified,
+	windowRestored,
+
 	guiUpdate,
 
 	keyPressed,
@@ -24,6 +26,7 @@ enum class EventType
 	mouseMoved,
 	mouseScrolled,
 
+	//According to static allocation and more flexible way of crating new event Type, "invalid" type should be always on the last position
 	invalid
 };
 
@@ -34,22 +37,59 @@ enum EventCategory
 	input		= 1 << 1,
 	keyboard	= 1 << 2,
 	mouse		= 1 << 3,
-	mouseButton 	= 1 << 4
+	mouseButton = 1 << 4
 };
+
+#ifdef DEBUG
+#define GENCLASSESSETIALS(classType, category) 	\
+static EventType staticType()					\
+{												\
+	return EventType::classType;				\
+}												\
+												\
+EventType type() const							\
+{												\
+	return staticType();						\
+}												\
+												\
+int getCategory() const							\
+{												\
+	return category;							\
+}																\
+																\
+const char* name() const				\
+{																\
+	return #classType;						\
+}
+#else
+#define GENCLASSESSETIALS(classType, category) 	\
+static EventType staticType()					\
+{												\
+	return EventType::classType;				\
+}												\
+												\
+EventType type() const							\
+{												\
+	return staticType();						\
+}												\
+												\
+int getCategory() const							\
+{												\
+	return category;							\
+}
+#endif
 
 class Event
 {
 public:
-	Event(EventType type, const int category);
+	virtual EventType type() const = 0;
 
-	EventType getType() const;
-	int getCategory() const;
+	virtual int getCategory() const = 0;
+#ifdef _DEBUG
+	virtual const char* name() const = 0;
+#endif
 
-	bool inCategory(const int category);
-
-private:
-	EventType type;
-	int category;
+	bool inCategory(const int category) const;
 };
 }
 

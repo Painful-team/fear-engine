@@ -2,15 +2,16 @@
 
 #include <GLFW/glfw3.h>
 
+#include "Input.hpp"
 #include "events.hpp"
 
 namespace FearEngine
 {
-Window::Window(const std::string& title, const uint32_t width, const uint32_t heigth, bool vsync)
+Window::Window(const std::string& title, const uint32_t width, const uint32_t height, bool vsync)
 {
 	data.title = title;
 	data.width = width;
-	data.heigth = heigth;
+	data.height = height;
 
 	setVsync(vsync);
 }
@@ -20,12 +21,12 @@ uint32_t Window::getWidth() const
 	return data.width;
 }
 
-uint32_t Window::getHeigth() const
+uint32_t Window::getHeight() const
 {
-	return data.heigth;
+	return data.height;
 }
 
-void Window::setEventHandler(handle_type& handler)
+void Window::setEventHandler(handle_type handler)
 {
 	data.eventHandler = handler;
 }
@@ -56,7 +57,7 @@ int Window::init(const bool resizeAble)
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_RESIZABLE, resizeAble);
 
-	window = glfwCreateWindow(data.width, data.heigth, data.title.c_str(), NULL, NULL);
+	window = glfwCreateWindow(data.width, data.height, data.title.c_str(), NULL, NULL);
 	if (!window)
 	{
 		return -1;
@@ -64,28 +65,31 @@ int Window::init(const bool resizeAble)
 
 	glfwSetWindowUserPointer(window, &data);
 
-	glfwSetWindowSizeCallback(window, [](GLFWwindow* window, int width, int heigth)
+	glfwSetWindowSizeCallback(window, [](GLFWwindow* window, int width, int height)
 	{
 		WindowData* data = reinterpret_cast<WindowData*>(glfwGetWindowUserPointer(window));
 
-		data->heigth = heigth;
+		data->height = height;
 		data->width = width;
 
-		data->eventHandler(&Events::WindowResize(heigth, heigth));
+		auto evnt = Events::WindowResize(width, height);
+		data->eventHandler(&evnt);
 	});
 
 	glfwSetWindowCloseCallback(window, [](GLFWwindow* window)
 	{
 		WindowData* data = reinterpret_cast<WindowData*>(glfwGetWindowUserPointer(window));
 
-		data->eventHandler(&Events::WindowClose());
+		auto evnt = Events::WindowClose();
+		data->eventHandler(&evnt);
 	});
 
 	glfwSetWindowPosCallback(window, [](GLFWwindow* window, int x, int y)
 	{
 		WindowData* data = reinterpret_cast<WindowData*>(glfwGetWindowUserPointer(window));
 
-		data->eventHandler(&Events::WindowMoved(x, y));
+		auto evnt = Events::WindowMoved(x, y);
+		data->eventHandler(&evnt);
 	});
 
 	glfwSetWindowFocusCallback(window, [](GLFWwindow* window, int focused)
@@ -94,11 +98,13 @@ int Window::init(const bool resizeAble)
 
 		if (focused)
 		{
-			data->eventHandler(&Events::WindowFocus());
+			auto evnt = Events::WindowFocus();
+			data->eventHandler(&evnt);
 		}
 		else
 		{
-			data->eventHandler(&Events::WindowLostFocus());
+			auto evnt = Events::WindowLostFocus();
+			data->eventHandler(&evnt);
 		}
 	});
 
@@ -110,17 +116,20 @@ int Window::init(const bool resizeAble)
 		{
 		case GLFW_PRESS:
 		{
-			data->eventHandler(&Events::KeyPressed(key));
+			auto evnt = Events::KeyPressed(key);
+			data->eventHandler(&evnt);
 			break;
 		}
 		case GLFW_RELEASE:
 		{
-			data->eventHandler(&Events::KeyReleased(key));
+			auto evnt = Events::KeyReleased(key);
+			data->eventHandler(&evnt);
 			break;
 		}
 		case GLFW_REPEAT:
 		{
-			data->eventHandler(&Events::KeyPressed(key));
+			auto evnt = Events::KeyPressed(key);
+			data->eventHandler(&evnt);
 			break;
 		}
 		}
@@ -130,7 +139,8 @@ int Window::init(const bool resizeAble)
 	{
 		WindowData* data = reinterpret_cast<WindowData*>(glfwGetWindowUserPointer(window));
 
-		data->eventHandler(&Events::KeyTyped(keycode));
+		auto evnt = Events::KeyTyped(keycode);
+		data->eventHandler(&evnt);
 	});
 
 	glfwSetMouseButtonCallback(window, [](GLFWwindow* window, int button, int action, int mods)
@@ -141,12 +151,14 @@ int Window::init(const bool resizeAble)
 		{
 		case GLFW_PRESS:
 		{
-			data->eventHandler(&Events::MouseButtonPressed(button));
+			auto evnt = Events::MouseButtonPressed(button);
+			data->eventHandler(&evnt);
 			break;
 		}
 		case GLFW_RELEASE:
 		{
-			data->eventHandler(&Events::MouseButtonReleased(button));
+			auto evnt = Events::MouseButtonReleased(button);
+			data->eventHandler(&evnt);
 			break;
 		}
 		}
@@ -156,16 +168,24 @@ int Window::init(const bool resizeAble)
 	{
 		WindowData* data = reinterpret_cast<WindowData*>(glfwGetWindowUserPointer(window));
 
-		data->eventHandler(&Events::MouseScrolled(offsetX, offsetY));
+		auto evnt = Events::MouseScrolled(offsetX, offsetY);
+		data->eventHandler(&evnt);
 	});
 
 	glfwSetCursorPosCallback(window, [](GLFWwindow* window, double x, double y)
 	{
 		WindowData* data = reinterpret_cast<WindowData*>(glfwGetWindowUserPointer(window));
 
-		data->eventHandler(&Events::MouseMoved(x, y));
+		auto evnt = Events::MouseMoved(x, y);
+		data->eventHandler(&evnt);
 	});
 
 	return 0;
+}
+
+void Window::onUpdate()
+{
+	glfwSwapBuffers(window);
+	glfwPollEvents();
 }
 }

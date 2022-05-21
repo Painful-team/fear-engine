@@ -14,14 +14,14 @@ void DockingArea::showWindow()
 bool enableDocking = true;
 	const float bottomPanelHeight = 30.0f;
 
+	
 	const ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse
 			| ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus
 			| ImGuiWindowFlags_NoBackground;
 
 	ImGuiViewport* viewport = ImGui::GetMainViewport();
-	const ImVec2 dockingAreaSize = ImVec2(viewport->GetWorkSize().x, viewport->GetWorkSize().y - bottomPanelHeight);
-
-	ImGui::SetNextWindowPos(viewport->GetWorkPos());
+	const ImVec2 dockingAreaSize = ImVec2(viewport->WorkSize.x, viewport->WorkSize.y - bottomPanelHeight);
+	ImGui::SetNextWindowPos(viewport->WorkPos);
 	ImGui::SetNextWindowSize(dockingAreaSize);
 	ImGui::SetNextWindowViewport(viewport->ID);
 
@@ -40,7 +40,7 @@ bool enableDocking = true;
 	{
 		ImGui::DockSpace(ImGui::GetID("MyDockSpace"), ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
 	}
-
+	
 	ImGui::End();
 }
 

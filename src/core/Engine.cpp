@@ -1,110 +1,124 @@
+#include "glad/glad.h"
 #include "Engine.hpp"
 
-#include <GLFW/glfw3.h>
+#include <iostream>
+#include <memory>
+#include <cassert>
 
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <GLFW/glfw3.h>
+#include <GLFW/glfw3native.h>
+
+#include <render/shader/Uniform.hpp>
 #include <event/detail/Delegate.hpp>
+#include <event/KeyCodes.hpp>
 
 #include "Window.hpp"
 #include "events.hpp"
+#include "Input.hpp"
+
 
 namespace FearEngine
 {
-Render::Renderer* Engine::renderer;
-Events::Dispatcher* Engine::eventDispatcher;
-Window* Engine::window;
-
-Render::Renderer* Engine::getRender()
-{
-	return renderer;
-}
-
-Window* Engine::getWindow()
-{
-	return window;
-}
-
-FearEngine::Events::Dispatcher* Engine::getDispatcher()
-{
-	return eventDispatcher;
-}
+std::unique_ptr<Renderer> Engine::renderer =std::make_unique<Renderer>();
+std::unique_ptr <Events::Dispatcher> Engine::eventDispatcher = std::make_unique<Events::Dispatcher>();
+std::unique_ptr<Window> Engine::window = std::make_unique<Window>();
 
 void Engine::onEvent(Events::Event* event)
 {
 	eventDispatcher->notify(event);
 }
 
-void Engine::onResize(Events::WindowResize* event)
+bool Engine::onMinimized(Events::WindowMinimized* event)
 {
-	if (event->getWidth() == 0 && event->getHeigth() == 0)
+	minimized = true;
+	return true;
+}
+
+bool Engine::onRestore(Events::WindowRestored* event)
+{
+	minimized = false;
+	return true;
+}
+
+bool Engine::onResize(Events::WindowResize* event)
+{
+	if (event->getWidth() == 0 || event->getHeight() == 0)
 	{
 		minimized = true;
-		return;
+		return true;
 	}
 
 	minimized = false;
 	renderer->onResize(event);
+
+	return true;
 }
 
-void Engine::onClose(Events::WindowClose* event)
+bool Engine::onClose(Events::WindowClose* event)
 {
 	running = false;
+	return true;
 }
 
-void Engine::provide(Render::Renderer* newrenderer)
+std::unique_ptr<Renderer>& Engine::getRender()
 {
-	renderer = newrenderer;
+	return Engine::renderer;
 }
 
-void Engine::provide(Events::Dispatcher* newDispatcher)
+std::unique_ptr<Window>& Engine::getWindow()
 {
-	eventDispatcher = newDispatcher;
+	return Engine::window;
 }
 
-void Engine::provide(Window* newWindow)
+std::unique_ptr<Events::Dispatcher>& Engine::getDispatcher()
 {
-	window = newWindow;
+	return Engine::eventDispatcher;
 }
 
 int Engine::init()
 {
-	Engine::provide(new Render::Renderer);
-	if (renderer->init() != 0)
-	{
-		return -1;
-	}
-
-	Engine::provide(new Window);
+	assert(glfwInit());
 
 	window->setEventHandler(Window::handle_type::create<&Engine::onEvent>());
 
-	if (window->init(true) != 0)
-	{
-		return -1;
-	}
+	assert(window->init(true) == 0);
 
-	Engine::provide(new Events::Dispatcher);
+	glfwMakeContextCurrent(window->window);
 
-	eventDispatcher->get<Events::WindowResize>(Events::EventType::windowResize)->attach<Engine, &Engine::onResize>(this);
-	eventDispatcher->get<Events::WindowClose>(Events::EventType::windowClose)->attach<Engine, &Engine::onClose>(this);
+	assert(renderer->init() == 0);
 
+	eventDispatcher->get<Events::WindowRestored>()->attach<&Engine::onRestore>(this);
+	
+	eventDispatcher->get<Events::WindowResize>()->attach<&Engine::onResize>(this);
+	eventDispatcher->get<Events::WindowClose>()->attach<&Engine::onClose>(this);
+	eventDispatcher->get<Events::WindowMinimized>()->attach<&Engine::onMinimized>(this);
+	eventDispatcher->get<Events::WindowRestored>()->attach<&Engine::onRestore>(this);
+	eventDispatcher->get<Events::KeyPressed>()->attach([this](Events::KeyPressed* evnt) 
+		{ 
+			std::cout << evnt->keyCode();
+			if (evnt->keyCode() == Events::Key::ESCAPE)
+			{
+				std::cout << " ESCAPE" << std::endl;
+				auto evnt = Events::WindowClose();
+				Engine::getDispatcher()->notify(&evnt);
+			}
+			std::cout << std::endl;
+	
+			return false;; 
+		}
+	);
 	return 0;
 }
 
 void Engine::run()
 {
-	glfwMakeContextCurrent(window->window);
-
 	while (running)
 	{
-		glfwSwapBuffers(window->window);
-		glfwPollEvents();
-	}
-}
+		renderer->preUpdate();
 
-Engine::~Engine()
-{
-	delete renderer;
-	delete window;
-	delete eventDispatcher;
+		renderer->update();
+		window->onUpdate();
+	}
 }
 }

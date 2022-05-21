@@ -4,17 +4,16 @@ workspace "FearEngine"
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("obj/" .. outputdir .. "/%{prj.name}")
 
-	configurations 
-	{
-		"Release", 
-		"Debug"
-	}
-
 	architecture "x86_64"
 	staticruntime "on"
 	flags "MultiProcessorCompile"
 	startproject "Engine"
 
+	configurations
+	{
+		"Release",
+		"Debug"
+	}
 	
 group "Dependencies"
 	include  "include/glad"
@@ -30,6 +29,7 @@ project "Engine"
 	
 	files 
 	{
+		"resources/shaders/*.*",
 		".editorconfig",
 		"src/**.hpp",
 		"src/**.cpp",
@@ -69,6 +69,7 @@ project "Engine"
 		}
 
 	filter "configurations:Debug"
+		defines "DEBUG" 
 		runtime "Debug"
 		symbols "On"
 
@@ -83,11 +84,15 @@ newaction {
    execute     = function ()
       print("Clean premakefiles...")
 	  
-	  print("Cleaning vs files")
-	  os.remove ("*.sln")
+	  print("Cleaning Visual studio files")
 	  os.rmdir(".vs")
-	  os.remove ("*.sln")
+	  os.remove("*.sln")
       os.remove("**.vcxproj*")
+	  print("Done")
+	  
+	  print("Cleaning compiled files")
+	  os.rmdir("bin")
+	  os.rmdir("obj")
 	  print("Done")
 	  
 	  print("Cleaning makefiles")
@@ -96,10 +101,10 @@ newaction {
 	  print("Done")
 	  
 	  print("Cleaning cmake")
-	  os.rmdir ("**CMakeFiles/")
-	  os.remove ("*CMakeFiles")
-	  os.remove ("*CMakeCache.txt")
-	  os.remove ("**.cmake")
+	  os.rmdir("**CMakeFiles/")
+	  os.remove("*CMakeFiles")
+	  os.remove("*CMakeCache.txt")
+	  os.remove("**.cmake")
 	  print("Done")
 	  
       print("Cleaning done.")

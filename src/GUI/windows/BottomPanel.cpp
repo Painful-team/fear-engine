@@ -16,7 +16,7 @@ void BottomPanel::showWindow()
 {
 	const float panelHeight = 30.0f;
 
-	ImGui::SetNextWindowPos(ImVec2(ImGui::GetMainViewport()->GetWorkPos().x, static_cast<float>(Engine::getWindow()->getHeigth())
+	ImGui::SetNextWindowPos(ImVec2(ImGui::GetMainViewport()->WorkPos.x, static_cast<float>(Engine::getWindow()->getHeight())
 			- panelHeight), ImGuiCond_Always);
 	ImGui::SetNextWindowSize(ImVec2(static_cast<float>(Engine::getWindow()->getWidth()), panelHeight), ImGuiCond_Always);
 

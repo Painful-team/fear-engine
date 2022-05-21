@@ -3,6 +3,7 @@
 
 #include <event/Dispatcher.hpp>
 #include <event/Event.hpp>
+#include <event/GuiEvent.hpp>
 #include <event/keyCodes.hpp>
 #include <event/KeyEvent.hpp>
 #include <event/MouseCodes.hpp>

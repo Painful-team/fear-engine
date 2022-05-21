@@ -1,5 +1,4 @@
 #include "Dispatcher.hpp"
-
 #include "WindowEvent.hpp"
 #include "KeyEvent.hpp"
 #include "MouseEvent.hpp"
@@ -9,63 +8,71 @@
 
 namespace FearEngine::Events
 {
-#define OBS(type) Observer<void(type*)>
-
-#define INDEX(type) static_cast<int>(EventType::type)
-
-#define NOTCASE(type, Class, func) case EventType::type:						\
-	reinterpret_cast<OBS(Class)*>(events[INDEX(type)])->notify(reinterpret_cast<Class*>(event));	\
-	func												\
-	break;
-
-#define FUNCASE(type, Class, func) case EventType::type:		\
-	reinterpret_cast<OBS(Class)*>(events[INDEX(type)])->func;	\
-	break;
-
-#define GETOBSERVER(type, cases, func)						\
-switch (type)									\
-{										\
-	cases(windowClose,				WindowClose, func)	\
-	cases(windowResize,				WindowResize, func)	\
-	cases(windowFocus,				WindowFocus, func)	\
-	cases(windowLostFocus,				WindowLostFocus, func)	\
-	cases(windowMoved,				WindowMoved, func)	\
-										\
-	cases(guiUpdate,				GuiUpdate, func)	\
-										\
-	cases(keyPressed,				KeyPressed, func)	\
-	cases(keyReleased,				KeyReleased, func)	\
-	cases(keyTyped,					KeyTyped, func)		\
-										\
-	cases(mouseButtonPressed,			KeyPressed, func)	\
-	cases(mouseButtonReleased,			KeyReleased, func)	\
-	cases(mouseMoved,				KeyTyped, func)		\
-	cases(mouseScrolled,				KeyTyped, func)		\
+#define NOTCASE(casetype, input, Class, func)										\
+casetype(input == Class::staticType())												\
+{																					\
+	auto* ptr = reinterpret_cast<Observer<bool(Class*)>*>(events[getIndex(input)]);	\
+	auto* newType = reinterpret_cast<Class*>(func);									\
+	for (auto it = ptr->begin(); it != ptr->end(); ++it)							\
+	{																				\
+		if (!(*it)(newType))														\
+		{																			\
+			break;																	\
+		}																			\
+	}																				\
 }
+
+#define FUNCASE(casetype, input, Class, func)									\
+casetype(input == Class::staticType())											\
+{																				\
+	reinterpret_cast<Observer<bool(Class*)>*>(events[getIndex(input)])->func;	\
+}                                                              					\
+
+#define GETOBSERVER(type, cases, func)			 		 \
+	cases(if,		type,	WindowClose,		 	func)\
+	cases(else if,	type,	WindowResize, 			func)\
+	cases(else if, 	type,	WindowFocus, 			func)\
+	cases(else if, 	type,	WindowLostFocus,		func)\
+	cases(else if, 	type,	WindowMoved, 			func)\
+	cases(else if, 	type,	WindowMinimized, 			func)\
+	cases(else if, 	type,	WindowRestored, 			func)\
+														 \
+	cases(else if, 	type,	GuiUpdate, 				func)\
+														 \
+	cases(else if, 	type,	KeyPressed, 			func)\
+	cases(else if, 	type,	KeyReleased, 			func)\
+	cases(else if, 	type,	KeyTyped, 				func)\
+														 \
+	cases(else if, 	type,	MouseButtonPressed, 	func)\
+	cases(else if, 	type,	MouseButtonReleased, 	func)\
+	cases(else if, 	type,	MouseMoved, 			func)\
+	cases(else if, 	type,	MouseScrolled, 			func)\
 
 Dispatcher::Dispatcher()
 {
-	events[INDEX(windowClose)]					= new OBS(WindowClose);
-	events[INDEX(windowResize)]					= new OBS(WindowResize);
-	events[INDEX(windowFocus)]					= new OBS(WindowFocus);
-	events[INDEX(windowLostFocus)]					= new OBS(WindowLostFocus);
-	events[INDEX(windowMoved)]					= new OBS(WindowMoved);
+	registerEvent<WindowClose>();
+	registerEvent<WindowResize>();
+	registerEvent<WindowFocus>();
+	registerEvent<WindowLostFocus>();
+	registerEvent<WindowMoved>();
+	registerEvent<WindowMinimized>();
+	registerEvent<WindowRestored>();
 
-	events[INDEX(guiUpdate)] = new OBS(GuiUpdate);
+	registerEvent<GuiUpdate>();
 
-	events[INDEX(keyPressed)]					= new OBS(KeyPressed);
-	events[INDEX(keyReleased)]					= new OBS(KeyReleased);
-	events[INDEX(keyTyped)]						= new OBS(KeyTyped);
+	registerEvent<KeyPressed>();
+	registerEvent<KeyReleased>();
+	registerEvent<KeyTyped>();
 
-	events[INDEX(mouseButtonPressed)]				= new OBS(KeyPressed);
-	events[INDEX(mouseButtonReleased)]				= new OBS(KeyReleased);
-	events[INDEX(mouseMoved)]					= new OBS(KeyTyped);
-	events[INDEX(mouseScrolled)]					= new OBS(KeyTyped);
+	registerEvent<MouseButtonPressed>();
+	registerEvent<MouseButtonReleased>();
+	registerEvent<MouseMoved>();
+	registerEvent<MouseScrolled>();
 }
 
 void Dispatcher::notify(Event* event)
 {
-	GETOBSERVER(event->getType(), NOTCASE, ;);
+	GETOBSERVER(event->type(), NOTCASE, event);
 }
 
 Dispatcher::~Dispatcher()
@@ -74,6 +81,11 @@ Dispatcher::~Dispatcher()
 	{
 		delete it;
 	}
+}
+
+constexpr int Dispatcher::getIndex(EventType type)
+{
+	return static_cast<int>(type);
 }
 
 void Dispatcher::detach(EventType type, std::pair<uint32_t, uint32_t>& key)

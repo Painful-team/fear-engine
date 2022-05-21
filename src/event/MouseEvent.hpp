@@ -13,6 +13,7 @@ public:
 
 	mouseCode getButton() const;
 
+	GENCLASSESSETIALS(mouseButtonPressed, mouse | input)
 private:
 	mouseCode button;
 };
@@ -24,6 +25,7 @@ public:
 
 	mouseCode getButton() const;
 
+	GENCLASSESSETIALS(mouseButtonReleased, mouse | input)
 private:
 	mouseCode button;
 };
@@ -36,6 +38,7 @@ public:
 	double getX() const;
 	double getY() const;
 
+	GENCLASSESSETIALS(mouseMoved, mouse | input)
 private:
 	double x;
 	double y;
@@ -49,6 +52,7 @@ public:
 	double getXoffset() const;
 	double getYoffset() const;
 
+	GENCLASSESSETIALS(mouseScrolled, mouse | input)
 private:
 	double offsetX;
 	double offsetY;

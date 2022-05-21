@@ -11,6 +11,8 @@ class GuiWindow
 public:
 	virtual void showWindow() = 0;
 
+	bool isWindowOpen() const;
+
 };
 }
 #endif

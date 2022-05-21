@@ -1,4 +1,4 @@
-#include "Gui.hpp"
+#include "GUI.hpp"
 
 #include <iostream>
 
@@ -7,6 +7,7 @@
 #include <imgui_impl_opengl3.h>
 #include <imgui_internal.h>
 
+#include <core/Engine.hpp>
 #include <event/GuiEvent.hpp>
 
 namespace FearEngine
@@ -15,8 +16,14 @@ void Gui::init()
 {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
-	ImGuiIO& io = ImGui::GetIO();
-	static_cast<void>(io);
+
+	Engine::getDispatcher()->get<Events::MouseMoved>()->attach<&Gui::onMouseMoved>(this);
+	Engine::getDispatcher()->get<Events::MouseButtonPressed>()->attach<&Gui::onMousePressed>(this);
+	Engine::getDispatcher()->get<Events::MouseButtonReleased>()->attach<&Gui::onMouseReleased>(this);
+	Engine::getDispatcher()->get<Events::MouseScrolled>()->attach<&Gui::onScroll>(this);
+	Engine::getDispatcher()->get<Events::KeyPressed>()->attach<&Gui::onKeyPressed>(this);
+	Engine::getDispatcher()->get<Events::KeyReleased>()->attach<&Gui::onKeyReleased>(this);
+	Engine::getDispatcher()->get<Events::KeyTyped>()->attach<&Gui::onKeyTyped>(this);
 
 	ImGui_ImplGlfw_InitForOpenGL(Engine::getWindow()->window, true);
 	ImGui_ImplOpenGL3_Init();
@@ -31,11 +38,13 @@ Gui::~Gui()
 	ImGui::DestroyContext();
 }
 
-void Gui::onGui()
+void Gui::update()
 {
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
+
+	windows.dockingArea.showWindow();
 
 	showMainMenuBar();
 	windows.showAllWindows();
@@ -43,16 +52,129 @@ void Gui::onGui()
 	ImGui::Render();
 
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+	auto evnt = Events::GuiUpdate();
+	Engine::getDispatcher()->notify(&evnt);
+}
 
-	Engine::getDispatcher()->notify(&Events::GuiUpdate());
+bool Gui::onMouseMoved(Events::MouseMoved* e)
+{
+	ImGuiIO& io = ImGui::GetIO();
+	io.MousePos = ImVec2(e->getX(), e->getY());
+
+	return true;
+}
+
+bool Gui::onMousePressed(Events::MouseButtonPressed* e)
+{
+	ImGuiIO& io = ImGui::GetIO();
+	io.MouseDown[e->getButton()] = true;
+
+	return true;
+}
+
+bool Gui::onMouseReleased(Events::MouseButtonReleased* e)
+{
+	ImGuiIO& io = ImGui::GetIO();
+	io.MouseReleased[e->getButton()] = true;
+
+	return true;
+}
+
+bool Gui::onScroll(Events::MouseScrolled* e)
+{
+	ImGuiIO& io = ImGui::GetIO();
+	io.MouseWheel += e->getXoffset();
+	io.MouseWheelH += e->getYoffset();
+
+	return true;
+}
+
+bool Gui::onKeyPressed(Events::KeyPressed* e)
+{
+	ImGuiIO& io = ImGui::GetIO();
+	if (ImGui::IsNamedKey(e->keyCode()))
+	{
+		io.AddKeyEvent(e->keyCode(), true);
+	}
+
+	if (!io.KeyAlt)
+	{
+		io.KeyAlt = (e->keyCode() == Events::Key::LEFT_ALT || e->keyCode() == Events::Key::RIGHT_ALT);
+	}
+	
+	if (!io.KeyCtrl)
+	{
+		io.KeyCtrl = (e->keyCode() == Events::Key::LEFT_CONTROL || e->keyCode() == Events::Key::RIGHT_CONTROL);
+	}
+
+	if (!io.KeyShift)
+	{
+		io.KeyShift = (e->keyCode() == Events::Key::LEFT_SHIFT || e->keyCode() == Events::Key::RIGHT_SHIFT);
+	}
+
+	if (!io.KeySuper)
+	{
+		io.KeySuper = (e->keyCode() == Events::Key::LEFT_SUPER || e->keyCode() == Events::Key::RIGHT_SUPER);
+	}
+
+	return false;
+}
+
+bool Gui::onKeyReleased(Events::KeyReleased* e)
+{
+	ImGuiIO& io = ImGui::GetIO();
+	if (ImGui::IsNamedKey(e->keyCode()))
+	{
+		io.AddKeyEvent(e->keyCode(), false);
+	}
+
+	if (io.KeyAlt)
+	{
+		io.KeyAlt = !(e->keyCode() == Events::Key::LEFT_ALT || e->keyCode() == Events::Key::RIGHT_ALT);
+	}
+
+	if (io.KeyCtrl)
+	{
+		io.KeyCtrl = !(e->keyCode() == Events::Key::LEFT_CONTROL || e->keyCode() == Events::Key::RIGHT_CONTROL);
+	}
+
+	if (io.KeyShift)
+	{
+		io.KeyShift = !(e->keyCode() == Events::Key::LEFT_SHIFT || e->keyCode() == Events::Key::RIGHT_SHIFT);
+	}
+
+	if (io.KeySuper)
+	{
+		io.KeySuper = !(e->keyCode() == Events::Key::LEFT_SUPER || e->keyCode() == Events::Key::RIGHT_SUPER);
+	}
+
+	return false;
+}
+
+bool Gui::onKeyTyped(Events::KeyTyped* e)
+{
+	ImGuiIO& io = ImGui::GetIO();
+	io.AddInputCharacter(e->keyCode());
+
+	return false;
+}
+
+bool Gui::onResize(Events::WindowResize* e)
+{
+	ImGuiIO& io = ImGui::GetIO();
+	io.DisplaySize = ImVec2(e->getWidth(), e->getHeight());
+	io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
+
+	return true;
 }
 
 void Gui::applyInitialSettings()
 {
 	setWindowStyles();
-	setMainWindowFlags();
 	setFonts();
 	setMainColors();
+
+	ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 }
 
 void Gui::setWindowStyles()
@@ -70,13 +192,6 @@ void Gui::setWindowStyles()
 	ImGuiMainStyle.PopupRounding = 0.0f;
 	ImGuiMainStyle.ScrollbarRounding = 12.0f;
 	ImGuiMainStyle.TabRounding = 0.0f;
-}
-
-void Gui::setMainWindowFlags()
-{
-	ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-
-	ImGui::GetIO().ConfigDockingAlwaysTabBar = true;
 }
 
 void Gui::setFonts()
@@ -165,10 +280,6 @@ void Gui::setMainColors()
 	colors[ImGuiCol_TabUnfocused]						= ImVec4(0.26f, 0.26f, 0.26f, 1.00f);
 	// color - #424242FF
 	colors[ImGuiCol_TabUnfocusedActive]					= ImVec4(0.26f, 0.26f, 0.26f, 1.00f);
-	// color - #2B5C87FF
-	colors[ImGuiCol_DockingPreview]						= ImVec4(0.17f, 0.36f, 0.53f, 1.00f);
-	// color - #333333FF
-	colors[ImGuiCol_DockingEmptyBg]						= ImVec4(0.20f, 0.20f, 0.20f, 1.00f);
 	// color - #5E5E5EFF
 	colors[ImGuiCol_PlotLines]							= ImVec4(0.37f, 0.37f, 0.37f, 1.00f);
 	// color - #4296FA59

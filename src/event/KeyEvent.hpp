@@ -12,6 +12,8 @@ public:
 	KeyPressed(const keys key);
 
 	keys keyCode() const;
+
+	GENCLASSESSETIALS(keyPressed, keyboard | input)
 private:
 	keys key;
 };
@@ -22,6 +24,8 @@ public:
 	KeyReleased(const keys key);
 
 	keys keyCode() const;
+
+	GENCLASSESSETIALS(keyReleased, keyboard | input)
 private:
 	keys key;
 };
@@ -32,6 +36,8 @@ public:
 	KeyTyped(const keys key);
 
 	keys keyCode() const;
+
+	GENCLASSESSETIALS(keyTyped, keyboard | input)
 private:
 	keys key;
 };
