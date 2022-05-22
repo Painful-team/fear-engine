@@ -14,6 +14,8 @@ workspace "FearEngine"
 		"Release",
 		"Debug"
 	}
+
+	defines "_AMD64_" 
 	
 group "Dependencies"
 	include  "include/glad"
@@ -34,6 +36,7 @@ project "Engine"
 		"src/**.hpp",
 		"src/**.cpp",
 		"include/containers/*.h",
+		"include/tinyobj/*.*",
 		"include/glm/glm/**.*",
 		"include/stb/**.h"
 	}
@@ -42,6 +45,7 @@ project "Engine"
 	{
 		"src",
 		"include/containers",
+		"include/tinyobj",
        	"include/glad/include",
        	"include/GLFW/include",
        	"include/glm/include",

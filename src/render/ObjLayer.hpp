@@ -8,6 +8,8 @@
 
 #include "Camera.hpp"
 
+#include <cache/ObjResource.hpp>
+
 namespace FearEngine::Render
 {
 class ModelLayer: public Layer
@@ -22,7 +24,8 @@ private:
 	Render::VertexBuffer vertex;
 	Render::Shaders::Shader shader;
 	Render::VertexArray arr;
-	std::vector<Vertex> vertices;
+
+	std::shared_ptr<Cache::ObjData> model;
 
 	Render::Shaders::Uniform projUniform;
 	Render::Shaders::Uniform viewUniform;

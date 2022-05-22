@@ -1,28 +1,27 @@
 #include <glad/glad.h>
 #include "ObjLayer.hpp"
 
-#include <fstream>
-
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include <core/Engine.hpp>
 #include <core/Input.hpp>
 
 #include "shader/Uniform.hpp"
 
+#include <cache/ObjResource.hpp>
+#include <utils/PointerCasts.hpp>
 
 namespace FearEngine::Render
 {
 ModelLayer::ModelLayer() :
 	vertex({
 		{Render::BufferType::Float, 3},
-		{Render::BufferType::Float, 2},
+		{Render::BufferType::Float, 3},
 		{Render::BufferType::Float, 3}
 	})
-{
-	vertices.resize(300000);
-}
+{}
 
 void ModelLayer::init()
 {
@@ -36,10 +35,11 @@ void ModelLayer::init()
 
 	arr.bind();
 
-	auto file = std::fstream("resources/models/backpack.obj");
-	vertices = LoadOBJ(file);
+	std::shared_ptr<Cache::Resource> resource;
+	auto result = Engine::getCache()->getResource("resources/models/backpack.obj", resource);
+	model = utils::static_pointer_cast<Cache::ObjData>(resource->extra);
 
-	vertex.bindData(&vertices.data()->position[0], vertices.size() * sizeof(Vertex));
+	vertex.bindData((float*)resource->data, resource->size);
 
 	arr.addVertexBuffer(vertex);
 
@@ -88,7 +88,7 @@ void ModelLayer::update()
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	glPolygonOffset(1, 0.1);
-	glDrawArrays(GL_TRIANGLES, 0, vertices.size());
+	glDrawArrays(GL_TRIANGLES, 0, model->vertices.size());
 	//glDrawElements(GL_TRIANGLES, chunk.triangles.size(), GL_UNSIGNED_INT, 0);
 
 	frame.setFloat(0);
@@ -97,7 +97,7 @@ void ModelLayer::update()
 	glPolygonOffset(1, 0);
 	//glDrawElements(GL_TRIANGLES, chunk.triangles.size(), GL_UNSIGNED_INT, 0);
 
-	glDrawArrays(GL_TRIANGLES, 0, vertices.size());
+	glDrawArrays(GL_TRIANGLES, 0, model->vertices.size());
 
 	glBindVertexArray(0);
 }

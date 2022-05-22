@@ -20,9 +20,10 @@
 
 namespace FearEngine
 {
-std::unique_ptr<Renderer> Engine::renderer =std::make_unique<Renderer>();
-std::unique_ptr <Events::Dispatcher> Engine::eventDispatcher = std::make_unique<Events::Dispatcher>();
-std::unique_ptr<Window> Engine::window = std::make_unique<Window>();
+std::unique_ptr<Renderer> Engine::renderer;
+std::unique_ptr <Events::Dispatcher> Engine::eventDispatcher;
+std::unique_ptr<Window> Engine::window;
+std::unique_ptr<CacheManager> Engine::cacheManager;
 
 void Engine::onEvent(Events::Event* event)
 {
@@ -76,8 +77,21 @@ std::unique_ptr<Events::Dispatcher>& Engine::getDispatcher()
 	return Engine::eventDispatcher;
 }
 
+std::unique_ptr<CacheManager>& Engine::getCache()
+{
+	return Engine::cacheManager;
+}
+
 int Engine::init()
 {
+
+	Engine::renderer = std::make_unique<Renderer>();
+	Engine::eventDispatcher = std::make_unique<Events::Dispatcher>();
+	Engine::window = std::make_unique<Window>();
+	Engine::cacheManager = std::make_unique<CacheManager>();
+	
+	assert(cacheManager->init() == 0);
+
 	assert(glfwInit());
 
 	window->setEventHandler(Window::handle_type::create<&Engine::onEvent>());
@@ -87,6 +101,7 @@ int Engine::init()
 	glfwMakeContextCurrent(window->window);
 
 	assert(renderer->init() == 0);
+
 
 	eventDispatcher->get<Events::WindowRestored>()->attach<&Engine::onRestore>(this);
 	

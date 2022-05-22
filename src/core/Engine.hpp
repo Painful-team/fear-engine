@@ -3,6 +3,7 @@
 
 #include <event/Dispatcher.hpp>
 #include <render/Renderer.hpp>
+#include <Cache/CacheManager.hpp>
 
 #include "events.hpp"
 #include "Window.hpp"
@@ -18,6 +19,7 @@ public:
 	static std::unique_ptr<Renderer>& getRender();
 	static std::unique_ptr<Window>& getWindow();
 	static std::unique_ptr<Events::Dispatcher>& getDispatcher();
+	static std::unique_ptr<CacheManager>& getCache();
 
 	int init();
 	void run();
@@ -35,6 +37,7 @@ private:
 	static std::unique_ptr<Events::Dispatcher> eventDispatcher;
 	static std::unique_ptr<Renderer> renderer;
 	static std::unique_ptr<Window> window;
+	static std::unique_ptr<CacheManager> cacheManager;
 };
 }
 
