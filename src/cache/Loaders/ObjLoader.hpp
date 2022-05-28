@@ -12,7 +12,7 @@ class ObjLoader: public Loader
 public:
 	int init() override final;
 	std::string getPattern() const override final;
-	Cache::errorCode load(const std::string_view& filename, std::shared_ptr<Resource>& resource) override final;
+	Cache::errorCode load(const std::string_view& filename, std::shared_ptr<Resource>& resource, const uint64_t flags = 0) override final;
 
 	static const uint8_t Threads = 2;
 	~ObjLoader() override final;

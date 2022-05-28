@@ -69,7 +69,8 @@ const char* get_file_data(size_t& len, const char* filename)
 }
 
 FearEngine::Cache::errorCode FearEngine::Cache::Loaders::ObjLoader::load(const std::string_view& filename,
-	 std::shared_ptr<Resource>& resource)
+	 std::shared_ptr<Resource>& resource,
+	 const uint64_t flags)
 {
 	tinyobj_opt::attrib_t attrib;
 

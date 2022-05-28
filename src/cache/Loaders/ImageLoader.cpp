@@ -4,12 +4,17 @@
 
 #include <cache/ImageResource.hpp>
 
+FearEngine::Cache::Loaders::ImageLoader::ImageLoader(std::string _pattern)
+ : pattern(_pattern)
+{}
+
 int FearEngine::Cache::Loaders::ImageLoader::init() { return Cache::errorCodes::OK; }
 
-std::string FearEngine::Cache::Loaders::ImageLoader::getPattern() const { return "*.jpg"; }
+std::string FearEngine::Cache::Loaders::ImageLoader::getPattern() const { return pattern; }
 
 FearEngine::Cache::errorCode FearEngine::Cache::Loaders::ImageLoader::load(const std::string_view& filename,
-	 std::shared_ptr<Resource>& resource)
+	 std::shared_ptr<Resource>& resource,
+	 const uint64_t flags)
 {
 	int width;
 	int height;
@@ -38,5 +43,3 @@ FearEngine::Cache::errorCode FearEngine::Cache::Loaders::ImageLoader::load(const
 
 	return Cache::errorCodes::OK;
 }
-
-FearEngine::Cache::Loaders::ImageLoader::~ImageLoader() {}

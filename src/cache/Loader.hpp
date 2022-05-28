@@ -14,7 +14,7 @@ class Loader
 public:
 	virtual int init() = 0;
 	virtual std::string getPattern() const = 0;
-	virtual Cache::errorCode load(const std::string_view& filename, std::shared_ptr<Resource>& resource) = 0;
+	virtual Cache::errorCode load(const std::string_view& filename, std::shared_ptr<Resource>& resource, const uint64_t flags = 0) = 0;
 
 	virtual ~Loader() = default;
 };

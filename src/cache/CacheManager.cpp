@@ -13,8 +13,8 @@
 FearEngine::Cache::errorCode FearEngine::CacheManager::init()
 {
 	loaders.emplace("*.obj", new Cache::Loaders::ObjLoader);
-	loaders.emplace("*.jpg", new Cache::Loaders::ImageLoader);
-	loaders.emplace("*.png", new Cache::Loaders::ImageLoader);
+	loaders.emplace("*.jpg", new Cache::Loaders::ImageLoader("*.jpg"));
+	loaders.emplace("*.png", new Cache::Loaders::ImageLoader("*.png"));
 
 	for (auto& pair : loaders)
 	{
