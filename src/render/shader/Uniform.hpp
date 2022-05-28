@@ -2,6 +2,7 @@
 #define FEARENGINE_RENDER_SHADER_UNIFORM_H__
 
 #include <glm/glm.hpp>
+#include <string>
 
 namespace FearEngine::Render::Shaders
 {
@@ -10,11 +11,15 @@ class Uniform
 public:
 	Uniform();
 
+	Uniform(const char* name, uint32_t type);
 	Uniform(const uint32_t program, const char* name);
 	Uniform(const Uniform& other);
+	Uniform(Uniform&& other) noexcept;
 
 	Uniform& operator=(const Uniform& other);
+	Uniform& operator=(Uniform&& other) noexcept;
 
+	const std::string_view& getName() const;
 	int init(const uint32_t program, const char* name);
 
 	void setBool(const bool value) const;
@@ -34,7 +39,12 @@ public:
 	void setMat4(const glm::mat4& mat) const;
 
 private:
+	std::string name;
+	uint32_t type;
+
 	uint32_t m_location;
+
+	friend class Shader;
 };
 }  // namespace FearEngine::Render::Shaders
 #endif

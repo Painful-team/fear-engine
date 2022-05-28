@@ -94,10 +94,19 @@ Uniform::Uniform()
  : m_location(-1)
 {}
 
+Uniform::Uniform(const char* _name, uint32_t _type)
+ : name(_name)
+ , type(_type)
+{}
+
 Uniform::Uniform(const uint32_t program, const char* name) { m_location = glGetUniformLocation(program, name); }
 
 Uniform::Uniform(const Uniform& other)
  : m_location(other.m_location)
+{}
+
+Uniform::Uniform(Uniform&& other) noexcept
+ : name(std::move(other.name)), type(other.type)
 {}
 
 Uniform& Uniform::operator=(const Uniform& other)
@@ -106,6 +115,16 @@ Uniform& Uniform::operator=(const Uniform& other)
 
 	return *this;
 }
+
+Uniform& Uniform::operator=(Uniform&& other) noexcept
+{
+	name = std::move(other.name);
+	type = other.type;
+
+	return *this;
+}
+
+const std::string_view& Uniform::getName() const { return name; }
 
 int Uniform::init(const uint32_t program, const char* name)
 {

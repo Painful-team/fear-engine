@@ -1,6 +1,7 @@
-#include <glad/glad.h>
 #include "Shader.hpp"
+#include <glad/glad.h>
 
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -76,59 +77,112 @@ void Shader::compile()
 		std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
 	}
 
-	GLint num_active_uniforms = 0;
-	GLint num_active_blocks = 0;
-	glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &num_active_uniforms);
-	glGetProgramiv(program, GL_ACTIVE_UNIFORM_BLOCKS, &num_active_blocks);
-
-	{
-		constexpr uint32_t nameMaxSize = 128;
-		char name[nameMaxSize];
-		GLenum* uniform_types = (GLenum*)alloca(sizeof(GLenum) * num_active_uniforms);
-		GLuint* uniform_indices = (GLuint*)alloca(sizeof(GLuint) * num_active_uniforms);
-		for (int i = 0; i < num_active_uniforms; ++i)
-		{
-			GLsizei uniform_length = 0;
-			GLint uniform_size = 0;
-			GLenum uniform_type = 0;
-
-			// grab uniform info
-			glGetActiveUniform(program, (GLuint)i, nameMaxSize, &uniform_length, &uniform_size, &uniform_type, name);
-			uniform_types[i] = uniform_type;
-			uniform_indices[i] = glGetUniformBlockIndex(program, name);
-
-			std::cout << name << ' ' << uniform_types[i] << ' ' << uniform_indices[i] << std::endl;
-		}
-
-		if (num_active_blocks > 0)
-		{
-			GLint* offsets = (GLint*)alloca(sizeof(GLint) * num_active_uniforms);
-			glGetActiveUniformsiv(program, num_active_uniforms, uniform_indices, GL_UNIFORM_OFFSET, offsets);
-		}
-
-		//To prevent run-time check fail we have to create array of 3 GLint because of glGetActiveUniformBlockiv is writing more bytes that it has to
-		GLint uniformIndexStride[3];
-		char blockname[nameMaxSize];
-		for (int i = 0; i < num_active_blocks; ++i)
-		{
-			GLsizei blockSize = 0;
-			glGetActiveUniformBlockName(program, i, sizeof(blockname), &blockSize, blockname);
-			uint32_t blockIndex = glGetUniformBlockIndex(program, blockname);
-
-			glGetActiveUniformBlockiv(program, blockIndex, GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES, &*uniformIndexStride);
-			std::cout << blockname << ' ' << blockSize << ' ' << uniformIndexStride[0] << std::endl;
-		}
-	}
+	shaderId = program;
+	initUniforms();
 
 	for (auto it : vec)
 	{
 		glDeleteShader(it);
 	}
-
-	shaderId = program;
 }
 
 void Shader::use() { glUseProgram(shaderId); }
 uint32_t Shader::getId() { return shaderId; }
 Shader::~Shader() { glDeleteProgram(shaderId); }
+void Shader::initUniforms()
+{
+	GLint activeUniforms = 0;
+	GLint activeBlocks = 0;
+	glGetProgramiv(shaderId, GL_ACTIVE_UNIFORMS, &activeUniforms);
+	glGetProgramiv(shaderId, GL_ACTIVE_UNIFORM_BLOCKS, &activeBlocks);
+
+	constexpr uint16_t maxNameUniformBatch = 32;
+	constexpr uint16_t nameMaxSize = 128;
+
+	{
+		// To prevent run-time check fail we have to create array of 3 GLint because of glGetActiveUniformBlockiv is writing more bytes that
+		// it has to
+		char blockname[nameMaxSize];
+		for (int i = 0; i < activeBlocks; ++i)
+		{
+			GLsizei blockSize = 0;
+			glGetActiveUniformBlockName(shaderId, i, sizeof(blockname), &blockSize, blockname);
+			uint32_t blockIndex = glGetUniformBlockIndex(shaderId, blockname);
+
+			GLint uniforms;
+			glGetActiveUniformBlockiv(shaderId, blockIndex, GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS, &uniforms);
+
+			GLint* indices = (GLint*)alloca(sizeof(GLint*) * uniforms);
+			glGetActiveUniformBlockiv(shaderId, blockIndex, GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES, &*indices);
+
+			auto minMax = std::minmax_element(&indices[0], &indices[uniforms - 1]);
+
+			BlockData blockData;
+			blockData.blockIndex = blockIndex;
+			blockData.uniformBeginIndex = *minMax.first;
+			blockData.uniformEndIndex = *minMax.second;
+
+			auto res = buffers.emplace(blockname, std::move(blockData));
+
+			res.first->second.name = res.first->first;
+		}
+
+		for (auto& buf : buffers)
+		{
+			std::cout << buf.first << ' ' << buf.second.blockIndex << ' ' << buf.second.uniformBeginIndex << '-'
+					  << buf.second.uniformEndIndex << std::endl;
+		}
+
+		char name[nameMaxSize];
+		char** names = (char**)alloca(sizeof(char**) * (activeUniforms));
+		GLuint* uniformIndices = (GLuint*)alloca(sizeof(GLuint) * activeUniforms);
+		GLint* offsets = (GLint*)alloca(sizeof(GLint) * activeUniforms);
+		for (uint16_t i = 0; i < activeUniforms; ++i)
+		{
+			GLsizei nameLength = 0;
+			GLint uniform_size = 0;
+			GLenum uniform_type = 0;
+
+			glGetActiveUniform(shaderId, (GLuint)i, nameMaxSize, &nameLength, &uniform_size, &uniform_type, name);
+			Uniform uniform(name, uniform_type);
+			names[i] = uniform.name.data();
+
+			/* for (auto& buf : buffers)
+			{
+				if (buf.second.uniformBeginIndex && buf.second.uniformEndIndex)
+				{
+				}
+			}
+			*/
+		}
+
+		if (activeBlocks > 0)
+		{
+			glGetUniformIndices(shaderId, activeUniforms, names, uniformIndices);
+			glGetActiveUniformsiv(shaderId, activeUniforms, uniformIndices, GL_UNIFORM_OFFSET, offsets);
+		}
+	}
+}
+
+Shader::BlockData::BlockData(BlockData&& other) noexcept
+ : name(other.name)
+ , blockIndex(other.blockIndex)
+ , uniformBeginIndex(other.uniformBeginIndex)
+ , uniformEndIndex(other.uniformEndIndex)
+ , uniforms(std::move(other.uniforms))
+{}
+
+Shader::BlockData& Shader::BlockData::operator=(BlockData&& other) noexcept
+{
+	name = other.name;
+
+	blockIndex = other.blockIndex;
+
+	uniformBeginIndex = other.uniformBeginIndex;
+	uniformEndIndex = other.uniformEndIndex;
+
+	uniforms = std::move(other.uniforms);
+
+	return *this;
+}
 }  // namespace FearEngine::Render::Shaders

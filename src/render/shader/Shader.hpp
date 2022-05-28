@@ -14,6 +14,23 @@ using uint32_t = unsigned;
 
 class Shader
 {
+private:
+	struct BlockData
+	{
+		std::string_view name;
+
+		uint16_t blockIndex;
+
+		uint16_t uniformBeginIndex;
+		uint16_t uniformEndIndex;
+
+		std::vector<Uniform> uniforms;
+
+		BlockData() = default;
+		BlockData(BlockData&& other) noexcept;
+		BlockData& operator=(BlockData&& other) noexcept;
+	};
+
 public:
 	Shader();
 
@@ -28,10 +45,12 @@ public:
 	~Shader();
 
 private:
+	void initUniforms();
+
 	std::unordered_map<GLenum, std::string> sources;
 	uint32_t shaderId;
 
-	std::unordered_map<std::string, std::vector<Uniform>> buffers;
+	std::unordered_map<std::string, BlockData> buffers;
 };
 }  // namespace FearEngine::Render::Shaders
 #endif
