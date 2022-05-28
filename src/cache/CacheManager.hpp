@@ -1,8 +1,8 @@
 
-#include <string_view>
 #include <list>
-#include <unordered_map>
 #include <memory>
+#include <string_view>
+#include <unordered_map>
 
 #include "Loader.hpp"
 #include "Resource.hpp"
@@ -23,6 +23,7 @@ public:
 	void addLoader(const std::string_view& filter, Cache::Loader* loader);
 
 	~CacheManager();
+
 private:
 	void updatePriority(std::shared_ptr<Cache::Resource>& resource);
 	void addNewResource(std::shared_ptr<Cache::Resource>& resource);
@@ -32,4 +33,4 @@ private:
 	std::unordered_map<std::string_view, std::shared_ptr<Cache::Resource>> resources;
 	std::unordered_map<std::string, Cache::Loader*> loaders;
 };
-}
+}  // namespace FearEngine

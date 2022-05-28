@@ -1,15 +1,15 @@
 #ifndef FEARENGINE_CACHE_RESOURCE_H__
 #define FEARENGINE_CACHE_RESOURCE_H__
 
-#include <string_view>
 #include <memory>
+#include <string_view>
 namespace FearEngine::Cache
 {
-
 enum ResourceExtraType
 {
 	OBJ = 0,
-
+	Mat = 1,
+	Image = 2,
 	invalid,
 };
 
@@ -19,25 +19,31 @@ public:
 	virtual ResourceExtraType type() const = 0;
 };
 
+void deleterFunc(void* ptr);
+
 struct Resource
 {
 	std::shared_ptr<ResourceExtra> extra;
 
 	std::string filename;
-	char* data;
+	int8_t* data;
 	uint32_t size;
+
+	decltype(&deleterFunc) deleter = deleterFunc;
+
+	~Resource()
+	{
+		if (deleter != nullptr)
+		{
+			deleterFunc(data);
+		}
+	};
 };
 
-#define GENRESOURCECLASSESSETIALS(classType) 	\
-static ResourceExtraType staticType()					\
-{												\
-	return ResourceExtraType::classType;				\
-}												\
-												\
-ResourceExtraType type() const override						\
-{												\
-	return staticType();						\
-}												
-}
+#define GENRESOURCECLASSESSETIALS(classType)                                       \
+	static ResourceExtraType staticType() { return ResourceExtraType::classType; } \
+                                                                                   \
+	ResourceExtraType type() const override { return staticType(); }
+}  // namespace FearEngine::Cache
 
 #endif

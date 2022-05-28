@@ -6,14 +6,17 @@
 
 #include <utils/StringUtils.hpp>
 
+#include "Loaders/ImageLoader.hpp"
 #include "Loaders/ObjLoader.hpp"
 
 
 FearEngine::Cache::errorCode FearEngine::CacheManager::init()
 {
 	loaders.emplace("*.obj", new Cache::Loaders::ObjLoader);
+	loaders.emplace("*.jpg", new Cache::Loaders::ImageLoader);
+	loaders.emplace("*.png", new Cache::Loaders::ImageLoader);
 
-	for (auto& pair: loaders)
+	for (auto& pair : loaders)
 	{
 		pair.second->init();
 	}
@@ -21,7 +24,8 @@ FearEngine::Cache::errorCode FearEngine::CacheManager::init()
 	return Cache::errorCodes::OK;
 }
 
-FearEngine::Cache::errorCode FearEngine::CacheManager::getResource(const std::string_view& file_name, std::shared_ptr<Cache::Resource>& resource)
+FearEngine::Cache::errorCode FearEngine::CacheManager::getResource(const std::string_view& file_name,
+	 std::shared_ptr<Cache::Resource>& resource)
 {
 	if (resources.find(file_name.data()) != resources.end())
 	{
@@ -30,8 +34,8 @@ FearEngine::Cache::errorCode FearEngine::CacheManager::getResource(const std::st
 		updatePriority(resource);
 		return Cache::errorCodes::OK;
 	}
-	
-	for(auto& pair: loaders)
+
+	for (auto& pair : loaders)
 	{
 		if (utils::WildcardMatch(pair.first.c_str(), file_name.data()))
 		{
@@ -79,7 +83,7 @@ void FearEngine::CacheManager::addLoader(const std::string_view& filter, Cache::
 
 FearEngine::CacheManager::~CacheManager()
 {
-	for (auto& pair: loaders)
+	for (auto& pair : loaders)
 	{
 		delete pair.second;
 	}
@@ -101,7 +105,7 @@ void FearEngine::CacheManager::addNewResource(std::shared_ptr<Cache::Resource>& 
 
 void FearEngine::CacheManager::clear()
 {
-	while(!resources.empty())
+	while (!resources.empty())
 	{
 		auto& it = resources.begin();
 		free(it->second);

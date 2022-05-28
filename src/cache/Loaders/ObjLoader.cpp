@@ -5,17 +5,13 @@
 #include <tinyobj_loader_opt.h>
 
 #include <cache/ObjResource.hpp>
+#include <utils/PointerCasts.hpp>
 
-int FearEngine::Cache::Loaders::ObjLoader::init()
-{
-	return errorCodes::OK;
-}
+int FearEngine::Cache::Loaders::ObjLoader::init() { return errorCodes::OK; }
 
-std::string FearEngine::Cache::Loaders::ObjLoader::getPattern() const
-{
-	return "*.obj";
-}
+std::string FearEngine::Cache::Loaders::ObjLoader::getPattern() const { return "*.obj"; }
 
+// TODO rewrite into optimized glm::version.
 void CalcNormal(float N[3], float v0[3], float v1[3], float v2[3])
 {
 	float v10[3];
@@ -51,7 +47,8 @@ const char* get_file_data(size_t& len, const char* filename)
 
 	len = 0;
 
-	HANDLE file = CreateFileA(filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, NULL);
+	HANDLE file = CreateFileA(
+		 filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, NULL);
 	assert(file != INVALID_HANDLE_VALUE);
 
 	HANDLE fileMapping = CreateFileMapping(file, NULL, PAGE_READONLY, 0, 0, NULL);
@@ -71,7 +68,8 @@ const char* get_file_data(size_t& len, const char* filename)
 	return data;
 }
 
-FearEngine::Cache::errorCode FearEngine::Cache::Loaders::ObjLoader::load(const std::string_view& filename, std::shared_ptr<Resource>& resource)
+FearEngine::Cache::errorCode FearEngine::Cache::Loaders::ObjLoader::load(const std::string_view& filename,
+	 std::shared_ptr<Resource>& resource)
 {
 	tinyobj_opt::attrib_t attrib;
 
@@ -97,7 +95,7 @@ FearEngine::Cache::errorCode FearEngine::Cache::Loaders::ObjLoader::load(const s
 
 	auto extra = std::make_shared<ObjData>();
 	std::vector<tinyobj_opt::shape_t> shapes;
-	auto& materials = extra->materials;
+	std::vector<tinyobj_opt::material_t> materials;
 
 	option.verbose = verbose;
 	bool ret = parseObj(&attrib, &shapes, &materials, data, data_len, option);
@@ -107,11 +105,11 @@ FearEngine::Cache::errorCode FearEngine::Cache::Loaders::ObjLoader::load(const s
 		return false;
 	}
 
-	auto& vb = extra->vertices; // pos(3float), normal(3float), color(3float)
+	auto& vb = extra->vertices;	 // pos(3float), normal(3float), color(3float)
 	size_t face_offset = 0;
 	for (size_t v = 0; v < attrib.face_num_verts.size(); v++)
 	{
-		assert(attrib.face_num_verts[v] % 3 == 0); // assume all triangle face(multiple of 3).
+		assert(attrib.face_num_verts[v] % 3 == 0);	// assume all triangle face(multiple of 3).
 		for (size_t f = 0; f < attrib.face_num_verts[v] / 3; f++)
 		{
 			tinyobj_opt::index_t idx0 = attrib.indices[face_offset + 3 * f + 0];
@@ -156,16 +154,24 @@ FearEngine::Cache::errorCode FearEngine::Cache::Loaders::ObjLoader::load(const s
 				{
 					// compute geometric normal
 					CalcNormal(n[0], v[0], v[1], v[2]);
-					n[1][0] = n[0][0]; n[1][1] = n[0][1]; n[1][2] = n[0][2];
-					n[2][0] = n[0][0]; n[2][1] = n[0][1]; n[2][2] = n[0][2];
+					n[1][0] = n[0][0];
+					n[1][1] = n[0][1];
+					n[1][2] = n[0][2];
+					n[2][0] = n[0][0];
+					n[2][1] = n[0][1];
+					n[2][2] = n[0][2];
 				}
 			}
 			else
 			{
 				// compute geometric normal
 				CalcNormal(n[0], v[0], v[1], v[2]);
-				n[1][0] = n[0][0]; n[1][1] = n[0][1]; n[1][2] = n[0][2];
-				n[2][0] = n[0][0]; n[2][1] = n[0][1]; n[2][2] = n[0][2];
+				n[1][0] = n[0][0];
+				n[1][1] = n[0][1];
+				n[1][2] = n[0][2];
+				n[2][0] = n[0][0];
+				n[2][1] = n[0][1];
+				n[2][2] = n[0][2];
 			}
 
 			for (int k = 0; k < 3; k++)
@@ -177,7 +183,7 @@ FearEngine::Cache::errorCode FearEngine::Cache::Loaders::ObjLoader::load(const s
 				vb.push_back(n[k][1]);
 				vb.push_back(n[k][2]);
 				// Use normal as color.
-				float c[3] = { n[k][0], n[k][1], n[k][2] };
+				float c[3] = {n[k][0], n[k][1], n[k][2]};
 				float len2 = c[0] * c[0] + c[1] * c[1] + c[2] * c[2];
 				if (len2 > 1.0e-6f)
 				{
@@ -197,11 +203,19 @@ FearEngine::Cache::errorCode FearEngine::Cache::Loaders::ObjLoader::load(const s
 
 	resource = std::make_shared<Cache::Resource>();
 	resource->filename = filename.data();
-	resource->extra = std::shared_ptr(extra);
-	resource->data = reinterpret_cast<char*>(vb.data());
+
+	std::vector<std::shared_ptr<Material>> materialRefs;
+	materialRefs.resize(materials.size());
+	for (uint8_t i = 0; i < materials.size(); ++i)
+	{
+		materialRefs[i] = Material::create(materials[i]);
+	}
+
+	extra->materials = std::move(materialRefs);
+	resource->extra = utils::reinterpret_pointer_cast<ResourceExtra>(extra);
+	resource->data = reinterpret_cast<int8_t*>(vb.data());
 	resource->size = vb.size() * sizeof(vb[0]);
 	return errorCodes::OK;
 }
 
-FearEngine::Cache::Loaders::ObjLoader::~ObjLoader()
-{}
+FearEngine::Cache::Loaders::ObjLoader::~ObjLoader() {}

@@ -4,8 +4,8 @@
 #include <memory>
 #include <string_view>
 
-#include "Resource.hpp"
 #include "ErrorCodes.hpp"
+#include "Resource.hpp"
 
 namespace FearEngine::Cache
 {
@@ -18,6 +18,5 @@ public:
 
 	virtual ~Loader() = default;
 };
-}
+}  // namespace FearEngine::Cache
 #endif
-

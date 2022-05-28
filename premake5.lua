@@ -33,12 +33,13 @@ project "Engine"
 	{
 		"resources/shaders/*.*",
 		".editorconfig",
+		".clang-format",
 		"src/**.hpp",
 		"src/**.cpp",
 		"include/containers/*.h",
 		"include/tinyobj/*.*",
 		"include/glm/glm/**.*",
-		"include/stb/**.h"
+		"include/stb/**.*"
 	}
 
 	includedirs
