@@ -26,57 +26,36 @@ enum class EventType
 	mouseMoved,
 	mouseScrolled,
 
-	//According to static allocation and more flexible way of crating new event Type, "invalid" type should be always on the last position
+	// According to static allocation and more flexible way of crating new event Type, "invalid" type should be always on the last position
 	invalid
 };
 
 enum EventCategory
 {
-	invalid		= 0,
-	window		= 1 << 0,
-	input		= 1 << 1,
-	keyboard	= 1 << 2,
-	mouse		= 1 << 3,
+	invalid = 0,
+	window = 1 << 0,
+	input = 1 << 1,
+	keyboard = 1 << 2,
+	mouse = 1 << 3,
 	mouseButton = 1 << 4
 };
 
 #ifdef DEBUG
-#define GENCLASSESSETIALS(classType, category) 	\
-static EventType staticType()					\
-{												\
-	return EventType::classType;				\
-}												\
-												\
-EventType type() const							\
-{												\
-	return staticType();						\
-}												\
-												\
-int getCategory() const							\
-{												\
-	return category;							\
-}																\
-																\
-const char* name() const				\
-{																\
-	return #classType;						\
-}
+#define GENCLASSESSETIALS(classType, category)                     \
+	static EventType staticType() { return EventType::classType; } \
+                                                                   \
+	EventType type() const { return staticType(); }                \
+                                                                   \
+	int getCategory() const { return category; }                   \
+                                                                   \
+	const char* name() const { return #classType; }
 #else
-#define GENCLASSESSETIALS(classType, category) 	\
-static EventType staticType()					\
-{												\
-	return EventType::classType;				\
-}												\
-												\
-EventType type() const							\
-{												\
-	return staticType();						\
-}												\
-												\
-int getCategory() const							\
-{												\
-	return category;							\
-}
+#define GENCLASSESSETIALS(classType, category)                     \
+	static EventType staticType() { return EventType::classType; } \
+                                                                   \
+	EventType type() const { return staticType(); }                \
+                                                                   \
+	int getCategory() const { return category; }
 #endif
 
 class Event
@@ -91,6 +70,6 @@ public:
 
 	bool inCategory(const int category) const;
 };
-}
+}  // namespace FearEngine::Events
 
 #endif

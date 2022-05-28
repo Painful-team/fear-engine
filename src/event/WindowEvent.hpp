@@ -72,6 +72,6 @@ public:
 
 	GENCLASSESSETIALS(windowRestored, window)
 };
-}
+}  // namespace FearEngine::Events
 
 #endif

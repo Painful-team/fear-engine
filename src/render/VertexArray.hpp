@@ -19,10 +19,11 @@ public:
 	void addVertexBuffer(const VertexBuffer& buffer);
 
 	~VertexArray();
+
 private:
 	uint32_t VAO;
 	uint32_t attribIndex;
 };
-}
+}  // namespace FearEngine::Render
 
 #endif

@@ -1,7 +1,10 @@
 #ifndef FEARENGINE_RENDER_SHADER_SHADER_H__
 #define FEARENGINE_RENDER_SHADER_SHADER_H__
 
+#include "Uniform.hpp"
+
 #include <string>
+#include <vector>
 #include <unordered_map>
 
 namespace FearEngine::Render::Shaders
@@ -25,8 +28,10 @@ public:
 	~Shader();
 
 private:
-	std::unordered_map< GLenum, std::string> sources;
+	std::unordered_map<GLenum, std::string> sources;
 	uint32_t shaderId;
+
+	std::unordered_map<std::string, std::vector<Uniform>> buffers;
 };
-}
+}  // namespace FearEngine::Render::Shaders
 #endif

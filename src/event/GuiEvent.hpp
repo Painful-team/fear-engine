@@ -12,5 +12,5 @@ public:
 
 	GENCLASSESSETIALS(guiUpdate, window)
 };
-}
+}  // namespace FearEngine::Events
 #endif

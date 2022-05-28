@@ -2,8 +2,8 @@
 #define FEARENGINE_RENDER_OBJLAYER_H__
 
 #include "Layer.hpp"
-#include "VertexBuffer.hpp"
 #include "VertexArray.hpp"
+#include "VertexBuffer.hpp"
 #include "shader/Shader.hpp"
 
 #include "Camera.hpp"
@@ -34,6 +34,6 @@ private:
 
 	Render::Camera camera;
 };
-}
+}  // namespace FearEngine::Render
 
 #endif

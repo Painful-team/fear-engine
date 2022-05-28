@@ -20,9 +20,10 @@ public:
 	void onResize(Events::WindowResize* event, const int x = 0, const int y = 0);
 
 	~Renderer();
+
 private:
 	std::list<Render::Layer*> m_layers;
 };
-}
+}  // namespace FearEngine
 
 #endif

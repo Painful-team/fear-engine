@@ -6,11 +6,11 @@ namespace FearEngine::Render
 using errorCode = short;
 namespace errorCodes
 {
-	enum : errorCode
-	{
-		Uniform_Location_Not_Found = 129,
-	};
+enum : errorCode
+{
+	Uniform_Location_Not_Found = 129,
+};
 }
-}
+}  // namespace FearEngine::Render
 
 #endif

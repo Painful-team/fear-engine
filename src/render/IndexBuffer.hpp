@@ -6,6 +6,7 @@ namespace FearEngine::Render
 class IndexBuffer
 {
 	using uint32_t = unsigned;
+
 public:
 	IndexBuffer();
 
@@ -16,9 +17,10 @@ public:
 	void setData(uint32_t* indices, const uint32_t size);
 
 	~IndexBuffer();
+
 private:
 	uint32_t EBO;
 };
-}
+}  // namespace FearEngine::Render
 
 #endif

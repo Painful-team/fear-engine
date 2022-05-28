@@ -57,6 +57,6 @@ private:
 	double offsetX;
 	double offsetY;
 };
-}
+}  // namespace FearEngine::Events
 
 #endif

@@ -15,12 +15,8 @@
 
 namespace FearEngine::Render
 {
-ModelLayer::ModelLayer() :
-	vertex({
-		{Render::BufferType::Float, 3},
-		{Render::BufferType::Float, 3},
-		{Render::BufferType::Float, 3}
-	})
+ModelLayer::ModelLayer()
+ : vertex({{Render::BufferType::Float, 3}, {Render::BufferType::Float, 3}, {Render::BufferType::Float, 3}})
 {}
 
 void ModelLayer::init()
@@ -82,23 +78,23 @@ void ModelLayer::update()
 	modelUniform.setMat4(glm::mat4(1.0f));
 
 	arr.bind();
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	frame.setFloat(1);
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	glPolygonOffset(1, 0.1);
 	glDrawArrays(GL_TRIANGLES, 0, model->vertices.size());
-	//glDrawElements(GL_TRIANGLES, chunk.triangles.size(), GL_UNSIGNED_INT, 0);
+	// glDrawElements(GL_TRIANGLES, chunk.triangles.size(), GL_UNSIGNED_INT, 0);
 
 	frame.setFloat(0);
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glPolygonOffset(1, 0);
-	//glDrawElements(GL_TRIANGLES, chunk.triangles.size(), GL_UNSIGNED_INT, 0);
+	// glDrawElements(GL_TRIANGLES, chunk.triangles.size(), GL_UNSIGNED_INT, 0);
 
 	glDrawArrays(GL_TRIANGLES, 0, model->vertices.size());
 
 	glBindVertexArray(0);
 }
-}
+}  // namespace FearEngine::Render

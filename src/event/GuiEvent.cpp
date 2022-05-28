@@ -2,6 +2,5 @@
 
 namespace FearEngine::Events
 {
-FearEngine::Events::GuiUpdate::GuiUpdate()
-{}
-}
+FearEngine::Events::GuiUpdate::GuiUpdate() {}
+}  // namespace FearEngine::Events

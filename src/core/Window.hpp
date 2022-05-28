@@ -1,8 +1,8 @@
 #ifndef FEARENGINE_CORE_WINDOW_H__
 #define FEARENGINE_CORE_WINDOW_H__
 
-#include <string>
 #include <GLFW/glfw3.h>
+#include <string>
 
 #include <event/Event.hpp>
 #include <event/detail/Delegate.hpp>
@@ -12,7 +12,7 @@ namespace FearEngine
 class Window
 {
 public:
-	using event_sign  = void(Events::Event*);
+	using event_sign = void(Events::Event*);
 	using handle_type = Events::detail::Delegate<event_sign>;
 
 	struct WindowData
@@ -40,9 +40,10 @@ public:
 	void onUpdate();
 
 	GLFWwindow* window;
+
 private:
 	WindowData data;
 };
-}
+}  // namespace FearEngine
 
 #endif

@@ -5,30 +5,21 @@
 
 namespace FearEngine::Events
 {
-KeyPressed::KeyPressed(const keys key):
-	key(key)
+KeyPressed::KeyPressed(const keys key)
+ : key(key)
 {}
 
-keys KeyPressed::keyCode() const
-{
-	return key;
-}
+keys KeyPressed::keyCode() const { return key; }
 
-KeyReleased::KeyReleased(const keys key):
-	key(key)
+KeyReleased::KeyReleased(const keys key)
+ : key(key)
 {}
 
-keys KeyReleased::keyCode() const
-{
-	return key;
-}
+keys KeyReleased::keyCode() const { return key; }
 
-KeyTyped::KeyTyped(const keys key):
-	key(key)
+KeyTyped::KeyTyped(const keys key)
+ : key(key)
 {}
 
-keys KeyTyped::keyCode() const
-{
-	return key;
-}
-}
+keys KeyTyped::keyCode() const { return key; }
+}  // namespace FearEngine::Events

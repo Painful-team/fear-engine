@@ -15,7 +15,7 @@ public:
 
 	void notify(Event* event);
 
-	template<class T>
+	template <class T>
 	auto get()
 	{
 		return reinterpret_cast<Observer<bool(T*)>*>(events[static_cast<int>(T::staticType())]);
@@ -26,10 +26,9 @@ public:
 	~Dispatcher();
 
 private:
-
 	constexpr int getIndex(EventType type);
 
-	template<typename T>
+	template <typename T>
 	constexpr void registerEvent()
 	{
 		events[getIndex(T::staticType())] = new Observer<bool(T*)>;
@@ -37,6 +36,6 @@ private:
 
 	std::array<ObserverBase*, static_cast<int>(EventType::invalid)> events;
 };
-}
+}  // namespace FearEngine::Events
 
 #endif

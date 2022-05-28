@@ -41,6 +41,6 @@ public:
 private:
 	keys key;
 };
-}
+}  // namespace FearEngine::Events
 
 #endif

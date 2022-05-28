@@ -31,5 +31,5 @@ private:
 
 	bool orthographic;
 };
-}
+}  // namespace FearEngine::Render
 #endif

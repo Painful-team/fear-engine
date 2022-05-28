@@ -13,7 +13,10 @@ new_segment:
 	if (*pat == '*')
 	{
 		star = 1;
-		do { pat++; } while (*pat == '*');
+		do
+		{
+			pat++;
+		} while (*pat == '*');
 	}
 
 test_match:
@@ -22,9 +25,12 @@ test_match:
 	{
 		if (str[i] != pat[i])
 		{
-			if (!str[i]) return 0;
-			if ((pat[i] == '?') && (str[i] != '.')) continue;
-			if (!star) return 0;
+			if (!str[i])
+				return 0;
+			if ((pat[i] == '?') && (str[i] != '.'))
+				continue;
+			if (!star)
+				return 0;
 			str++;
 			goto test_match;
 		}
@@ -35,10 +41,13 @@ test_match:
 		pat += i;
 		goto new_segment;
 	}
-	if (!str[i]) return 1;
-	if (i && pat[i - 1] == '*') return 1;
-	if (!star) return 0;
+	if (!str[i])
+		return 1;
+	if (i && pat[i - 1] == '*')
+		return 1;
+	if (!star)
+		return 0;
 	str++;
 	goto test_match;
 }
-}
+}  // namespace FearEngine::utils

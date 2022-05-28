@@ -4,9 +4,9 @@
 
 namespace FearEngine::Render
 {
-VertexBuffer::VertexBuffer(std::initializer_list<BufferElement> element):
-	elements(element),
-	VBO(0)
+VertexBuffer::VertexBuffer(std::initializer_list<BufferElement> element)
+ : elements(element)
+ , VBO(0)
 {
 	int offset = 0;
 	for (auto& it : elements)
@@ -16,10 +16,7 @@ VertexBuffer::VertexBuffer(std::initializer_list<BufferElement> element):
 	}
 }
 
-void VertexBuffer::genBuffer()
-{
-	glGenBuffers(1, &VBO);
-}
+void VertexBuffer::genBuffer() { glGenBuffers(1, &VBO); }
 
 void VertexBuffer::bindData(const uint32_t size)
 {
@@ -39,31 +36,22 @@ void VertexBuffer::setData(float* vertices, const uint32_t size)
 	glGetBufferSubData(GL_ARRAY_BUFFER, 0, size, vertices);
 }
 
-const std::vector<BufferElement>& VertexBuffer::GetElements() const
-{
-	return elements;
-}
+const std::vector<BufferElement>& VertexBuffer::GetElements() const { return elements; }
 
 int VertexBuffer::getStride() const
 {
 	return elements.back().offset + BufferElement::getSize(elements.back().type) * elements.back().count;
 }
 
-void VertexBuffer::unbind()
-{
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-}
+void VertexBuffer::unbind() { glBindBuffer(GL_ARRAY_BUFFER, 0); }
 
-VertexBuffer::~VertexBuffer()
-{
-	glDeleteBuffers(1, &VBO);
-}
+VertexBuffer::~VertexBuffer() { glDeleteBuffers(1, &VBO); }
 
-BufferElement::BufferElement(const BufferType type, const int count, bool normalized):
-	type(type),
-	normalized(normalized),
-	count(count),
-	size(getSize(type))
+BufferElement::BufferElement(const BufferType type, const int count, bool normalized)
+ : type(type)
+ , normalized(normalized)
+ , count(count)
+ , size(getSize(type))
 {}
 
 int BufferElement::getSize(const BufferType type)
@@ -82,4 +70,4 @@ int BufferElement::getSize(const BufferType type)
 
 	return 0;
 }
-}
+}  // namespace FearEngine::Render

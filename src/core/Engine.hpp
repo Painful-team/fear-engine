@@ -1,19 +1,18 @@
 #ifndef FEARENGINE_CORE_ENGINE_H__
 #define FEARENGINE_CORE_ENGINE_H__
 
+#include <Cache/CacheManager.hpp>
 #include <event/Dispatcher.hpp>
 #include <render/Renderer.hpp>
-#include <Cache/CacheManager.hpp>
 
-#include "events.hpp"
 #include "Window.hpp"
+#include "events.hpp"
 
 namespace FearEngine
 {
 class Engine
 {
 public:
-
 	Engine() = default;
 
 	static std::unique_ptr<Renderer>& getRender();
@@ -39,6 +38,6 @@ private:
 	static std::unique_ptr<Window> window;
 	static std::unique_ptr<CacheManager> cacheManager;
 };
-}
+}  // namespace FearEngine
 
 #endif

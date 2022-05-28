@@ -11,10 +11,10 @@ using uint32_t = unsigned;
 
 enum class BufferType
 {
-	Float 	= GL_FLOAT,
-	Short 	= GL_SHORT,
-	Int 	= GL_INT,
-	Char 	= GL_BYTE
+	Float = GL_FLOAT,
+	Short = GL_SHORT,
+	Int = GL_INT,
+	Char = GL_BYTE
 };
 
 struct BufferElement
@@ -47,11 +47,12 @@ public:
 	void unbind();
 
 	~VertexBuffer();
+
 private:
 	uint32_t VBO;
 
 	std::vector<BufferElement> elements;
 };
-}
+}  // namespace FearEngine::Render
 
 #endif

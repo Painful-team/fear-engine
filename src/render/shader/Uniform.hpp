@@ -36,5 +36,5 @@ public:
 private:
 	uint32_t m_location;
 };
-}
+}  // namespace FearEngine::Render::Shaders
 #endif

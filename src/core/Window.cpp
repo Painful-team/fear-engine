@@ -16,25 +16,13 @@ Window::Window(const std::string& title, const uint32_t width, const uint32_t he
 	setVsync(vsync);
 }
 
-uint32_t Window::getWidth() const
-{
-	return data.width;
-}
+uint32_t Window::getWidth() const { return data.width; }
 
-uint32_t Window::getHeight() const
-{
-	return data.height;
-}
+uint32_t Window::getHeight() const { return data.height; }
 
-void Window::setEventHandler(handle_type handler)
-{
-	data.eventHandler = handler;
-}
+void Window::setEventHandler(handle_type handler) { data.eventHandler = handler; }
 
-bool Window::isVsync() const
-{
-	return data.vsync;
-}
+bool Window::isVsync() const { return data.vsync; }
 
 void Window::setVsync(const bool vsync)
 {
@@ -65,8 +53,7 @@ int Window::init(const bool resizeAble)
 
 	glfwSetWindowUserPointer(window, &data);
 
-	glfwSetWindowSizeCallback(window, [](GLFWwindow* window, int width, int height)
-	{
+	glfwSetWindowSizeCallback(window, [](GLFWwindow* window, int width, int height) {
 		WindowData* data = reinterpret_cast<WindowData*>(glfwGetWindowUserPointer(window));
 
 		data->height = height;
@@ -76,24 +63,21 @@ int Window::init(const bool resizeAble)
 		data->eventHandler(&evnt);
 	});
 
-	glfwSetWindowCloseCallback(window, [](GLFWwindow* window)
-	{
+	glfwSetWindowCloseCallback(window, [](GLFWwindow* window) {
 		WindowData* data = reinterpret_cast<WindowData*>(glfwGetWindowUserPointer(window));
 
 		auto evnt = Events::WindowClose();
 		data->eventHandler(&evnt);
 	});
 
-	glfwSetWindowPosCallback(window, [](GLFWwindow* window, int x, int y)
-	{
+	glfwSetWindowPosCallback(window, [](GLFWwindow* window, int x, int y) {
 		WindowData* data = reinterpret_cast<WindowData*>(glfwGetWindowUserPointer(window));
 
 		auto evnt = Events::WindowMoved(x, y);
 		data->eventHandler(&evnt);
 	});
 
-	glfwSetWindowFocusCallback(window, [](GLFWwindow* window, int focused)
-	{
+	glfwSetWindowFocusCallback(window, [](GLFWwindow* window, int focused) {
 		WindowData* data = reinterpret_cast<WindowData*>(glfwGetWindowUserPointer(window));
 
 		if (focused)
@@ -108,26 +92,22 @@ int Window::init(const bool resizeAble)
 		}
 	});
 
-	glfwSetKeyCallback(window, [](GLFWwindow* window, int key, int scancode, int action, int mods)
-	{
+	glfwSetKeyCallback(window, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
 		WindowData* data = reinterpret_cast<WindowData*>(glfwGetWindowUserPointer(window));
 
 		switch (action)
 		{
-		case GLFW_PRESS:
-		{
+		case GLFW_PRESS: {
 			auto evnt = Events::KeyPressed(key);
 			data->eventHandler(&evnt);
 			break;
 		}
-		case GLFW_RELEASE:
-		{
+		case GLFW_RELEASE: {
 			auto evnt = Events::KeyReleased(key);
 			data->eventHandler(&evnt);
 			break;
 		}
-		case GLFW_REPEAT:
-		{
+		case GLFW_REPEAT: {
 			auto evnt = Events::KeyPressed(key);
 			data->eventHandler(&evnt);
 			break;
@@ -135,28 +115,24 @@ int Window::init(const bool resizeAble)
 		}
 	});
 
-	glfwSetCharCallback(window, [](GLFWwindow* window, uint32_t keycode)
-	{
+	glfwSetCharCallback(window, [](GLFWwindow* window, uint32_t keycode) {
 		WindowData* data = reinterpret_cast<WindowData*>(glfwGetWindowUserPointer(window));
 
 		auto evnt = Events::KeyTyped(keycode);
 		data->eventHandler(&evnt);
 	});
 
-	glfwSetMouseButtonCallback(window, [](GLFWwindow* window, int button, int action, int mods)
-	{
+	glfwSetMouseButtonCallback(window, [](GLFWwindow* window, int button, int action, int mods) {
 		WindowData* data = reinterpret_cast<WindowData*>(glfwGetWindowUserPointer(window));
 
 		switch (action)
 		{
-		case GLFW_PRESS:
-		{
+		case GLFW_PRESS: {
 			auto evnt = Events::MouseButtonPressed(button);
 			data->eventHandler(&evnt);
 			break;
 		}
-		case GLFW_RELEASE:
-		{
+		case GLFW_RELEASE: {
 			auto evnt = Events::MouseButtonReleased(button);
 			data->eventHandler(&evnt);
 			break;
@@ -164,16 +140,14 @@ int Window::init(const bool resizeAble)
 		}
 	});
 
-	glfwSetScrollCallback(window, [](GLFWwindow* window, double offsetX, double offsetY)
-	{
+	glfwSetScrollCallback(window, [](GLFWwindow* window, double offsetX, double offsetY) {
 		WindowData* data = reinterpret_cast<WindowData*>(glfwGetWindowUserPointer(window));
 
 		auto evnt = Events::MouseScrolled(offsetX, offsetY);
 		data->eventHandler(&evnt);
 	});
 
-	glfwSetCursorPosCallback(window, [](GLFWwindow* window, double x, double y)
-	{
+	glfwSetCursorPosCallback(window, [](GLFWwindow* window, double x, double y) {
 		WindowData* data = reinterpret_cast<WindowData*>(glfwGetWindowUserPointer(window));
 
 		auto evnt = Events::MouseMoved(x, y);
@@ -188,4 +162,4 @@ void Window::onUpdate()
 	glfwSwapBuffers(window);
 	glfwPollEvents();
 }
-}
+}  // namespace FearEngine
