@@ -3,8 +3,14 @@
 
 #include <memory>
 #include <string_view>
+
+#include "LoadersFlags.hpp"
+
 namespace FearEngine::Cache
 {
+
+using ResourceFlags = uint64_t;
+
 enum ResourceExtraType
 {
 	OBJ = 0,
@@ -23,6 +29,8 @@ void deleterFunc(void* ptr);
 
 struct Resource
 {
+	ResourceFlags flags;
+
 	std::shared_ptr<ResourceExtra> extra;
 
 	std::string filename;

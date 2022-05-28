@@ -14,11 +14,13 @@ std::string FearEngine::Cache::Loaders::ImageLoader::getPattern() const { return
 
 FearEngine::Cache::errorCode FearEngine::Cache::Loaders::ImageLoader::load(const std::string_view& filename,
 	 std::shared_ptr<Resource>& resource,
-	 const uint64_t flags)
+	 ResourceFlags flags)
 {
 	int width;
 	int height;
 	int channels;
+
+	stbi_set_flip_vertically_on_load(flags & resourceFlag::FlipImageVertically);
 
 	// TODO Write error handler
 	auto data = reinterpret_cast<int8_t*>(stbi_load(filename.data(), &width, &height, &channels, 0));
@@ -30,6 +32,7 @@ FearEngine::Cache::errorCode FearEngine::Cache::Loaders::ImageLoader::load(const
 	resource = std::make_shared<Resource>();
 	resource->filename = filename;
 	resource->data = data;
+	resource->flags = flags;
 
 	auto extra = std::make_shared<ImageData>();
 

@@ -70,7 +70,7 @@ const char* get_file_data(size_t& len, const char* filename)
 
 FearEngine::Cache::errorCode FearEngine::Cache::Loaders::ObjLoader::load(const std::string_view& filename,
 	 std::shared_ptr<Resource>& resource,
-	 const uint64_t flags)
+	 ResourceFlags flags)
 {
 	tinyobj_opt::attrib_t attrib;
 
@@ -204,6 +204,7 @@ FearEngine::Cache::errorCode FearEngine::Cache::Loaders::ObjLoader::load(const s
 
 	resource = std::make_shared<Cache::Resource>();
 	resource->filename = filename.data();
+	resource->flags = flags;
 
 	std::vector<std::shared_ptr<Material>> materialRefs;
 	materialRefs.resize(materials.size());

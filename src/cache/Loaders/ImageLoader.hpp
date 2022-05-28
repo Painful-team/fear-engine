@@ -8,14 +8,15 @@
 
 namespace FearEngine::Cache::Loaders
 {
-
 class ImageLoader: public Loader
 {
 public:
 	ImageLoader(const std::string pattern);
 	int init() override final;
 	std::string getPattern() const override final;
-	Cache::errorCode load(const std::string_view& filename, std::shared_ptr<Resource>& resource, const uint64_t flags = 0) override final;
+	Cache::errorCode load(const std::string_view& filename,
+		 std::shared_ptr<Resource>& resource,
+		 ResourceFlags flags = resourceFlag::None) override final;
 
 	~ImageLoader() override final{};
 

@@ -39,6 +39,7 @@ project "Engine"
 		"include/containers/*.h",
 		"include/tinyobj/*.*",
 		"include/glm/glm/**.*",
+		"include/boost/**.*",
 		"include/stb/**.*"
 	}
 
@@ -50,6 +51,7 @@ project "Engine"
        	"include/glad/include",
        	"include/GLFW/include",
        	"include/glm/include",
+		"include/boost",
        	"include/imgui",
        	"include/stb"
     }

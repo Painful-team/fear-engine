@@ -9,7 +9,6 @@
 #include "Loaders/ImageLoader.hpp"
 #include "Loaders/ObjLoader.hpp"
 
-
 FearEngine::Cache::errorCode FearEngine::CacheManager::init()
 {
 	loaders.emplace("*.obj", new Cache::Loaders::ObjLoader);
@@ -25,11 +24,12 @@ FearEngine::Cache::errorCode FearEngine::CacheManager::init()
 }
 
 FearEngine::Cache::errorCode FearEngine::CacheManager::getResource(const std::string_view& file_name,
-	 std::shared_ptr<Cache::Resource>& resource)
+	 std::shared_ptr<Cache::Resource>& resource,
+	 Cache::ResourceFlags flags)
 {
-	if (resources.find(file_name.data()) != resources.end())
+	if (resources.find({file_name.data(), flags}) != resources.end())
 	{
-		resource = resources.at(file_name.data());
+		resource = resources.at({file_name.data(), flags});
 
 		updatePriority(resource);
 		return Cache::errorCodes::OK;
@@ -39,10 +39,10 @@ FearEngine::Cache::errorCode FearEngine::CacheManager::getResource(const std::st
 	{
 		if (utils::WildcardMatch(pair.first.c_str(), file_name.data()))
 		{
-			auto result = pair.second->load(file_name, resource);
+			auto result = pair.second->load(file_name, resource, flags);
 			if (result == Cache::errorCodes::OK)
 			{
-				addNewResource(resource);
+				addNewResource(resource, flags);
 			}
 
 			return result;
@@ -59,9 +59,9 @@ int FearEngine::CacheManager::prepare(const std::string_view& file_name)
 	return getResource(file_name, resource);
 }
 
-FearEngine::Cache::errorCode FearEngine::CacheManager::releaseResource(const std::string_view& file_name)
+FearEngine::Cache::errorCode FearEngine::CacheManager::releaseResource(const std::string_view& file_name, Cache::ResourceFlags flags)
 {
-	auto resource = resources.find(file_name.data());
+	auto resource = resources.find({file_name.data(), flags});
 	if (resource == resources.end())
 	{
 		return Cache::errorCodes::RESOURCE_NOT_FOUND;
@@ -97,9 +97,9 @@ void FearEngine::CacheManager::updatePriority(std::shared_ptr<Cache::Resource>& 
 	priority.push_front(resource.get());
 }
 
-void FearEngine::CacheManager::addNewResource(std::shared_ptr<Cache::Resource>& resource)
+void FearEngine::CacheManager::addNewResource(std::shared_ptr<Cache::Resource>& resource, Cache::ResourceFlags flags)
 {
-	resources.emplace(resource->filename, resource);
+	resources.emplace(std::pair{resource->filename.data(), flags}, resource);
 	priority.push_front(resource.get());
 }
 
@@ -108,12 +108,17 @@ void FearEngine::CacheManager::clear()
 	while (!resources.empty())
 	{
 		auto& it = resources.begin();
-		free(it->second);
+		free(it->second, it->first.second);
 	}
 }
 
-void FearEngine::CacheManager::free(std::shared_ptr<Cache::Resource>& resource)
+void FearEngine::CacheManager::free(std::shared_ptr<Cache::Resource>& resource, Cache::ResourceFlags flags)
 {
 	priority.remove(resource.get());
-	resources.erase(resource->filename.data());
+	resources.erase({resource->filename.data(), flags});
+}
+
+std::size_t FearEngine::Cache::detail::__hasher::operator()(const std::pair<std::string_view, Cache::ResourceFlags>& pair) const
+{ 
+	return boost::hash_value(pair);
 }
