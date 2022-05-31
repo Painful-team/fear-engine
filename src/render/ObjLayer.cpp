@@ -50,33 +50,17 @@ void ModelLayer::init()
 
 	frame.init(shader.getId(), "inframe");
 
-	this->camera = Camera(projUniform);
+	this->camera = Camera(projUniform, viewUniform);
+	camera.init();
 	camera.setProjection(false);
 
 	shader.use();
+
+	modelUniform.setMat4(glm::mat4(1.0f));
 }
 
 void ModelLayer::update()
 {
-	static glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
-	static glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-	static glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
-
-	if (Input::isKeyPressed(Events::Key::W))
-		cameraPos += camera.getSpeed() * cameraFront;
-	if (Input::isKeyPressed(Events::Key::S))
-		cameraPos -= camera.getSpeed() * cameraFront;
-	if (Input::isKeyPressed(Events::Key::A))
-		cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * camera.getSpeed();
-	if (Input::isKeyPressed(Events::Key::D))
-		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * camera.getSpeed();
-
-	glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-
-	viewUniform.setMat4(view);
-
-	modelUniform.setMat4(glm::mat4(1.0f));
-
 	arr.bind();
 	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
