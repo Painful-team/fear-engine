@@ -10,6 +10,8 @@
 
 #include <core/Engine.hpp>
 
+#include <iostream>
+
 namespace FearEngine::Render
 {
 Camera::Camera(const float fov, const float speed, const bool orthographic)
@@ -48,6 +50,17 @@ void Camera::setFOV(const float fove)
 	}
 	else
 	{
+		auto mat = glm::perspective(
+			 glm::radians(fove), (float)Engine::getWindow()->getWidth() / (float)Engine::getWindow()->getHeight(), 0.1f, 100.0f);
+		//for (int i = 0; i < 4; ++i)
+		//{
+		//	for (int j = 0; j < 4; ++j)
+		//	{
+		//		std::cout << "projection[" << i << "][" << j << "] == " << mat[i][j] << " && ";
+		//	}
+		//
+		//	std::cout << std::endl;
+		//}
 		camera.setMat4(glm::perspective(
 			 glm::radians(fove), (float)Engine::getWindow()->getWidth() / (float)Engine::getWindow()->getHeight(), 0.1f, 100.0f));
 	}

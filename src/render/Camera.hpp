@@ -23,12 +23,12 @@ public:
 
 	void setProjection(const bool orthographic);
 
-private:
 	Shaders::Uniform camera;
 
 	float fov;
 	float speed;
 
+private:
 	bool orthographic;
 };
 }  // namespace FearEngine::Render

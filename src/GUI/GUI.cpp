@@ -196,7 +196,7 @@ void Gui::setWindowStyles()
 
 void Gui::setFonts()
 {
-	const ImFont* mainMenuFont = ImGui::GetIO().Fonts->AddFontFromFileTTF("./resources/fonts/Roboto-Regular.ttf", 20.0f);
+	const ImFont* mainMenuFont = ImGui::GetIO().Fonts->AddFontFromFileTTF("resources/fonts/Roboto-Regular.ttf", 20.0f);
 	IM_ASSERT(mainMenuFont != NULL);
 }
 

@@ -4,6 +4,8 @@
 #include <glm/glm.hpp>
 #include <string>
 
+#include "UniformTypes.hpp"
+
 namespace FearEngine::Render::Shaders
 {
 class Uniform
@@ -11,8 +13,6 @@ class Uniform
 public:
 	Uniform();
 
-	Uniform(const char* name, uint32_t type);
-	Uniform(const uint32_t program, const char* name);
 	Uniform(const Uniform& other);
 	Uniform(Uniform&& other) noexcept;
 
@@ -20,7 +20,7 @@ public:
 	Uniform& operator=(Uniform&& other) noexcept;
 
 	const std::string_view& getName() const;
-	int init(const uint32_t program, const char* name);
+	int isValid();
 
 	void setBool(const bool value) const;
 	void setInt(const int value) const;
@@ -38,11 +38,17 @@ public:
 	void setVec4(const float x, const float y, const float z, const float w) const;
 	void setMat4(const glm::mat4& mat) const;
 
-private:
-	std::string name;
-	uint32_t type;
+	std::string_view name;
+	uniformType type;
 
-	uint32_t m_location;
+	uint32_t location;
+
+	uint32_t index;
+	uint32_t offset;
+
+	int8_t* buffer;
+
+private:
 
 	friend class Shader;
 };

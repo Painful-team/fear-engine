@@ -28,11 +28,13 @@ private:
 	std::shared_ptr<Cache::ObjData> model;
 
 	Render::Shaders::Uniform projUniform;
+	Render::Shaders::Uniform projUniform1;
 	Render::Shaders::Uniform viewUniform;
 	Render::Shaders::Uniform modelUniform;
 	Render::Shaders::Uniform frame;
 
 	Render::Camera camera;
+	Render::Camera camera1;
 };
 }  // namespace FearEngine::Render
 
