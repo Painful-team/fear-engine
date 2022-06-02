@@ -54,8 +54,6 @@ void Gui::resize(int width, int height)
 	frameBuffer.onResize();
 }
 
-void Gui::resize() { frameBuffer.onResize(); }
-
 Gui::~Gui()
 {
 	ImGui_ImplOpenGL3_Shutdown();

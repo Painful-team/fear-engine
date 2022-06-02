@@ -82,8 +82,6 @@ void ModelLayer::update()
 
 	frame.setFloat(0);
 
-	viewUniform.setMat4(view);
-
 	modelUniform.setMat4(glm::mat4(1.0f));
 
 	shader.updateBuffers();
