@@ -6,8 +6,6 @@
 
 #include <core/Engine.hpp>
 
-#include <iostream>
-
 namespace FearEngine::UI::windows
 {
 SceneWindow::SceneWindow()
@@ -115,8 +113,6 @@ void SceneWindow::showWindow()
 		}
 
 		auto size = ImGui::GetContentRegionAvail();
-		ImGui::Image((void*)mainLayer->getFrameBuffer().getColorAttachment(), size, {0, 1}, {1, 0});
-
 		if (size.x != windowSize.x || size.y != windowSize.y)
 		{
 			windowSize = size;
@@ -125,6 +121,7 @@ void SceneWindow::showWindow()
 			Engine::getDispatcher()->notify(&evnt);
 		}
 
+		ImGui::Image((void*)mainLayer->getFrameBuffer().getColorAttachment(), size, {0, 1}, {1, 0});
 		ImGui::End();
 	}
 

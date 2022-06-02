@@ -32,6 +32,8 @@ int Renderer::init()
 		return -1;
 	}
 
+	initGraphicData();
+
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_DEBUG_OUTPUT);
 	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
@@ -90,5 +92,18 @@ Renderer::~Renderer()
 	}
 
 	m_layers.clear();
+}
+
+int Renderer::initGraphicData() 
+{ 
+	GLint maxBindings = 0;
+	glGetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS, &maxBindings);
+
+	graphicsData.emplace(GL_MAX_UNIFORM_BUFFER_BINDINGS, maxBindings);
+
+	GLint maxBufferSize = 0;
+	glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &maxBufferSize);
+	graphicsData.emplace(GL_MAX_UNIFORM_BLOCK_SIZE, maxBufferSize);
+	return 0;
 }
 }  // namespace FearEngine

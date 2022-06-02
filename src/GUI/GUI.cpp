@@ -54,6 +54,8 @@ void Gui::resize(int width, int height)
 	frameBuffer.onResize();
 }
 
+void Gui::resize() { frameBuffer.onResize(); }
+
 Gui::~Gui()
 {
 	ImGui_ImplOpenGL3_Shutdown();
@@ -226,7 +228,7 @@ void Gui::setWindowStyles()
 
 void Gui::setFonts()
 {
-	const ImFont* mainMenuFont = ImGui::GetIO().Fonts->AddFontFromFileTTF("./resources/fonts/Roboto-Regular.ttf", 20.0f);
+	const ImFont* mainMenuFont = ImGui::GetIO().Fonts->AddFontFromFileTTF("resources/fonts/Roboto-Regular.ttf", 20.0f);
 	IM_ASSERT(mainMenuFont != NULL);
 }
 

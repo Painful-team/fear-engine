@@ -44,15 +44,14 @@ void ModelLayer::init()
 
 	shader.use();
 
-	projUniform.init(shader.getId(), "projection");
-	viewUniform.init(shader.getId(), "view");
-	modelUniform.init(shader.getId(), "model");
+	projUniform = shader.findUniform("projection");
+	viewUniform = shader.findUniform("view");
+	modelUniform = shader.findUniform("model");
 
-	frame.init(shader.getId(), "inframe");
+	frame = shader.findUniform("wireframe");
 
 	this->camera = Camera(projUniform, viewUniform);
 	camera.init();
-	camera.setProjection(false);
 
 	shader.use();
 
@@ -69,9 +68,12 @@ void ModelLayer::preUpdate()
 
 void ModelLayer::update()
 {
-	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
+	arr.bind();
 	frame.setFloat(1);
+
+	shader.updateBuffers();
+  
+	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	glPolygonOffset(1, 0.1);
@@ -79,6 +81,12 @@ void ModelLayer::update()
 	// glDrawElements(GL_TRIANGLES, chunk.triangles.size(), GL_UNSIGNED_INT, 0);
 
 	frame.setFloat(0);
+
+	viewUniform.setMat4(view);
+
+	modelUniform.setMat4(glm::mat4(1.0f));
+
+	shader.updateBuffers();
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glPolygonOffset(1, 0);

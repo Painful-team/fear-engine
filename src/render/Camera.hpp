@@ -61,13 +61,13 @@ private:
 
 private:
 	static constexpr const glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
-
+  
 	Shaders::Uniform camera;
 	Shaders::Uniform viewUn;
 
 	float fov;
 	float speed;
-
+  
 	glm::vec2 sensivity;
 
 	glm::vec2 mousePos;

@@ -37,7 +37,6 @@ private:
 	Render::Shaders::Uniform frame;
 
 	Render::Camera camera;
-
 };
 }  // namespace FearEngine::Render
 
