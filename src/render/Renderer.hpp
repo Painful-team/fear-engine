@@ -2,10 +2,13 @@
 #define FEARENGINE_RENDER_RENDERER_H__
 
 #include <list>
+#include <unordered_map>
 
 #include <event/WindowEvent.hpp>
 
 #include "Layer.hpp"
+
+#include "shader/Shader.hpp"
 
 namespace FearEngine
 {
@@ -22,7 +25,13 @@ public:
 	~Renderer();
 
 private:
+	int initGraphicData();
+
 	std::list<Render::Layer*> m_layers;
+
+	std::unordered_map<int, int> graphicsData;
+
+	friend class Render::Shaders::Shader;
 };
 }  // namespace FearEngine
 

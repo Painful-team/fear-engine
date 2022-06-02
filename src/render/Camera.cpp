@@ -6,6 +6,7 @@
 
 #include <core/Engine.hpp>
 
+
 namespace FearEngine::Render
 {
 Camera::Camera(const glm::vec3& pos,
@@ -65,6 +66,9 @@ void Camera::setFOV(const float fove)
 	}
 	else
 	{
+		auto mat = glm::perspective(
+			 glm::radians(fove), (float)Engine::getWindow()->getWidth() / (float)Engine::getWindow()->getHeight(), 0.1f, 100.0f);
+
 		camera.setMat4(glm::perspective(
 			 glm::radians(fove), (float)Engine::getWindow()->getWidth() / (float)Engine::getWindow()->getHeight(), 0.1f, 100.0f));
 	}

@@ -12,7 +12,7 @@ int FearEngine::Cache::Loaders::ObjLoader::init() { return errorCodes::OK; }
 std::string FearEngine::Cache::Loaders::ObjLoader::getPattern() const { return "*.obj"; }
 
 // TODO rewrite into optimized glm::version.
-void CalcNormal(float N[3], float v0[3], float v1[3], float v2[3])
+void CalcNormal(float normal[3], float v0[3], float v1[3], float v2[3])
 {
 	float v10[3];
 	v10[0] = v1[0] - v0[0];
@@ -24,17 +24,17 @@ void CalcNormal(float N[3], float v0[3], float v1[3], float v2[3])
 	v20[1] = v2[1] - v0[1];
 	v20[2] = v2[2] - v0[2];
 
-	N[0] = v20[1] * v10[2] - v20[2] * v10[1];
-	N[1] = v20[2] * v10[0] - v20[0] * v10[2];
-	N[2] = v20[0] * v10[1] - v20[1] * v10[0];
-
-	float len2 = N[0] * N[0] + N[1] * N[1] + N[2] * N[2];
+	normal[0] = v20[1] * v10[2] - v20[2] * v10[1];
+	normal[1] = v20[2] * v10[0] - v20[0] * v10[2];
+	normal[2] = v20[0] * v10[1] - v20[1] * v10[0];
+	
+	float len2 = normal[0] * normal[0] + normal[1] * normal[1] + normal[2] * normal[2];
 	if (len2 > 0.0f)
 	{
 		float len = sqrtf(len2);
 
-		N[0] /= len;
-		N[1] /= len;
+		normal[0] /= len;
+		normal[1] /= len;
 	}
 }
 
