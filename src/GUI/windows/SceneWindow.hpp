@@ -3,12 +3,21 @@
 
 #include "GuiWindow.hpp"
 
+
+namespace FearEngine
+{
+class Gui;
+};
+
+
 namespace FearEngine::UI::windows
 {
 class SceneWindow final : public GuiWindow
 {
 public:
 	SceneWindow();
+
+	void init(Gui* layer);
 
 	void showWindow() final;
 
@@ -26,6 +35,9 @@ private:
 
 	void showStatsDialog();
 
+	ImVec2 windowSize;
+
+	Gui* mainLayer;
 };
 }
 #endif

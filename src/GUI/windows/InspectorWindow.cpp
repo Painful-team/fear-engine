@@ -24,6 +24,8 @@ namespace FearEngine::UI::windows
 		}
 	}
 
+	void InspectorWindow::init(Gui* layer) {}
+
 	void InspectorWindow::showWindow()
 	{
 		const ImVec2 minWindowSize = ImVec2(200.0f, 200.0f);

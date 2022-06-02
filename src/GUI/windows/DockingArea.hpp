@@ -10,8 +10,11 @@ class DockingArea final : public GuiWindow
 public:
 	DockingArea();
 
+	void init(Gui* layer);
+
 	void showWindow() final;
 
+	bool isWindowOpen() const;
 	bool isDockingEnabled() const;
 	void toggleDocking(const bool enableDocking);
 

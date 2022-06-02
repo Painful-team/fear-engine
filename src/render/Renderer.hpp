@@ -17,6 +17,8 @@ public:
 	int init();
 	void preUpdate();
 	void update();
+	void postUpdate();
+
 	void onResize(Events::WindowResize* event, const int x = 0, const int y = 0);
 
 	~Renderer();

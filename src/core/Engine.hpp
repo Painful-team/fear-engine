@@ -1,5 +1,6 @@
 #ifndef FEARENGINE_CORE_ENGINE_H__
 #define FEARENGINE_CORE_ENGINE_H__
+#include <render/FrameBuffer.hpp>
 
 #include <Cache/CacheManager.hpp>
 #include <event/Dispatcher.hpp>
@@ -7,6 +8,7 @@
 
 #include "Window.hpp"
 #include "events.hpp"
+
 
 namespace FearEngine
 {
@@ -29,6 +31,8 @@ public:
 	bool onMinimized(Events::WindowMinimized* event);
 	bool onRestore(Events::WindowRestored* event);
 
+	static Render::FrameBuffer* buf;
+
 private:
 	bool running = true;
 	bool minimized = false;
@@ -37,6 +41,7 @@ private:
 	static std::unique_ptr<Renderer> renderer;
 	static std::unique_ptr<Window> window;
 	static std::unique_ptr<CacheManager> cacheManager;
+
 };
 }  // namespace FearEngine
 

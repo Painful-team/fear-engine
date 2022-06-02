@@ -10,6 +10,8 @@ class HierarchyWindow final : public GuiWindow
 public:
 	HierarchyWindow();
 
+	void init(Gui* layer);
+
 	void showWindow() final;
 
 	bool isWindowOpen() const;

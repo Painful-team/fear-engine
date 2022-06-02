@@ -9,6 +9,8 @@ ProjectWindow::ProjectWindow():
 	filterItemEnabled(true)
 {}
 
+void ProjectWindow::init(Gui* layer) {}
+
 void ProjectWindow::showWindow()
 {
 	const ImVec2 minWindowSize = ImVec2(200.0f, 200.0f);

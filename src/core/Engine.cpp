@@ -24,6 +24,7 @@ std::unique_ptr<Renderer> Engine::renderer;
 std::unique_ptr<Events::Dispatcher> Engine::eventDispatcher;
 std::unique_ptr<Window> Engine::window;
 std::unique_ptr<CacheManager> Engine::cacheManager;
+Render::FrameBuffer* Engine::buf = nullptr;
 
 void Engine::onEvent(Events::Event* event) { eventDispatcher->notify(event); }
 
@@ -113,8 +114,9 @@ void Engine::run()
 	while (running)
 	{
 		renderer->preUpdate();
-
 		renderer->update();
+		renderer->postUpdate();
+
 		window->onUpdate();
 	}
 }

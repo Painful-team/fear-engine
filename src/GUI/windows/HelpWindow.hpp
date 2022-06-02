@@ -9,6 +9,8 @@ class HelpWindow final : public GuiWindow
 {
 public:
 	HelpWindow();
+
+	void init(Gui* layer);
 		
 	void showWindow() final;
 

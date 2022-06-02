@@ -1,8 +1,8 @@
 #ifndef FEARENGINE_GUI_WINDOWS_INSPECTORWINDOW_H__
 #define FEARENGINE_GUI_WINDOWS_INSPECTORWINDOW_H__
 
-#include <vector>
 #include <string>
+#include <vector>
 
 #include <glm/glm.hpp>
 
@@ -10,10 +10,12 @@
 
 namespace FearEngine::UI::windows
 {
-class InspectorWindow final : public GuiWindow
+class InspectorWindow final: public GuiWindow
 {
 public:
 	InspectorWindow();
+
+	void init(Gui* layer);
 
 	void showWindow() final;
 
@@ -26,16 +28,16 @@ public:
 private:
 	enum InspectorComponents
 	{
-		Transform						= 0,
-		Color								= 1,
-		Mesh								= 2,
-		Interaction					= 3,
-		Shader							= 4
+		Transform = 0,
+		Color = 1,
+		Mesh = 2,
+		Interaction = 3,
+		Shader = 4
 	};
 
 	bool windowOpen;
 	bool isObjectPicked;
-	
+
 	bool showPickedObject;
 
 	std::string pickedObjectName;
@@ -50,7 +52,6 @@ private:
 	std::string modelPath;
 
 	void showAddComponentBtn();
-
 };
-}
+}  // namespace FearEngine::UI::windows
 #endif

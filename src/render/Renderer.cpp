@@ -48,6 +48,10 @@ int Renderer::init()
 	return 0;
 }
 
+void Renderer::postUpdate()
+{
+}
+
 void Renderer::preUpdate()
 {
 	assert(!m_layers.empty() && "Renderer not initialized");
@@ -62,11 +66,21 @@ void Renderer::update()
 
 	for (auto it = m_layers.rbegin(); it != m_layers.rend(); ++it)
 	{
+		(*it)->preUpdate();
 		(*it)->update();
+		(*it)->postUpdate();
 	}
 }
 
-void Renderer::onResize(Events::WindowResize* event, const int x, const int y) { glViewport(x, y, event->getWidth(), event->getHeight()); }
+void Renderer::onResize(Events::WindowResize* event, const int x, const int y) 
+{ 
+	glViewport(x, y, event->getWidth(), event->getHeight()); 
+
+	for (auto it = m_layers.rbegin(); it != m_layers.rend(); ++it)
+	{
+		(*it)->resize(event->getWidth(), event->getHeight());
+	}
+}
 
 Renderer::~Renderer()
 {

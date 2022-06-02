@@ -59,9 +59,16 @@ void ModelLayer::init()
 	modelUniform.setMat4(glm::mat4(1.0f));
 }
 
+void ModelLayer::resize(int width, int height) {}
+
+void ModelLayer::preUpdate()
+{
+	Engine::buf->enable();
+	arr.bind();
+}
+
 void ModelLayer::update()
 {
-	arr.bind();
 	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	frame.setFloat(1);
@@ -78,7 +85,11 @@ void ModelLayer::update()
 	// glDrawElements(GL_TRIANGLES, chunk.triangles.size(), GL_UNSIGNED_INT, 0);
 
 	glDrawArrays(GL_TRIANGLES, 0, model->vertices.size());
+}
 
+void ModelLayer::postUpdate()
+{
 	glBindVertexArray(0);
+	Engine::buf->disable();
 }
 }  // namespace FearEngine::Render

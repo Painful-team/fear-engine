@@ -10,6 +10,8 @@ class ProjectWindow final : public GuiWindow
 public:
 	ProjectWindow();
 
+	void init(Gui* layer);
+
 	void showWindow() final;
 
 	bool isWindowOpen() const;

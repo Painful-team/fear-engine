@@ -8,6 +8,8 @@ HelpWindow::HelpWindow():
 	windowOpen(false)
 {}
 
+void HelpWindow::init(Gui* layer) {}
+
 void HelpWindow::showWindow()
 {
 	const ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize;

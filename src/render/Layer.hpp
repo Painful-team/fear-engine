@@ -13,7 +13,10 @@ class Layer
 {
 public:
 	virtual void init() = 0;
+	virtual void resize(int width, int height) = 0;
+	virtual void preUpdate() = 0;
 	virtual void update() = 0;
+	virtual void postUpdate() = 0;
 };
 }  // namespace FearEngine::Render
 

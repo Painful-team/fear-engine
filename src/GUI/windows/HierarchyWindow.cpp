@@ -10,6 +10,8 @@ HierarchyWindow::HierarchyWindow():
 	filterItemEnabled(true)
 {}
 
+void HierarchyWindow::init(Gui* layer) {}
+
 void HierarchyWindow::showWindow()
 {
 	const ImVec2 minWindowSize = ImVec2(200.0f, 200.0f);

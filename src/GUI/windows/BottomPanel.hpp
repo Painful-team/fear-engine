@@ -12,7 +12,10 @@ class BottomPanel final : public GuiWindow
 public:
 	BottomPanel();
 
+	void init(Gui* layer);
+
 	void showWindow() final;
+	bool isWindowOpen() const;
 
 	bool isPanelEnabled() const;
 	void togglePanel(const bool showPanel);

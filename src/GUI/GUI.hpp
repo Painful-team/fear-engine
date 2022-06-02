@@ -3,6 +3,7 @@
 
 #include <core/events.hpp>
 
+#include <render/FrameBuffer.hpp>
 #include <render/Layer.hpp>
 
 #include "windows/GuiWindow.hpp"
@@ -19,6 +20,8 @@ namespace FearEngine
 {
 struct GuiMainWindows
 {
+	void init(Gui* layer);
+	
 	void showAllWindows()
 	{
 		if (sceneWindow.isWindowOpen())
@@ -53,6 +56,7 @@ struct GuiMainWindows
 	}
 
 	UI::windows::SceneWindow sceneWindow;
+
 	UI::windows::HierarchyWindow hierarchyWindow;
 	UI::windows::ProjectWindow projectWindow;
 	UI::windows::InspectorWindow inspectorWindow;
@@ -65,9 +69,13 @@ struct GuiMainWindows
 class Gui: public Render::Layer
 {
 public:
-	void init();
+	Gui() {};
+	void init() override;
+	void resize(int width, int height) override;
 
-	void update();
+	void preUpdate() override;
+	void update() override;
+	void postUpdate() override;
 
 	bool onMouseMoved(Events::MouseMoved* e);
 	bool onMousePressed(Events::MouseButtonPressed* e);
@@ -79,6 +87,8 @@ public:
 	bool onKeyTyped(Events::KeyTyped* e);
 
 	bool onResize(Events::WindowResize* e);
+
+	Render::FrameBuffer& getFrameBuffer();
 
 	~Gui();
 
@@ -93,6 +103,7 @@ private:
 
 	void showMainMenuBar();
 
+	Render::FrameBuffer frameBuffer;
 };
 }
 

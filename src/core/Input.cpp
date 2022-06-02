@@ -1,8 +1,8 @@
 #include "Input.hpp"
 
+#include "Engine.hpp"
 #include <GLFW/glfw3.h>
 
-#include "Engine.hpp"
 
 namespace FearEngine::Input
 {

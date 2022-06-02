@@ -9,9 +9,10 @@ DockingArea::DockingArea():
 	dockingEnabled(true)
 {}
 
+void DockingArea::init(Gui* layer) {}
+
 void DockingArea::showWindow()
 {
-bool enableDocking = true;
 	const float bottomPanelHeight = 30.0f;
 
 	
@@ -29,7 +30,7 @@ bool enableDocking = true;
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
 
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-	ImGui::Begin("Docker window", &enableDocking, windowFlags);
+	ImGui::Begin("Docker window", &dockingEnabled, windowFlags);
 
 	ImGui::PopStyleVar();
 
@@ -48,6 +49,10 @@ bool DockingArea::isDockingEnabled() const
 {
 	return dockingEnabled;
 }
+
+bool DockingArea::isWindowOpen() const
+{ return true; }
+
 
 void DockingArea::toggleDocking(const bool enableDocking)
 {

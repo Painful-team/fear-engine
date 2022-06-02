@@ -18,7 +18,11 @@ public:
 	ModelLayer();
 
 	void init() override;
+
+	void resize(int width, int height) override;
+	void preUpdate() override;
 	void update() override;
+	void postUpdate() override;
 
 private:
 	Render::VertexBuffer vertex;
@@ -33,6 +37,7 @@ private:
 	Render::Shaders::Uniform frame;
 
 	Render::Camera camera;
+
 };
 }  // namespace FearEngine::Render
 

@@ -12,6 +12,8 @@ BottomPanel::BottomPanel():
 	panelText("dev")
 {}
 
+void BottomPanel::init(Gui* layer) {}
+
 void BottomPanel::showWindow()
 {
 	const float panelHeight = 30.0f;
@@ -42,10 +44,11 @@ void BottomPanel::showWindow()
 	ImGui::PopStyleColor();
 }
 
-bool BottomPanel::isPanelEnabled() const
-{
-	return panelEnabled;
-}
+
+bool BottomPanel::isWindowOpen() const { return true; }
+
+bool BottomPanel::isPanelEnabled() const { return panelEnabled; }
+
 
 void BottomPanel::togglePanel(const bool showPanel)
 {

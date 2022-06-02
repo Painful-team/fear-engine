@@ -14,6 +14,8 @@ namespace FearEngine
 {
 void Gui::init()
 {
+	windows.init(this);
+
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 
@@ -29,6 +31,27 @@ void Gui::init()
 	ImGui_ImplOpenGL3_Init();
 
 	applyInitialSettings();
+
+	Render::FrameBufferParams params;
+	params.width = Engine::getWindow()->getWidth();
+	params.height = Engine::getWindow()->getHeight();
+	params.bufferTypes = Render::FrameBufferType::Color | Render::FrameBufferType::Depth | Render::FrameBufferType::Stencil;
+	params.colorFormat = Render::ColorFormat::RGBA8;
+	params.depthFormat = Render::DepthFormat::Depth24;
+	params.stencilFormat = Render::StencilFormat::Stencil8;
+
+	frameBuffer.init(params);
+	Engine::buf = &frameBuffer;
+}
+
+void Gui::resize(int width, int height)
+{
+	auto params = frameBuffer.getParams();
+	params.width = width;
+	params.height = height;
+
+	frameBuffer.setParams(params);
+	frameBuffer.onResize();
 }
 
 Gui::~Gui()
@@ -37,6 +60,9 @@ Gui::~Gui()
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
 }
+
+void Gui::preUpdate() 
+{  }
 
 void Gui::update()
 {
@@ -55,6 +81,8 @@ void Gui::update()
 	auto evnt = Events::GuiUpdate();
 	Engine::getDispatcher()->notify(&evnt);
 }
+
+void Gui::postUpdate() {  }
 
 bool Gui::onMouseMoved(Events::MouseMoved* e)
 {
@@ -167,6 +195,8 @@ bool Gui::onResize(Events::WindowResize* e)
 
 	return true;
 }
+
+Render::FrameBuffer& Gui::getFrameBuffer() { return frameBuffer; }
 
 void Gui::applyInitialSettings()
 {
@@ -393,4 +423,17 @@ void Gui::showMainMenuBar()
 		ImGui::EndMainMenuBar();
 	}
 }
+
+void GuiMainWindows::init(Gui* layer)
+{
+	sceneWindow.init(layer);
+
+	hierarchyWindow.init(layer);
+	projectWindow.init(layer);
+	inspectorWindow.init(layer);
+	helpWindow.init(layer);
+
+	bottomPanel.init(layer);
+	dockingArea.init(layer);
 }
+}  // namespace FearEngine

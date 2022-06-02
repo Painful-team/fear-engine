@@ -1,24 +1,34 @@
 #include "SceneWindow.hpp"
+#include <GUI/GUI.hpp>
 
 #include <imgui.h>
 #include <imgui_internal.h>
 
 #include <core/Engine.hpp>
 
+#include <iostream>
+
 namespace FearEngine::UI::windows
 {
-SceneWindow::SceneWindow():
-	windowOpen(true),
-	isSceneStarted(false),
-	isScenePaused(false),
-	statsItemSize(260.0f, 150.0f)
+SceneWindow::SceneWindow()
+ : mainLayer(nullptr)
+ , windowOpen(true)
+ , isSceneStarted(false)
+ , isScenePaused(false)
+ , windowSize(0, 0)
+ , statsItemSize(260.0f, 150.0f)
 {}
+
+void SceneWindow::init(Gui* layer) 
+{ 
+	mainLayer = layer; 
+};
 
 void SceneWindow::showWindow()
 {
 	const ImVec2 minWindowSize = ImVec2(400, 400);
-	const ImVec2 maxWindowSize = ImVec2(static_cast<float>(Engine::getWindow()->getWidth()),
-			static_cast<float>(Engine::getWindow()->getHeight()));
+	const ImVec2 maxWindowSize
+		 = ImVec2(static_cast<float>(Engine::getWindow()->getWidth()), static_cast<float>(Engine::getWindow()->getHeight()));
 
 	ImGui::SetNextWindowSizeConstraints(minWindowSize, maxWindowSize);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
@@ -103,26 +113,29 @@ void SceneWindow::showWindow()
 			}
 			ImGui::EndMenuBar();
 		}
+
+		auto size = ImGui::GetContentRegionAvail();
+		ImGui::Image((void*)mainLayer->getFrameBuffer().getColorAttachment(), size, {0, 1}, {1, 0});
+
+		if (size.x != windowSize.x || size.y != windowSize.y)
+		{
+			windowSize = size;
+
+			auto evnt = Events::WindowResize(size.x, size.y);
+			Engine::getDispatcher()->notify(&evnt);
+		}
+
 		ImGui::End();
 	}
 
 	ImGui::PopStyleVar();
 }
 
-bool SceneWindow::isWindowOpen() const
-{
-	return windowOpen;
-}
+bool SceneWindow::isWindowOpen() const { return windowOpen; }
 
-void SceneWindow::toggleWindow(const bool openWindow)
-{
-	windowOpen = openWindow;
-}
+void SceneWindow::toggleWindow(const bool openWindow) { windowOpen = openWindow; }
 
-void SceneWindow::setStatsItemSize(const ImVec2 newSize)
-{
-	statsItemSize = newSize;
-}
+void SceneWindow::setStatsItemSize(const ImVec2 newSize) { statsItemSize = newSize; }
 
 void SceneWindow::showStatsDialog()
 {
@@ -134,4 +147,4 @@ void SceneWindow::showStatsDialog()
 	}
 	ImGui::EndChild();
 }
-}
+}  // namespace FearEngine::UI::windows

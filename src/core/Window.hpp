@@ -12,6 +12,9 @@ namespace FearEngine
 class Window
 {
 public:
+	static constexpr const uint32_t defaultWidth = 1920;
+	static constexpr const uint32_t defaultHeight = 1080;
+
 	using event_sign = void(Events::Event*);
 	using handle_type = Events::detail::Delegate<event_sign>;
 
@@ -25,7 +28,10 @@ public:
 		handle_type eventHandler;
 	};
 
-	Window(const std::string& title = "FearEngine", const uint32_t width = 1920, const uint32_t heigth = 1080, bool vsync = false);
+	Window(const std::string& title = "FearEngine",
+		 const uint32_t width = defaultWidth,
+		 const uint32_t heigth = defaultHeight,
+		 bool vsync = false);
 
 	uint32_t getWidth() const;
 	uint32_t getHeight() const;
