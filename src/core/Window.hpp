@@ -35,6 +35,9 @@ public:
 	bool isVsync() const;
 	void setVsync(const bool vsync);
 
+	void blockCursor();
+	void unblockCursor();
+
 	int init(const bool resizeAble);
 
 	void onUpdate();

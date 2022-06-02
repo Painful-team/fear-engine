@@ -38,6 +38,12 @@ void Window::setVsync(const bool vsync)
 	data.vsync = true;
 }
 
+void Window::blockCursor() 
+{ glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); }
+
+
+void Window::unblockCursor() { glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL); }
+
 int Window::init(const bool resizeAble)
 {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);

@@ -117,7 +117,7 @@ bool Gui::onKeyPressed(Events::KeyPressed* e)
 		io.KeySuper = (e->keyCode() == Events::Key::LEFT_SUPER || e->keyCode() == Events::Key::RIGHT_SUPER);
 	}
 
-	return false;
+	return true;
 }
 
 bool Gui::onKeyReleased(Events::KeyReleased* e)
@@ -148,7 +148,7 @@ bool Gui::onKeyReleased(Events::KeyReleased* e)
 		io.KeySuper = !(e->keyCode() == Events::Key::LEFT_SUPER || e->keyCode() == Events::Key::RIGHT_SUPER);
 	}
 
-	return false;
+	return true;
 }
 
 bool Gui::onKeyTyped(Events::KeyTyped* e)
@@ -156,7 +156,7 @@ bool Gui::onKeyTyped(Events::KeyTyped* e)
 	ImGuiIO& io = ImGui::GetIO();
 	io.AddInputCharacter(e->keyCode());
 
-	return false;
+	return true;
 }
 
 bool Gui::onResize(Events::WindowResize* e)
