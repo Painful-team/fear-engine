@@ -5,12 +5,12 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 #include <unordered_map>
 
 namespace FearEngine::Render::Shaders
 {
-using GLenum = unsigned;
-using uint32_t = unsigned;
+using GLenum = uint32_t;
 
 class Shader
 {
@@ -33,13 +33,13 @@ private:
 		uint16_t blockSize;
 
 		uint32_t bufferBlockId;
-		unsigned int uboExampleBlock;
 
-		int8_t* bufferMemory;
+		std::shared_ptr<int8_t[]> bufferMemory;
 
 		std::unordered_map<std::string, Uniform> uniforms;
 
 		BlockData();
+		BlockData(BlockData& other);
 		BlockData(BlockData&& other) noexcept;
 		BlockData& operator=(BlockData&& other) noexcept;
 
@@ -55,6 +55,10 @@ public:
 	Uniform& findUniform(const std::string& name);
 	UniformStorage& findBuffer(const std::string& name);
 
+	void linkBuffer(const std::string& bufferName, Shader& shader);
+
+	std::vector<std::string_view> getBufferNames() const;
+
 	void updateBuffers();
 	void compile();
 	void use();
@@ -63,13 +67,13 @@ public:
 
 	~Shader();
 
-private:
 	void initUniforms();
 
 	std::unordered_map<GLenum, std::string> sources;
 	uint32_t shaderId;
 
 	std::unordered_map<std::string, BlockData> buffers;
+private:
 };
 }  // namespace FearEngine::Render::Shaders
 #endif

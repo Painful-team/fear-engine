@@ -8,6 +8,7 @@
 
 namespace FearEngine::Render::Shaders
 {
+
 class Uniform
 {
 public:
@@ -19,8 +20,11 @@ public:
 	Uniform& operator=(const Uniform& other);
 	Uniform& operator=(Uniform&& other) noexcept;
 
-	const std::string_view& getName() const;
 	int isValid();
+
+	uniformType getType() const;
+	uint16_t getTypeSize() const;
+	const std::string_view& getName() const;
 
 	void setBool(const bool value) const;
 	void setInt(const int value) const;
@@ -39,8 +43,10 @@ public:
 	void setMat4(const glm::mat4& mat) const;
 
 	std::string_view name;
+	
 	uniformType type;
 
+	//Todo think about replacement with union
 	uint32_t location;
 
 	uint32_t index;

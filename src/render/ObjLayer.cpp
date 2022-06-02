@@ -51,9 +51,9 @@ void ModelLayer::init()
 	frame = shader.findUniform("wireframe");
 
 	this->camera = Camera(projUniform);
-	camera.setProjection(false);
 
 	shader.use();
+	modelUniform.setMat4(glm::mat4(1.0f));
 }
 
 void ModelLayer::update()
@@ -76,7 +76,6 @@ void ModelLayer::update()
 	viewUniform.setMat4(view);
 	frame.setFloat(1);
 
-	modelUniform.setMat4(glm::mat4(1.0f));
 	shader.updateBuffers();
 
 	arr.bind();
@@ -92,6 +91,7 @@ void ModelLayer::update()
 	viewUniform.setMat4(view);
 
 	modelUniform.setMat4(glm::mat4(1.0f));
+
 	shader.updateBuffers();
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);

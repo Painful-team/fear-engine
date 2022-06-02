@@ -28,7 +28,7 @@ public:
 	float fov;
 	float speed;
 
-private:
+private: 
 	bool orthographic;
 };
 }  // namespace FearEngine::Render
