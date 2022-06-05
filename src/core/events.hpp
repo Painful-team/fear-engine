@@ -11,5 +11,6 @@
 #include <event/NamedEvent.hpp>
 #include <event/Observer.hpp>
 #include <event/WindowEvent.hpp>
+#include <event/CoreEvent.hpp>
 
 #endif

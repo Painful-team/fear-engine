@@ -7,6 +7,8 @@ using uint32_t = unsigned;
 
 enum class EventType
 {
+	renderInit,
+
 	windowClose,
 	windowResize,
 	windowFocus,
@@ -25,6 +27,7 @@ enum class EventType
 	mouseButtonReleased,
 	mouseMoved,
 	mouseScrolled,
+	mouseRequired,
 
 	// According to static allocation and more flexible way of crating new event Type, "invalid" type should be always on the last position
 	invalid
@@ -37,7 +40,8 @@ enum EventCategory
 	input = 1 << 1,
 	keyboard = 1 << 2,
 	mouse = 1 << 3,
-	mouseButton = 1 << 4
+	mouseButton = 1 << 4,
+	core = 1 << 5
 };
 
 #ifdef DEBUG

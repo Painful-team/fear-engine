@@ -5,14 +5,14 @@
 
 #include "GuiWindow.hpp"
 
-namespace FearEngine::UI::windows
+namespace FearEngine::EditorUI::windows
 {
 class BottomPanel final : public GuiWindow
 {
 public:
 	BottomPanel();
 
-	void init(Gui* layer);
+	void init();
 
 	void showWindow() final;
 	bool isWindowOpen() const;

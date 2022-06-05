@@ -2,14 +2,14 @@
 
 #include <core/Engine.hpp>
 
-namespace FearEngine::UI::windows
+namespace FearEngine::EditorUI::windows
 {
 ProjectWindow::ProjectWindow():
 	windowOpen(true),
 	filterItemEnabled(true)
 {}
 
-void ProjectWindow::init(Gui* layer) {}
+void ProjectWindow::init() {}
 
 void ProjectWindow::showWindow()
 {

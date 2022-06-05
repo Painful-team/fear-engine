@@ -3,17 +3,13 @@
 
 #include <imgui.h>
 
-namespace FearEngine
-{
-class Gui;
-};
 
-namespace FearEngine::UI::windows
+namespace FearEngine::EditorUI::windows
 {
 class GuiWindow
 {
 public:
-	virtual void init(FearEngine::Gui* main) = 0;
+	virtual void init() = 0;
 
 	virtual void showWindow() = 0;
 

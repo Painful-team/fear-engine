@@ -5,25 +5,25 @@
 
 #include <core/events.hpp>
 
+#include <render/FrameBuffer.hpp>
+
 namespace FearEngine::Render
 {
 class Camera
 {
 public:
-	Camera(const Shaders::Uniform& projection,
-		 const Shaders::Uniform& view,
+	Camera();
+
+	int init(FrameBufferParams& frameBuffer,
 		 const glm::vec3& pos = {0, 0, 0},
 		 const glm::vec3& ang = {0, -90.0, 0},
 		 const float fieldOfView = 90,
 		 const float cameraSpeed = 0.1,
 		 const glm::vec2& cameraSensivity = {0.1, 0.1},
 		 const bool orthographic = false);
-	Camera(const glm::vec3& pos = {0, 0, 0},
-		 const glm::vec3& ang = {0, -90.0, 0},
-		 const float fieldOfView = 90,
-		 const float cameraSpeed = 0.1,
-		 const glm::vec2& cameraSensivity = {0.1, 0.1},
-		 const bool orthographic = false);
+
+	void beginView();
+	void end();
 
 	void setUniforms(const Shaders::Uniform& uniform, const Shaders::Uniform& view);
 
@@ -43,6 +43,9 @@ public:
 	void setXSensivity(float x);
 	void setYSensivity(float y);
 	void setSensivity(float x, float y);
+	
+	FrameBuffer& getFrameBuffer();
+	void setFrameBuffer(FrameBuffer& buffer);
 
 	bool isOrthograpic();
 	void setProjection(const bool orthographic);
@@ -55,8 +58,9 @@ public:
 	bool onKeyReleased(Events::KeyReleased* evnt);
 	bool onKeyTyped(Events::KeyTyped* evnt);
 
+	void onResize(int width, int height);
+
 	void updatePos();
-	void init();
 private:
 
 private:
@@ -65,9 +69,11 @@ private:
 	Shaders::Uniform camera;
 	Shaders::Uniform viewUn;
 
+	Render::FrameBuffer frameBuffer;
+
 	float fov;
 	float speed;
-  
+
 	glm::vec2 sensivity;
 
 	glm::vec2 mousePos;
@@ -79,6 +85,8 @@ private:
 	glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 
 	glm::vec3 angles;
+
+	glm::mat4 projection;
 
 	bool orthographic;
 };

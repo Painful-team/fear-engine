@@ -2,13 +2,13 @@
 
 #include <core/Engine.hpp>
 
-namespace FearEngine::UI::windows
+namespace FearEngine::EditorUI::windows
 {
 HelpWindow::HelpWindow():
 	windowOpen(false)
 {}
 
-void HelpWindow::init(Gui* layer) {}
+void HelpWindow::init() {}
 
 void HelpWindow::showWindow()
 {

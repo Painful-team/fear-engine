@@ -24,4 +24,8 @@ MouseScrolled::MouseScrolled(const double offsetX, const double offsetY): offset
 double MouseScrolled::getXoffset() const { return offsetX; }
 
 double MouseScrolled::getYoffset() const { return offsetY; }
+MouseRequired::MouseRequired(const bool required)
+ : state(required)
+{}
+bool MouseRequired::isRequired() const { return state; }
 }  // namespace FearEngine::Events

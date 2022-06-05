@@ -57,6 +57,7 @@
 //  2016-10-15: Misc: Added a void* user_data parameter to Clipboard function handlers.
 
 #include "imgui.h"
+
 #include "imgui_impl_glfw.h"
 
 // Clang warnings with -Weverything
@@ -606,7 +607,7 @@ static void ImGui_ImplGlfw_UpdateMouseData()
                 glfwSetCursorPos(window, (double)(mouse_pos_prev.x - viewport->Pos.x), (double)(mouse_pos_prev.y - viewport->Pos.y));
 
             // (Optional) Fallback to provide mouse position when focused (ImGui_ImplGlfw_CursorPosCallback already provides this when hovered or captured)
-            if (bd->MouseWindow == NULL)
+            if (bd->MouseWindow != NULL)
             {
                 double mouse_x, mouse_y;
                 glfwGetCursorPos(window, &mouse_x, &mouse_y);

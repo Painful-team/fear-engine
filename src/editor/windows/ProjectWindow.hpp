@@ -1,16 +1,16 @@
-#ifndef FEARENGINE_GUI_WINDOWS_HIERARCHYWINDOW_H__
-#define FEARENGINE_GUI_WINDOWS_HIERARCHYWINDOW_H__
+#ifndef FEARENGINE_GUI_WINDOWS_PROJECTWINDOW_H__
+#define FEARENGINE_GUI_WINDOWS_PROJECTWINDOW_H__
 
 #include "GuiWindow.hpp"
 
-namespace FearEngine::UI::windows
+namespace FearEngine::EditorUI::windows
 {
-class HierarchyWindow final : public GuiWindow
+class ProjectWindow final : public GuiWindow
 {
 public:
-	HierarchyWindow();
+	ProjectWindow();
 
-	void init(Gui* layer);
+	void init();
 
 	void showWindow() final;
 
@@ -25,7 +25,6 @@ private:
 	bool filterItemEnabled;
 
 	void showFilterMenuItem() const;
-
 };
 }
 #endif

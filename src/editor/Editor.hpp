@@ -18,9 +18,9 @@
 
 namespace FearEngine
 {
-struct GuiMainWindows
+struct EditorMainWindows
 {
-	void init(Gui* layer);
+	void init();
 	
 	void showAllWindows()
 	{
@@ -55,31 +55,31 @@ struct GuiMainWindows
 		}
 	}
 
-	UI::windows::SceneWindow sceneWindow;
+	EditorUI::windows::SceneWindow sceneWindow;
 
-	UI::windows::HierarchyWindow hierarchyWindow;
-	UI::windows::ProjectWindow projectWindow;
-	UI::windows::InspectorWindow inspectorWindow;
-	UI::windows::HelpWindow helpWindow;
+	EditorUI::windows::HierarchyWindow hierarchyWindow;
+	EditorUI::windows::ProjectWindow projectWindow;
+	EditorUI::windows::InspectorWindow inspectorWindow;
+	EditorUI::windows::HelpWindow helpWindow;
 
-	UI::windows::BottomPanel bottomPanel;
-	UI::windows::DockingArea dockingArea;
+	EditorUI::windows::BottomPanel bottomPanel;
+	EditorUI::windows::DockingArea dockingArea;
 };
 
-class Gui: public Render::Layer
+class Editor
 {
 public:
-	Gui() {};
-	void init() override;
-	void resize(int width, int height) override;
+	Editor();
+	int init();
+	void resize(int width, int height);
 
-	void preUpdate() override;
-	void update() override;
-	void postUpdate() override;
+	void begin();
+	void end();
 
 	bool onMouseMoved(Events::MouseMoved* e);
 	bool onMousePressed(Events::MouseButtonPressed* e);
 	bool onMouseReleased(Events::MouseButtonReleased* e);
+	bool onMouseRequired(Events::MouseRequired* e);
 	bool onScroll(Events::MouseScrolled* e);
 
 	bool onKeyPressed(Events::KeyPressed* e);
@@ -88,13 +88,9 @@ public:
 
 	bool onResize(Events::WindowResize* e);
 
-	Render::FrameBuffer& getFrameBuffer();
-
-	~Gui();
+	~Editor();
 
 private:
-	GuiMainWindows windows;
-
 	void applyInitialSettings();
 
 	void setWindowStyles();
@@ -103,7 +99,9 @@ private:
 
 	void showMainMenuBar();
 
-	Render::FrameBuffer frameBuffer;
+	EditorMainWindows windows;
+
+	bool mouseReq;
 };
 }
 

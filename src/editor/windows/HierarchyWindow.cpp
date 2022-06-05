@@ -3,14 +3,14 @@
 #include <core/Engine.hpp>
 #include <core/Input.hpp>
 
-namespace FearEngine::UI::windows
+namespace FearEngine::EditorUI::windows
 {
 HierarchyWindow::HierarchyWindow():
 	windowOpen(true),
 	filterItemEnabled(true)
 {}
 
-void HierarchyWindow::init(Gui* layer) {}
+void HierarchyWindow::init() {}
 
 void HierarchyWindow::showWindow()
 {

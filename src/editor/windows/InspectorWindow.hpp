@@ -8,14 +8,14 @@
 
 #include "GuiWindow.hpp"
 
-namespace FearEngine::UI::windows
+namespace FearEngine::EditorUI::windows
 {
 class InspectorWindow final: public GuiWindow
 {
 public:
 	InspectorWindow();
 
-	void init(Gui* layer);
+	void init();
 
 	void showWindow() final;
 

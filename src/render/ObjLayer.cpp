@@ -17,6 +17,7 @@ namespace FearEngine::Render
 {
 ModelLayer::ModelLayer()
  : vertex({{Render::BufferType::Float, 3}, {Render::BufferType::Float, 3}, {Render::BufferType::Float, 3}})
+ , camera(std::make_shared<Camera>())
 {}
 
 void ModelLayer::init()
@@ -50,25 +51,22 @@ void ModelLayer::init()
 
 	frame = shader.findUniform("wireframe");
 
-	this->camera = Camera(projUniform, viewUniform);
-	camera.init();
-
 	shader.use();
-
+	
 	modelUniform.setMat4(glm::mat4(1.0f));
 }
 
-void ModelLayer::resize(int width, int height) {}
+void ModelLayer::resize(int width, int height) 
+{}
 
-void ModelLayer::preUpdate()
-{
-	Engine::buf->enable();
+void ModelLayer::preUpdate(Camera& cam) {
 	arr.bind();
+	cam.setUniforms(projUniform, viewUniform);
+	cam.beginView();
 }
 
-void ModelLayer::update()
+void ModelLayer::update(Camera& cam)
 {
-	arr.bind();
 	frame.setFloat(1);
 
 	shader.updateBuffers();
@@ -93,9 +91,8 @@ void ModelLayer::update()
 	glDrawArrays(GL_TRIANGLES, 0, model->vertices.size());
 }
 
-void ModelLayer::postUpdate()
-{
+void ModelLayer::postUpdate(Camera& cam) {
 	glBindVertexArray(0);
-	Engine::buf->disable();
+	cam.end();
 }
 }  // namespace FearEngine::Render

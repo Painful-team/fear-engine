@@ -1,6 +1,8 @@
 #ifndef FEARENGINE_RENDER_OBJLAYER_H__
 #define FEARENGINE_RENDER_OBJLAYER_H__
 
+#include <memory>
+
 #include "Layer.hpp"
 #include "VertexArray.hpp"
 #include "VertexBuffer.hpp"
@@ -20,9 +22,9 @@ public:
 	void init() override;
 
 	void resize(int width, int height) override;
-	void preUpdate() override;
-	void update() override;
-	void postUpdate() override;
+	void preUpdate(Camera& cam) override;
+	void update(Camera& cam) override;
+	void postUpdate(Camera& cam) override;
 
 private:
 	Render::VertexBuffer vertex;
@@ -36,7 +38,7 @@ private:
 	Render::Shaders::Uniform modelUniform;
 	Render::Shaders::Uniform frame;
 
-	Render::Camera camera;
+	std::shared_ptr<Render::Camera> camera;
 };
 }  // namespace FearEngine::Render
 

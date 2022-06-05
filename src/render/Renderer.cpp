@@ -14,8 +14,11 @@
 #include "Layer.hpp"
 #include "shader/Shader.hpp"
 
-#include <GUI/GUI.hpp>
+#include <Editor/Editor.hpp>
 #include "ObjLayer.hpp"
+
+#include <core/Engine.hpp>
+#include <event/CoreEvent.hpp>
 
 namespace FearEngine
 {
@@ -39,8 +42,11 @@ int Renderer::init()
 	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 	glDebugMessageCallback(MessageCallback, 0);
 
+	auto evnt = Events::RenderInitialized();
+	Engine::getDispatcher()->notify(&evnt);
+
 	m_layers.emplace_back(new Render::ModelLayer);
-	m_layers.emplace_back(new Gui);
+	//m_layers.emplace_back(new Render::ModelLayer);
 
 	for (auto it = m_layers.rbegin(); it != m_layers.rend(); ++it)
 	{
@@ -57,26 +63,29 @@ void Renderer::postUpdate()
 void Renderer::preUpdate()
 {
 	assert(!m_layers.empty() && "Renderer not initialized");
-
-	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void Renderer::update()
 {
 	assert(!m_layers.empty() && "Renderer not initialized");
 
-	for (auto it = m_layers.rbegin(); it != m_layers.rend(); ++it)
+	for (auto& camera: cameras)
 	{
-		(*it)->preUpdate();
-		(*it)->update();
-		(*it)->postUpdate();
+		for (auto it = m_layers.rbegin(); it != m_layers.rend(); ++it)
+		{
+			(*it)->preUpdate(camera);
+			(*it)->update(camera);
+			(*it)->postUpdate(camera);
+		}
 	}
 }
 
 void Renderer::onResize(Events::WindowResize* event, const int x, const int y) 
 { 
-	glViewport(x, y, event->getWidth(), event->getHeight()); 
+	if (static_cast<int>(event->getWidth()) > 1 && static_cast<int>(event->getHeight()) > 1)
+	{
+		glViewport(x, y, event->getWidth(), event->getHeight());
+	}
 
 	for (auto it = m_layers.rbegin(); it != m_layers.rend(); ++it)
 	{

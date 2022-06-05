@@ -18,6 +18,18 @@ private:
 	mouseCode button;
 };
 
+class MouseRequired: public Event
+{
+public:
+	MouseRequired(const bool required);
+
+	bool isRequired() const;
+
+	GENCLASSESSETIALS(mouseRequired, mouse | input)
+private:
+	bool state;
+};
+
 class MouseButtonReleased: public Event
 {
 public:

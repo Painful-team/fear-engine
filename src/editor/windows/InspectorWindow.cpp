@@ -4,7 +4,7 @@
 
 #include <core/Engine.hpp>
 
-namespace FearEngine::UI::windows
+namespace FearEngine::EditorUI::windows
 {
 	InspectorWindow::InspectorWindow() :
 		windowOpen(true),
@@ -24,7 +24,7 @@ namespace FearEngine::UI::windows
 		}
 	}
 
-	void InspectorWindow::init(Gui* layer) {}
+	void InspectorWindow::init() {}
 
 	void InspectorWindow::showWindow()
 	{

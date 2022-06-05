@@ -5,14 +5,14 @@
 
 #include <core/Engine.hpp>
 
-namespace FearEngine::UI::windows
+namespace FearEngine::EditorUI::windows
 {
 BottomPanel::BottomPanel():
 	panelEnabled(true),
 	panelText("dev")
 {}
 
-void BottomPanel::init(Gui* layer) {}
+void BottomPanel::init() {}
 
 void BottomPanel::showWindow()
 {

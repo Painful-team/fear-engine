@@ -41,6 +41,7 @@ public:
 	bool isVsync() const;
 	void setVsync(const bool vsync);
 
+	bool isCursorBlocked();
 	void blockCursor();
 	void unblockCursor();
 
@@ -52,6 +53,8 @@ public:
 
 private:
 	WindowData data;
+
+	int blocked;
 };
 }  // namespace FearEngine
 

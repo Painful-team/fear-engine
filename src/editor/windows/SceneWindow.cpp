@@ -1,26 +1,26 @@
 #include "SceneWindow.hpp"
-#include <GUI/GUI.hpp>
+#include <Editor/Editor.hpp>
+
+#include <iostream>
 
 #include <imgui.h>
 #include <imgui_internal.h>
 
 #include <core/Engine.hpp>
 
-namespace FearEngine::UI::windows
+namespace FearEngine::EditorUI::windows
 {
 SceneWindow::SceneWindow()
- : mainLayer(nullptr)
- , windowOpen(true)
+ : windowOpen(true)
  , isSceneStarted(false)
  , isScenePaused(false)
  , windowSize(0, 0)
  , statsItemSize(260.0f, 150.0f)
+ , cameralistSize(0)
+ , cameraPos(0)
 {}
 
-void SceneWindow::init(Gui* layer) 
-{ 
-	mainLayer = layer; 
-};
+void SceneWindow::init() {};
 
 void SceneWindow::showWindow()
 {
@@ -40,7 +40,6 @@ void SceneWindow::showWindow()
 				showStatsDialog();
 				ImGui::EndMenu();
 			}
-
 			{
 				const float btnOffset = 5.0f;
 				const ImVec2 btnSize = ImVec2(24.0f, 24.0f);
@@ -113,22 +112,62 @@ void SceneWindow::showWindow()
 		}
 
 		auto size = ImGui::GetContentRegionAvail();
-		if (size.x != windowSize.x || size.y != windowSize.y)
+		ImGuiID sceneDockSpaceId = ImGui::GetID("sceneViewPortDock");
+		ImGuiWindowClass viewPortClass;
+		viewPortClass.ClassId = sceneDockSpaceId;
+		viewPortClass.DockNodeFlagsOverrideSet = 0;
+		viewPortClass.DockingAllowUnclassed = false;
+		ImGui::DockSpace(sceneDockSpaceId, size, 0, &viewPortClass);
+		
+		if (Engine::getRender()->cameras.size() != cameralistSize && Engine::getRender()->cameras.size() != 0)
 		{
-			windowSize = size;
+			int tmpCamPos = -1;
+			for (auto& cam : Engine::getRender()->cameras)
+			{
+				++tmpCamPos;
+				if (cameraPos > tmpCamPos)
+				{
+					continue;
+				}
 
-			auto evnt = Events::WindowResize(size.x, size.y);
-			Engine::getDispatcher()->notify(&evnt);
+				for (uint32_t i = 0; i < maxViewPorts; ++i)
+				{
+					if (!viewPorts[i].isPanelEnabled())
+					{
+						viewPorts[i].setCamera(&cam);
+						viewPorts[i].name = "Viewport " + std::to_string(i);
+						break;
+					}
+				}
+			}
+
+			cameralistSize = Engine::getRender()->cameras.size();
+			cameraPos = cameralistSize;
 		}
 
-		ImGui::Image((void*)mainLayer->getFrameBuffer().getColorAttachment(), size, {0, 1}, {1, 0});
+		focused = false;
+		for (uint16_t i = 0; i < maxViewPorts; ++i)
+		{
+			if (viewPorts[i].isPanelEnabled())
+			{
+				ImGui::SetNextWindowClass(&viewPortClass);
+
+				viewPorts[i].showWindow();
+
+				focused |= viewPorts[i].isFocused();
+				focused |= ImGui::IsItemHovered();
+			}
+			
+		}
+		
 		ImGui::End();
 	}
-
 	ImGui::PopStyleVar();
 }
 
 bool SceneWindow::isWindowOpen() const { return windowOpen; }
+
+bool SceneWindow::isFocused() const { return focused; }
 
 void SceneWindow::toggleWindow(const bool openWindow) { windowOpen = openWindow; }
 

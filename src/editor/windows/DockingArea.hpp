@@ -3,14 +3,14 @@
 
 #include "GuiWindow.hpp"
 
-namespace FearEngine::UI::windows
+namespace FearEngine::EditorUI::windows
 {
 class DockingArea final : public GuiWindow
 {
 public:
 	DockingArea();
 
-	void init(Gui* layer);
+	void init();
 
 	void showWindow() final;
 

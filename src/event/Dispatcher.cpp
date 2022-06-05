@@ -3,6 +3,7 @@
 #include "KeyEvent.hpp"
 #include "MouseEvent.hpp"
 #include "GuiEvent.hpp"
+#include "CoreEvent.hpp"
 #include "Event.hpp"
 #include "Observer.hpp"
 
@@ -47,6 +48,8 @@ casetype(input == Class::staticType())											\
 	cases(else if, 	type,	MouseButtonReleased, 	func)\
 	cases(else if, 	type,	MouseMoved, 			func)\
 	cases(else if, 	type,	MouseScrolled, 			func)\
+	cases(else if, type, RenderInitialized, func)\
+	cases(else if, type, MouseRequired, func)\
 
 Dispatcher::Dispatcher()
 {
@@ -65,9 +68,11 @@ Dispatcher::Dispatcher()
 	registerEvent<KeyTyped>();
 
 	registerEvent<MouseButtonPressed>();
+	registerEvent<MouseRequired>();
 	registerEvent<MouseButtonReleased>();
 	registerEvent<MouseMoved>();
 	registerEvent<MouseScrolled>();
+	registerEvent<RenderInitialized>();
 }
 
 void Dispatcher::notify(Event* event)

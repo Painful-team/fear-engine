@@ -99,6 +99,8 @@ public:
 	void enable();
 	void disable();
 
+	bool isInitialized() const;
+
 	~FrameBuffer();
 
 private:
@@ -109,6 +111,8 @@ private:
 	uint32_t stencilId;
 
 	uint32_t frameBufferId;
+
+	FrameBufferTypes enabled;
 
 	int initialized;
 };

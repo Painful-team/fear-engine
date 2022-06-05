@@ -13,6 +13,8 @@ Window::Window(const std::string& title, const uint32_t width, const uint32_t he
 	data.width = width;
 	data.height = height;
 
+	blocked = false;
+
 	setVsync(vsync);
 }
 
@@ -38,11 +40,20 @@ void Window::setVsync(const bool vsync)
 	data.vsync = true;
 }
 
+bool Window::isCursorBlocked()
+{ return blocked; }
+
 void Window::blockCursor() 
-{ glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); }
+{ 
+	blocked = true;
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); 
+}
 
-
-void Window::unblockCursor() { glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL); }
+void Window::unblockCursor()
+{
+	blocked = false;
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+}
 
 int Window::init(const bool resizeAble)
 {

@@ -3,13 +3,13 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 
-namespace FearEngine::UI::windows
+namespace FearEngine::EditorUI::windows
 {
 DockingArea::DockingArea():
 	dockingEnabled(true)
 {}
 
-void DockingArea::init(Gui* layer) {}
+void DockingArea::init() {}
 
 void DockingArea::showWindow()
 {

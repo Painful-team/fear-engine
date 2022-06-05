@@ -46,6 +46,31 @@ void FearEngine::Render::FrameBuffer::setParams(const FrameBufferParams& params)
 	onResize();
 }
 
+uint32_t getInternalFormat(FearEngine::Render::ColorFormats type)
+{
+	switch (type)
+	{
+	case FearEngine::Render::ColorFormat::R8:
+	case FearEngine::Render::ColorFormat::R16:
+	case FearEngine::Render::ColorFormat::R32F:
+		return GL_R;
+	case FearEngine::Render::ColorFormat::RG8:
+	case FearEngine::Render::ColorFormat::RG16:
+	case FearEngine::Render::ColorFormat::RG32F:
+		return GL_RG;
+	case FearEngine::Render::ColorFormat::RGB8:
+	case FearEngine::Render::ColorFormat::RGB16:
+	case FearEngine::Render::ColorFormat::RGB32F:
+		return GL_RGB;
+	case FearEngine::Render::ColorFormat::RGBA8:
+	case FearEngine::Render::ColorFormat::RGBA16:
+	case FearEngine::Render::ColorFormat::RGBA32F:
+		return GL_RGBA;
+	default:
+		return 0;
+	}
+}
+
 void FearEngine::Render::FrameBuffer::onResize()
 {
 	if (!initialized)
@@ -58,28 +83,17 @@ void FearEngine::Render::FrameBuffer::onResize()
 		glGenFramebuffers(1, &frameBufferId);
 	}
 
-	if (colorId != -1)
-	{
-		glDeleteTextures(1, &colorId);
-	}
-
-	if (depthId != -1)
-	{
-		glDeleteTextures(1, &depthId);
-	}
-
-	if (stencilId != -1)
-	{
-		glDeleteTextures(1, &stencilId);
-	}
-
 	glBindFramebuffer(GL_FRAMEBUFFER, frameBufferId);
 
 	if (data.bufferTypes & FrameBufferType::Color)
 	{
-		glCreateTextures(GL_TEXTURE_2D, 1, &colorId);
+		if (colorId == -1)
+		{
+			glCreateTextures(GL_TEXTURE_2D, 1, &colorId);
+		}
+
 		glBindTexture(GL_TEXTURE_2D, colorId);
-		glTexStorage2D(GL_TEXTURE_2D, 1, data.colorFormat, data.width, data.height);
+		glTexImage2D(GL_TEXTURE_2D, 0, data.colorFormat, data.width, data.height, 0, getInternalFormat(data.colorFormat), GL_UNSIGNED_BYTE, nullptr);
 
 		// Todo think about adding ability to filtering
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -91,9 +105,13 @@ void FearEngine::Render::FrameBuffer::onResize()
 
 	if (data.bufferTypes & FrameBufferType::Depth && !(data.bufferTypes & FrameBufferType::Stencil))
 	{
-		glCreateTextures(GL_TEXTURE_2D, 1, &depthId);
+		if (depthId == -1)
+		{
+			glCreateTextures(GL_TEXTURE_2D, 1, &depthId);
+		}
+
 		glBindTexture(GL_TEXTURE_2D, depthId);
-		glTexStorage2D(GL_TEXTURE_2D, 1, data.depthFormat, data.width, data.height);
+		glTexImage2D(GL_TEXTURE_2D, 0, data.depthFormat, data.width, data.height, 0, GL_STENCIL_INDEX, GL_UNSIGNED_BYTE, nullptr);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
@@ -102,9 +120,13 @@ void FearEngine::Render::FrameBuffer::onResize()
 
 	if (data.bufferTypes & FrameBufferType::Stencil && !(data.bufferTypes & FrameBufferType::Depth))
 	{
-		glCreateTextures(GL_TEXTURE_2D, 1, &stencilId);
+		if (stencilId == -1)
+		{
+			glCreateTextures(GL_TEXTURE_2D, 1, &stencilId);
+		}
+
 		glBindTexture(GL_TEXTURE_2D, stencilId);
-		glTexStorage2D(GL_TEXTURE_2D, 1, data.stencilFormat, data.width, data.height);
+		glTexImage2D(GL_TEXTURE_2D, 0, data.stencilFormat, data.width, data.height, 0, getInternalFormat(data.colorFormat), GL_UNSIGNED_BYTE, nullptr);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
@@ -114,23 +136,30 @@ void FearEngine::Render::FrameBuffer::onResize()
 	if (data.bufferTypes & FrameBufferType::Stencil && data.bufferTypes & FrameBufferType::Depth)
 	{
 		uint32_t dataType = 0;
+		uint32_t dataFormat = 0;
 
 		if (data.depthFormat == DepthFormat::Depth24 && data.stencilFormat == StencilFormat::Stencil8)
 		{
 			dataType = GL_DEPTH24_STENCIL8;
+			dataFormat = GL_UNSIGNED_INT_24_8;
 		}
 		else if (data.depthFormat == DepthFormat::Depth32F && data.stencilFormat == StencilFormat::Stencil8)
 		{
 			dataType = GL_DEPTH32F_STENCIL8;
+			dataFormat = GL_FLOAT_32_UNSIGNED_INT_24_8_REV;
 		}
 		else
 		{
 			assert(!"Depth format and stencil supports only 24_8 and 32F_8");
 		}
 
-		glCreateTextures(GL_TEXTURE_2D, 1, &depthId);
+		if (depthId == -1)
+		{
+			glCreateTextures(GL_TEXTURE_2D, 1, &depthId);
+		}
+
 		glBindTexture(GL_TEXTURE_2D, depthId);
-		glTexStorage2D(GL_TEXTURE_2D, 1, dataType, data.width, data.height);
+		glTexImage2D(GL_TEXTURE_2D, 0, dataType, data.width, data.height, 0, GL_DEPTH_STENCIL, dataFormat, nullptr);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
@@ -144,12 +173,81 @@ void FearEngine::Render::FrameBuffer::onResize()
 
 void FearEngine::Render::FrameBuffer::enable()
 {
+	enabled = FrameBufferType::None;
+	if (glIsEnabled(GL_DEPTH_TEST))
+	{
+		enabled |= FrameBufferType::Depth;
+	}
+
+	if (glIsEnabled(GL_STENCIL_TEST))
+	{
+		enabled |= FrameBufferType::Stencil;
+	}
+
 	glBindFramebuffer(GL_FRAMEBUFFER, frameBufferId);
-	glEnable(GL_DEPTH_TEST);
+	if (depthId != -1)
+	{
+		if (data.bufferTypes & FrameBufferType::Stencil)
+		{
+			glEnable(GL_STENCIL_TEST);
+		}
+		
+		glEnable(GL_DEPTH_TEST);
+	}
+
+	if (stencilId != -1)
+	{
+		glEnable(GL_STENCIL_TEST);
+	}
+
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void FearEngine::Render::FrameBuffer::disable() { glBindFramebuffer(GL_FRAMEBUFFER, 0); }
+void FearEngine::Render::FrameBuffer::disable() {
 
-FearEngine::Render::FrameBuffer::~FrameBuffer() { glDeleteFramebuffers(1, &frameBufferId); }
+	if (depthId != -1)
+	{
+		if (data.bufferTypes & FrameBufferType::Stencil && !(enabled & FrameBufferType::Stencil))
+		{
+			glDisable(GL_STENCIL_TEST);
+		}
+
+		if (!(enabled & FrameBufferType::Depth))
+		{
+			glDisable(GL_DEPTH_TEST);
+		}
+	}
+
+	if (stencilId != -1 && !(enabled & FrameBufferType::Stencil))
+	{
+		glDisable(GL_STENCIL_TEST);
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0); 
+}
+
+bool FearEngine::Render::FrameBuffer::isInitialized() const { return initialized; }
+
+FearEngine::Render::FrameBuffer::~FrameBuffer()
+{
+	if (colorId == -1)
+	{
+		glDeleteTextures(1, &colorId);
+	}
+
+	if (depthId == -1)
+	{
+		glDeleteTextures(1, &depthId);
+	}
+
+	if (stencilId == -1)
+	{
+		glDeleteTextures(1, &stencilId);
+	}
+
+	if (frameBufferId != -1)
+	{
+		glDeleteFramebuffers(1, &frameBufferId);
+	}
+}

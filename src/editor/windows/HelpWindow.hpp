@@ -3,14 +3,14 @@
 
 #include "GuiWindow.hpp"
 
-namespace FearEngine::UI::windows
+namespace FearEngine::EditorUI::windows
 {
 class HelpWindow final : public GuiWindow
 {
 public:
 	HelpWindow();
 
-	void init(Gui* layer);
+	void init();
 		
 	void showWindow() final;
 
