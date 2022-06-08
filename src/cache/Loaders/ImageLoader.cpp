@@ -32,6 +32,7 @@ FearEngine::Cache::errorCode FearEngine::Cache::Loaders::ImageLoader::load(const
 	resource = std::make_shared<Resource>();
 	resource->filename = filename;
 	resource->data = data;
+	resource->size = width * height * channels;
 	resource->flags = flags;
 
 	auto extra = std::make_shared<ImageData>();

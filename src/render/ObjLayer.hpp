@@ -11,6 +11,7 @@
 #include "Camera.hpp"
 
 #include <cache/ObjResource.hpp>
+#include "Texture.hpp"
 
 namespace FearEngine::Render
 {
@@ -25,6 +26,7 @@ public:
 	void preUpdate(Camera& cam) override;
 	void update(Camera& cam) override;
 	void postUpdate(Camera& cam) override;
+	void linkTexture(std::shared_ptr<Texture>& texture);
 
 private:
 	Render::VertexBuffer vertex;
@@ -36,9 +38,13 @@ private:
 	Render::Shaders::Uniform projUniform;
 	Render::Shaders::Uniform viewUniform;
 	Render::Shaders::Uniform modelUniform;
-	Render::Shaders::Uniform frame;
 
-	std::shared_ptr<Render::Camera> camera;
+	Render::Shaders::Uniform frame;
+	Shaders::Shader::UniformStorage material;
+
+	std::array<std::shared_ptr<Texture>, FearEngine::Render::Shaders::Shader::maxTextureSlots> textures;
+
+	uint8_t enabledTextures;
 };
 }  // namespace FearEngine::Render
 

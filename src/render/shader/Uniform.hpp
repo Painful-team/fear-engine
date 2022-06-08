@@ -26,6 +26,9 @@ public:
 	uint16_t getTypeSize() const;
 	const std::string_view& getName() const;
 
+	bool isArray() const;
+	int getArraySize() const;
+
 	void setBool(const bool value) const;
 	void setInt(const int value) const;
 	void setFloat(const float value) const;
@@ -42,6 +45,20 @@ public:
 	void setVec4(const float x, const float y, const float z, const float w) const;
 	void setMat4(const glm::mat4& mat) const;
 
+	void setBool(bool* const value, uint32_t count) const;
+	void setInt(int* const value, uint32_t count) const;
+	void setFloat(float* const value, uint32_t count) const;
+
+	void setVec2(glm::vec2* const value, uint32_t count) const;
+	void setMat2(glm::mat2* const mat, uint32_t count) const;
+
+	void setVec3(glm::vec3* const value, uint32_t count) const;
+	void setMat3(glm::mat3* const mat, uint32_t count) const;
+
+	void setVec4(glm::vec4* const value, uint32_t count) const;
+	void setMat4(glm::mat4* const mat, uint32_t count) const;
+
+private:
 	std::string_view name;
 	
 	uniformType type;
@@ -49,12 +66,12 @@ public:
 	//Todo think about replacement with union
 	uint32_t location;
 
+	uint32_t arraySize;
+
 	uint32_t index;
 	uint32_t offset;
 
 	int8_t* buffer;
-
-private:
 
 	friend class Shader;
 };

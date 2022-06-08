@@ -6,6 +6,7 @@
 
 namespace FearEngine::Render::Shaders
 {
+int Uniform::getArraySize() const { return arraySize; }
 void Uniform::setBool(const bool value) const
 {
 	assert(!name.empty() && "Uniform not initialized");
@@ -168,6 +169,7 @@ Uniform::Uniform()
  , index(-1)
  , offset(-1)
  , type(-1)
+ , arraySize(-1)
  , buffer(nullptr)
 {}
 
@@ -180,6 +182,7 @@ Uniform::Uniform(Uniform&& other) noexcept
  , offset(other.offset)
  , type(other.type)
  , buffer(other.buffer)
+ , arraySize(other.arraySize)
 {
 	other.buffer = nullptr;
 }
@@ -192,6 +195,7 @@ Uniform& Uniform::operator=(const Uniform& other)
 	offset = other.offset;
 	type = other.type;
 	buffer = other.buffer;
+	arraySize = other.arraySize;
 
 	return *this;
 }
@@ -204,12 +208,16 @@ Uniform& Uniform::operator=(Uniform&& other) noexcept
 	offset = other.offset;
 	type = other.type;
 	buffer = other.buffer;
+	arraySize = other.arraySize;
+
 	other.buffer = nullptr;
 
 	return *this;
 }
 
 const std::string_view& Uniform::getName() const { return name; }
+
+bool Uniform::isArray() const { return arraySize > 1; }
 
 uniformType Uniform::getType() const { return type; }
 
@@ -238,4 +246,139 @@ uint16_t Uniform::getTypeSize() const
 }
 
 int Uniform::isValid() { return !name.empty(); }
+
+void Uniform::setBool(bool* const value, uint32_t count) const
+{
+	assert(!name.empty() && "Uniform not initialized");
+	assert(arraySize > count && "Array size is smaller than count");
+
+	if (location != -1)
+	{
+		glUniform1iv(location, count, reinterpret_cast<int*>(value));
+	}
+	else
+	{
+		memcpy(buffer + offset, value, count * sizeof(int));
+	}
+}
+
+void Uniform::setInt(int* const value, uint32_t count) const
+{
+	assert(!name.empty() && "Uniform not initialized");
+	assert(arraySize >= count && "Array size is smaller than count");
+
+	if (location != -1)
+	{
+		glUniform1iv(location, count, value);
+	}
+	else
+	{
+		memcpy(buffer + offset, value, count * sizeof(int));
+	}
+}
+
+void Uniform::setFloat(float* const value, uint32_t count) const
+{
+	assert(!name.empty() && "Uniform not initialized");
+	assert(arraySize > count && "Array size is smaller than count");
+
+	if (location != -1)
+	{
+		glUniform1fv(location, count, value);
+	}
+	else
+	{
+		memcpy(buffer + offset, value, count * sizeof(float));
+	}
+}
+
+void Uniform::setVec2(glm::vec2* const value, uint32_t count) const
+{
+	assert(!name.empty() && "Uniform not initialized");
+	assert(arraySize > count && "Array size is smaller than count");
+
+	if (location != -1)
+	{
+		glUniform2fv(location, count, &(*value)[0]);
+	}
+	else
+	{
+		memcpy(buffer + offset, value, count * sizeof(glm::vec2));
+	}
+}
+
+void Uniform::setMat2(glm::mat2* const mat, uint32_t count) const
+{
+	assert(!name.empty() && "Uniform not initialized");
+	assert(arraySize > count && "Array size is smaller than count");
+
+	if (location != -1)
+	{
+		glUniformMatrix2fv(location, count, false, &(*mat)[0][0]);
+	}
+	else
+	{
+		memcpy(buffer + offset, mat, count * sizeof(glm::mat2));
+	}
+}
+
+void Uniform::setVec3(glm::vec3* const value, uint32_t count) const
+{
+	assert(!name.empty() && "Uniform not initialized");
+	assert(arraySize > count && "Array size is smaller than count");
+
+	if (location != -1)
+	{
+		glUniform3fv(location, count, &(*value)[0]);
+	}
+	else
+	{
+		memcpy(buffer + offset, value, count * sizeof(glm::vec3));
+	}
+}
+
+void Uniform::setMat3(glm::mat3* const mat, uint32_t count) const
+{
+	assert(!name.empty() && "Uniform not initialized");
+	assert(arraySize > count && "Array size is smaller than count");
+
+	if (location != -1)
+	{
+		glUniformMatrix3fv(location, count, false, &(*mat)[0][0]);
+	}
+	else
+	{
+		memcpy(buffer + offset, mat, count * sizeof(glm::mat3));
+	}
+}
+
+void Uniform::setVec4(glm::vec4* const value, uint32_t count) const
+{
+	assert(!name.empty() && "Uniform not initialized");
+	assert(arraySize > count && "Array size is smaller than count");
+
+	if (location != -1)
+	{
+		glUniform4fv(location, count, &(*value)[0]);
+	}
+	else
+	{
+		memcpy(buffer + offset, value, count * sizeof(glm::vec4));
+	}
+}
+
+void Uniform::setMat4(glm::mat4* const mat, uint32_t count) const
+{
+	assert(!name.empty() && "Uniform not initialized");
+	assert(arraySize > count && "Array size is smaller than count");
+
+	if (location != -1)
+	{
+		glUniformMatrix4fv(location, count, false, &(*mat)[0][0]);
+	}
+	else
+	{
+		memcpy(buffer + offset, mat, count * sizeof(glm::mat4));
+	}
+}
 }  // namespace FearEngine::Render::Shaders

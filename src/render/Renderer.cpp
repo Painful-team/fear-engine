@@ -113,6 +113,10 @@ int Renderer::initGraphicData()
 	GLint maxBufferSize = 0;
 	glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &maxBufferSize);
 	graphicsData.emplace(GL_MAX_UNIFORM_BLOCK_SIZE, maxBufferSize);
+
+	GLint maxTextureSlots = 0;
+	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &maxTextureSlots);
+	graphicsData.emplace(GL_MAX_TEXTURE_IMAGE_UNITS, maxTextureSlots);
 	return 0;
 }
 }  // namespace FearEngine

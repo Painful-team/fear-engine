@@ -106,7 +106,7 @@ FearEngine::Cache::errorCode FearEngine::Cache::Loaders::ObjLoader::load(const s
 		return false;
 	}
 
-	auto& vb = extra->vertices;	 // pos(3float), normal(3float), color(3float)
+	auto& vb = extra->vertices;	 // pos(3float), normal(3float), color(3float), texCoord(2float)
 	size_t face_offset = 0;
 	for (size_t v = 0; v < attrib.face_num_verts.size(); v++)
 	{
@@ -130,6 +130,21 @@ FearEngine::Cache::errorCode FearEngine::Cache::Loaders::ObjLoader::load(const s
 				v[0][k] = attrib.vertices[3 * f0 + k];
 				v[1][k] = attrib.vertices[3 * f1 + k];
 				v[2][k] = attrib.vertices[3 * f2 + k];
+			}
+
+			float vt[3][2];
+			for (int k = 0; k < 2; k++)
+			{
+				int f0 = idx0.texcoord_index;
+				int f1 = idx1.texcoord_index;
+				int f2 = idx2.texcoord_index;
+				assert(f0 >= 0);
+				assert(f1 >= 0);
+				assert(f2 >= 0);
+
+				vt[0][k] = attrib.texcoords[2 * f0 + k];
+				vt[1][k] = attrib.texcoords[2 * f1 + k];
+				vt[2][k] = attrib.texcoords[2 * f2 + k];
 			}
 
 			float n[3][3];
@@ -197,6 +212,9 @@ FearEngine::Cache::errorCode FearEngine::Cache::Loaders::ObjLoader::load(const s
 				vb.push_back(c[0] * 0.5 + 0.5);
 				vb.push_back(c[1] * 0.5 + 0.5);
 				vb.push_back(c[2] * 0.5 + 0.5);
+
+				vb.push_back(vt[k][0]);
+				vb.push_back(vt[k][1]);
 			}
 		}
 		face_offset += attrib.face_num_verts[v];

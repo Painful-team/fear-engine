@@ -8,6 +8,8 @@
 #include <memory>
 #include <unordered_map>
 
+#include <render/Texture.hpp>
+
 namespace FearEngine::Render::Shaders
 {
 using GLenum = uint32_t;
@@ -15,8 +17,8 @@ using GLenum = uint32_t;
 class Shader
 {
 private:
-	using UniformStorage = std::unordered_map<std::string, Uniform>;
-
+	
+	//Todo think about replacing it on dynamic value even in the shaders
 	static constexpr const char* baseBufferName = "base";
 
 	struct BlockData
@@ -26,9 +28,6 @@ private:
 		uint16_t blockIndex;
 
 		uint16_t binding;
-
-		uint32_t uniformBeginIndex;
-		uint32_t uniformEndIndex;
 
 		uint16_t blockSize;
 
@@ -47,6 +46,9 @@ private:
 	};
 
 public:
+	static constexpr uint32_t maxTextureSlots = 32;
+	using UniformStorage = std::unordered_map<std::string, Uniform>;
+
 	Shader();
 
 	void readShader(const char* path, GLenum shaderType);
@@ -69,11 +71,11 @@ public:
 
 	void initUniforms();
 
+private:
 	std::unordered_map<GLenum, std::string> sources;
 	uint32_t shaderId;
 
 	std::unordered_map<std::string, BlockData> buffers;
-private:
 };
 }  // namespace FearEngine::Render::Shaders
 #endif
