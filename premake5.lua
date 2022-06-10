@@ -14,8 +14,6 @@ workspace "FearEngine"
 		"Release",
 		"Debug"
 	}
-
-	defines "_AMD64_" 
 	
 group "Dependencies"
 	include  "include/glad"
@@ -40,7 +38,8 @@ project "Engine"
 		"include/tinyobj/*.*",
 		"include/glm/glm/**.*",
 		"include/boost/**.*",
-		"include/stb/**.*"
+		"include/stb/**.*",
+		"include/entt/**.*"
 	}
 
 	includedirs
@@ -53,7 +52,8 @@ project "Engine"
        	"include/glm/include",
 		"include/boost",
        	"include/imgui",
-       	"include/stb"
+       	"include/stb",
+		"include/entt"
     }
 		
 	links 
@@ -62,6 +62,12 @@ project "Engine"
 		"glad",
 		"imgui",
 		"glm"
+	}
+
+	defines 
+	{
+		"ENTT_NOEXCEPTION", 
+		"ENTT_ASSERT"
 	}
 
 	filter { "system:windows" }
