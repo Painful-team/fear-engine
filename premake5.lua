@@ -66,8 +66,7 @@ project "Engine"
 
 	defines 
 	{
-		"ENTT_NOEXCEPTION", 
-		"ENTT_ASSERT"
+		"ENTT_NOEXCEPTION"
 	}
 
 	filter { "system:windows" }
