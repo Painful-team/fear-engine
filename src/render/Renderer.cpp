@@ -69,7 +69,6 @@ void Renderer::update()
 	assert(!m_layers.empty() && "Renderer not initialized");
 
 	auto cameraView = Engine::getScene()->view<Component::Camera>();
-
 	for (auto& entity : cameraView)
 	{
 		auto& camera = cameraView.get<Component::Camera>(entity); 

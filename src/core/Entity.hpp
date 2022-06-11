@@ -17,29 +17,11 @@ class Entity
 public:
 
 	Entity();
-	Entity(const Entity& other)
-	 : entity(other.entity)
-	 , scene(other.scene){}
+	Entity(const Entity& other);
 
-	Entity(Entity&& other) noexcept = default;
-	Entity& operator=(const Entity& other)
-	{ 
-		entity = other.entity;
-		scene = other.scene;
-
-		return *this;
-	}
-
-	Entity& operator=(Entity&& other) noexcept
-	{
-		entity = other.entity;
-		scene = other.scene;
-
-		entity = entt::null;
-		scene = nullptr;
-
-		return *this;
-	}
+	Entity(Entity&& other) noexcept;
+	Entity& operator=(const Entity& other);
+	Entity& operator=(Entity&& other) noexcept;
 
 	template<class Component>
 	bool hasComponent()
@@ -54,13 +36,13 @@ public:
 	}
 
 	template <class Component>
-	auto getComponent()
+	decltype(auto) getComponent()
 	{
 		return scene->entities.get<Component>(entity);
 	}
 
 	template <class Component>
-	auto removeComponent()
+	decltype(auto) removeComponent()
 	{
 		static_assert(std::is_same_v<Component, FearEngine::Component::Transform>, "Couldn't remove base Component");
 		static_assert(std::is_same_v<Component, FearEngine::Component::Tag>, "Couldn't remove base Component");

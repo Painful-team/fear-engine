@@ -357,12 +357,20 @@ Shader::BlockData::BlockData()
 {}
 
 Shader::BlockData::BlockData(BlockData& other)
- : name(other.name)
- , blockIndex(other.blockIndex)
- , binding(other.binding)
- , blockSize(other.blockSize)
- , bufferBlockId(other.bufferBlockId)
+{ *this = other; }
+
+Shader::BlockData::BlockData(BlockData&& other) noexcept
 {
+	*this = std::move(other); }
+
+Shader::BlockData& Shader::BlockData::operator=(BlockData& other) noexcept
+{
+	name = other.name;
+	blockIndex = other.blockIndex;
+	binding = other.binding;
+	blockSize = other.blockSize;
+	bufferBlockId = other.bufferBlockId;
+
 	// Todo could be replaced with shared_ptr<string>
 	for (auto& un : other.uniforms)
 	{
@@ -371,19 +379,8 @@ Shader::BlockData::BlockData(BlockData& other)
 	}
 
 	bufferMemory = other.bufferMemory;
-}
 
-Shader::BlockData::BlockData(BlockData&& other) noexcept
- : name(other.name)
- , blockIndex(other.blockIndex)
- , uniforms(std::move(other.uniforms))
- , blockSize(other.blockSize)
- , binding(other.binding)
- , bufferBlockId(other.bufferBlockId)
- , bufferMemory(other.bufferMemory)
-{
-	bufferMemory.swap(other.bufferMemory);
-	other.bufferMemory.reset();
+	return *this;
 }
 
 Shader::BlockData& Shader::BlockData::operator=(BlockData&& other) noexcept

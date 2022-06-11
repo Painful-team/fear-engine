@@ -50,7 +50,6 @@ bool Engine::onResize(Events::WindowResize* event)
 		return true;
 	}
 
-
 	minimized = false;
 	editor->resize(event->getWidth(), event->getHeight());
 	renderer->onResize(event);
@@ -114,7 +113,6 @@ int Engine::init()
 	return 0;
 }
 
-
 void Engine::run()
 {
 	Render::FrameBufferParams params;
@@ -125,6 +123,7 @@ void Engine::run()
 	params.depthFormat = Render::DepthFormat::Depth24;
 	params.stencilFormat = Render::StencilFormat::Stencil8;
 
+	std::cout << "Engine RUNNING";
 
 	Entity cameraA = Engine::getScene()->createEntity("Camera A");
 	{
@@ -151,6 +150,8 @@ void Engine::run()
 		auto& cameraComponentC = cameraC.addComponent<Component::Camera>(&transformC, params);
 		cameraC.addComponent<Component::NoclipCameraController>(&cameraComponentC).initEvents();
 	}
+
+	scene->removeEntity(cameraA);
 
 	while (running)
 	{

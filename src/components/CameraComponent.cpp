@@ -22,6 +22,8 @@ Camera::Camera(Transform* camTransform,
 	updateCameraPos();
 }
 
+Camera::Camera(Camera&& other) noexcept { *this = std::move(other); }
+
 void Camera::beginView()
 {
 	frameBuffer.enable();
@@ -81,9 +83,8 @@ void Camera::updateCameraPos()
 	front = glm::normalize(frontAngle);
 }
 
-Render::FrameBuffer& Camera::getFrameBuffer() { return frameBuffer; }
-
-void Camera::setFrameBuffer(Render::FrameBuffer& buffer) { frameBuffer = buffer; }
+Render::FrameBuffer& Camera::getFrameBuffer() { return frameBuffer; };
+void Camera::setFrameBuffer(Render::FrameBuffer& buffer) {}	 // frameBuffer = buffer; }
 
 bool Camera::isOrthograpic() { return orthographic; }
 
@@ -223,17 +224,7 @@ void NoclipCameraController::setXSensivity(float x) { sensivity.x = x; }
 
 void NoclipCameraController::setYSensivity(float y) { sensivity.y = y; }
 
-NoclipCameraController::~NoclipCameraController()
-{
- 	Engine::getDispatcher()->get<Events::MouseMoved>()->detach(attachedEventHandles[0]);
-	Engine::getDispatcher()->get<Events::MouseButtonPressed>()->detach(attachedEventHandles[1]);
-	Engine::getDispatcher()->get<Events::MouseButtonReleased>()->detach(attachedEventHandles[2]);
-	Engine::getDispatcher()->get<Events::MouseScrolled>()->detach(attachedEventHandles[3]);
-	Engine::getDispatcher()->get<Events::KeyPressed>()->detach(attachedEventHandles[4]);
-	Engine::getDispatcher()->get<Events::KeyReleased>()->detach(attachedEventHandles[5]);
-	Engine::getDispatcher()->get<Events::KeyTyped>()->detach(attachedEventHandles[6]);
-	Engine::getDispatcher()->get<Events::ActiveViewport>()->detach(attachedEventHandles[7]);
-}
+NoclipCameraController::~NoclipCameraController() { detachEvents(); }
 
 void NoclipCameraController::setSensivity(float x, float y)
 {
@@ -254,6 +245,25 @@ void NoclipCameraController::onResize(int width, int height)
 	}
 }
 
+Camera& Camera::operator=(Camera&& other) noexcept
+{
+	camera = std::move(other.camera);
+	farPlane = other.farPlane;
+	fov = other.fov;
+	frameBuffer = std::move(other.frameBuffer);
+	front = other.front;
+	nearPlane = other.nearPlane;
+	orthographic = other.orthographic;
+	projection = other.projection;
+	transform = other.transform;
+	viewUn = std::move(other.viewUn);
+
+	//Todo discover bug with other.transform = nullptr causing events stop working
+	//other.transform = nullptr;
+
+	return *this; 
+}
+
 void Camera::updateUniformData()
 {
 	viewUn.setMat4(glm::lookAt(transform->pos, transform->pos + front, cameraUp));
@@ -272,8 +282,31 @@ void NoclipCameraController::setSpeed(const float camSpeed) { speed = camSpeed; 
 
 const glm::vec2& NoclipCameraController::getSensivity() const { return sensivity; }
 
+NoclipCameraController::NoclipCameraController(NoclipCameraController&& other) noexcept
+{ *this = std::move(other); }
+
+NoclipCameraController& NoclipCameraController::operator=(NoclipCameraController && other) noexcept
+{
+	camera = other.camera;
+	flyInitialized = other.flyInitialized;
+	flyActive = other.flyActive;
+	speed = other.speed;
+	sensivity = other.sensivity;
+	mousePos = other.mousePos;
+	isInputEnabled = other.isInputEnabled;
+	initEvents();
+	other.camera = nullptr;
+	other.flyInitialized = false;
+	other.flyActive = false;
+
+	other.detachEvents();
+	
+	return *this;
+}
+
 void NoclipCameraController::initEvents()
 {
+	eventInitialized = true;
 	attachedEventHandles[0] = Engine::getDispatcher()->get<Events::MouseMoved>()->attach<&NoclipCameraController::onMove>(this);
 	attachedEventHandles[1] = Engine::getDispatcher()->get<Events::MouseButtonPressed>()->attach<&NoclipCameraController::onMousePressed>(this);
 	attachedEventHandles[2] = Engine::getDispatcher()->get<Events::MouseButtonReleased>()->attach<&NoclipCameraController::onMouseReleased>(this);
@@ -282,5 +315,22 @@ void NoclipCameraController::initEvents()
 	attachedEventHandles[5] = Engine::getDispatcher()->get<Events::KeyReleased>()->attach<&NoclipCameraController::onKeyReleased>(this);
 	attachedEventHandles[6] = Engine::getDispatcher()->get<Events::KeyTyped>()->attach<&NoclipCameraController::onKeyTyped>(this);
 	attachedEventHandles[7] = Engine::getDispatcher()->get<Events::ActiveViewport>()->attach<&NoclipCameraController::onActiveCamera>(this);
+}
+
+void NoclipCameraController::detachEvents()
+{
+	if (!eventInitialized)
+	{
+		return;
+	}
+
+	Engine::getDispatcher()->get<Events::MouseMoved>()->detach(attachedEventHandles[0]);
+	Engine::getDispatcher()->get<Events::MouseButtonPressed>()->detach(attachedEventHandles[1]);
+	Engine::getDispatcher()->get<Events::MouseButtonReleased>()->detach(attachedEventHandles[2]);
+	Engine::getDispatcher()->get<Events::MouseScrolled>()->detach(attachedEventHandles[3]);
+	Engine::getDispatcher()->get<Events::KeyPressed>()->detach(attachedEventHandles[4]);
+	Engine::getDispatcher()->get<Events::KeyReleased>()->detach(attachedEventHandles[5]);
+	Engine::getDispatcher()->get<Events::KeyTyped>()->detach(attachedEventHandles[6]);
+	Engine::getDispatcher()->get<Events::ActiveViewport>()->detach(attachedEventHandles[7]);
 }
 }  // namespace FearEngine::Component

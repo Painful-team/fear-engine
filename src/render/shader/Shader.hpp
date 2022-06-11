@@ -40,6 +40,7 @@ private:
 		BlockData();
 		BlockData(BlockData& other);
 		BlockData(BlockData&& other) noexcept;
+		BlockData& operator=(BlockData& other) noexcept;
 		BlockData& operator=(BlockData&& other) noexcept;
 
 		~BlockData();

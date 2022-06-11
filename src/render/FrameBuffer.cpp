@@ -11,6 +11,31 @@ FearEngine::Render::FrameBuffer::FrameBuffer()
  , initialized(false)
 {}
 
+FearEngine::Render::FrameBuffer::FrameBuffer(FrameBuffer&& other) noexcept
+{
+	*this = std::move(other);
+}
+
+FearEngine::Render::FrameBuffer& FearEngine::Render::FrameBuffer::operator=(FrameBuffer&& other) noexcept
+{ 
+	data = other.data;
+	colorId = other.colorId;
+	depthId = other.depthId;
+	stencilId = other.stencilId;
+	frameBufferId = other.frameBufferId;
+	initialized = other.initialized;
+	enabled = other.enabled;
+
+	other.colorId = -1;
+	other.depthId = -1;
+	other.stencilId = -1;
+	other.frameBufferId = -1;
+
+	other.initialized = false;
+
+	return *this; 
+}
+
 void FearEngine::Render::FrameBuffer::init(const FrameBufferParams& params) { setParams(params); }
 
 uint32_t FearEngine::Render::FrameBuffer::getDepthAttachment() const

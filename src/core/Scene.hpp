@@ -15,6 +15,7 @@ public:
 	Scene() = default;
 
 	Entity createEntity(const std::string& name);
+	void removeEntity(Entity& entity);
 
 	template<class Component, class...Compss>
 	auto view()

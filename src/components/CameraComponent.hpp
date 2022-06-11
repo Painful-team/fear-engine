@@ -17,7 +17,6 @@
 
 namespace FearEngine::Component
 {
-
 struct Camera
 {
 public:
@@ -28,6 +27,12 @@ public:
 		 float near = 0.1,
 		 float far = 100,
 		 bool orthographic = false);
+
+	Camera(const Camera& other) = delete;
+	Camera(Camera&& other) noexcept;
+
+	Camera& operator=(const Camera& other) = delete;
+	Camera& operator=(Camera&& other) noexcept;
 
 	void beginView();
 	void end();
@@ -83,10 +88,14 @@ class NoclipCameraController
 public:
 	NoclipCameraController() = delete;
 	NoclipCameraController(Camera* cam, float camSpeed = 0.1, const glm::vec2& camSensivity = {0.1, 0.1});
-
+	NoclipCameraController(const NoclipCameraController& other) = delete;
+	NoclipCameraController(NoclipCameraController&& other) noexcept;
+	NoclipCameraController& operator=(const NoclipCameraController& other) = delete;
+	NoclipCameraController& operator=(NoclipCameraController&& other) noexcept;
 	~NoclipCameraController();
 
 	void initEvents();
+	void detachEvents();
 
 	float getSpeed() const;
 	void setSpeed(const float camSpeed);
@@ -120,8 +129,9 @@ private:
 	int flyActive = false;
 	int flyInitialized = false;
 
-	static constexpr uint8_t EventAttached = 8; 
+	bool eventInitialized = false;
 
+	static constexpr uint8_t EventAttached = 8; 
 	std::array<std::pair<uint32_t, uint32_t>, EventAttached> attachedEventHandles;
 };
 }  // namespace FearEngine::Component

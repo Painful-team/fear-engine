@@ -176,15 +176,8 @@ Uniform::Uniform()
 Uniform::Uniform(const Uniform& other) { *this = other; }
 
 Uniform::Uniform(Uniform&& other) noexcept
- : name(std::move(other.name))
- , location(other.location)
- , index(other.index)
- , offset(other.offset)
- , type(other.type)
- , buffer(other.buffer)
- , arraySize(other.arraySize)
 {
-	other.buffer = nullptr;
+	*this = std::move(other);
 }
 
 Uniform& Uniform::operator=(const Uniform& other)

@@ -86,6 +86,11 @@ class FrameBuffer
 {
 public:
 	FrameBuffer();
+	FrameBuffer(const FrameBuffer& buffer) = delete;
+	FrameBuffer(FrameBuffer&& buffer) noexcept;
+	FrameBuffer& operator=(const FrameBuffer& other) = delete;
+	FrameBuffer& operator=(FrameBuffer&& other) noexcept;
+
 	void init(const FrameBufferParams& params);
 	uint32_t getColorAttachment() const;
 	uint32_t getDepthAttachment() const;
