@@ -13,6 +13,9 @@
 #include <cache/ObjResource.hpp>
 #include <utils/PointerCasts.hpp>
 
+
+#include <core/Scene.hpp>
+
 namespace FearEngine::Render
 {
 ModelLayer::ModelLayer()
@@ -67,6 +70,9 @@ void ModelLayer::init()
 
 	modelUniform.setMat4(glm::mat4(1.0f));
 
+	shader.findUniform("dirLight.dir").setVec3(-1.8, -1.8, -1);
+	shader.findUniform("dirLight.lightColor").setVec3(1, 1, 1);
+
 	int32_t samplers[Shaders::Shader::maxTextureSlots];
 	for (uint8_t i = 0; i < Shaders::Shader::maxTextureSlots; ++i)
 	{
@@ -79,13 +85,14 @@ void ModelLayer::init()
 void ModelLayer::resize(int width, int height) 
 {}
 
-void ModelLayer::preUpdate(Camera& cam) {
+void ModelLayer::preUpdate(Component::Camera& cam)
+{
 	arr.bind();
 	cam.setUniforms(projUniform, viewUniform);
 	cam.beginView();
 }
 
-void ModelLayer::update(Camera& cam)
+void ModelLayer::update(Component::Camera& cam)
 {
 
 	//frame.setFloat(1);
@@ -116,7 +123,8 @@ void ModelLayer::update(Camera& cam)
 	glDrawArrays(GL_TRIANGLES, 0, model->vertices.size());
 }
 
-void ModelLayer::postUpdate(Camera& cam) {
+void ModelLayer::postUpdate(Component::Camera& cam)
+{
 	glBindVertexArray(0);
 	cam.end();
 }

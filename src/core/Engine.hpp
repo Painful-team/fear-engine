@@ -10,6 +10,7 @@
 #include "Window.hpp"
 #include "events.hpp"
 
+#include "Scene.hpp"
 
 namespace FearEngine
 {
@@ -23,6 +24,7 @@ public:
 	static std::unique_ptr<Events::Dispatcher>& getDispatcher();
 	static std::unique_ptr<CacheManager>& getCache();
 	static std::unique_ptr<Editor>& getEditor();
+	static std::unique_ptr<Scene>& getScene();
 
 	int init();
 	void run();
@@ -42,6 +44,8 @@ private:
 	static std::unique_ptr<Window> window;
 	static std::unique_ptr<CacheManager> cacheManager;
 	static std::unique_ptr<Editor> editor;
+
+	static std::unique_ptr<Scene> scene;
 };
 }  // namespace FearEngine
 

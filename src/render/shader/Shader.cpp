@@ -341,7 +341,7 @@ void Shader::initUniforms()
 						  << " l:" << uniform.second.location << '\n';
 			}
 
-			std::cout << std::endl;
+			std::cout << '\n';
 		}
 #endif	// DEBUG
 	}

@@ -8,8 +8,6 @@
 #include "VertexBuffer.hpp"
 #include "shader/Shader.hpp"
 
-#include "Camera.hpp"
-
 #include <cache/ObjResource.hpp>
 #include "Texture.hpp"
 
@@ -23,9 +21,9 @@ public:
 	void init() override;
 
 	void resize(int width, int height) override;
-	void preUpdate(Camera& cam) override;
-	void update(Camera& cam) override;
-	void postUpdate(Camera& cam) override;
+	void preUpdate(Component::Camera& cam) override;
+	void update(Component::Camera& cam) override;
+	void postUpdate(Component::Camera& cam) override;
 	void linkTexture(std::shared_ptr<Texture>& texture);
 
 private:

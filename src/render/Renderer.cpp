@@ -10,7 +10,6 @@
 #include <core/Input.hpp>
 #include <event/WindowEvent.hpp>
 
-#include "Camera.hpp"
 #include "Layer.hpp"
 #include "shader/Shader.hpp"
 
@@ -69,8 +68,11 @@ void Renderer::update()
 {
 	assert(!m_layers.empty() && "Renderer not initialized");
 
-	for (auto& camera: cameras)
+	auto cameraView = Engine::getScene()->view<Component::Camera>();
+
+	for (auto& entity : cameraView)
 	{
+		auto& camera = cameraView.get<Component::Camera>(entity); 
 		for (auto it = m_layers.rbegin(); it != m_layers.rend(); ++it)
 		{
 			(*it)->preUpdate(camera);

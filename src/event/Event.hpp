@@ -29,7 +29,9 @@ enum class EventType
 	mouseScrolled,
 	mouseRequired,
 
-	// According to static allocation and more flexible way of crating new event Type, "invalid" type should be always on the last position
+	activeViewport,
+
+	// According to static allocation and more flexible way of creating new event Type, "invalid" type should be always on the last position
 	invalid
 };
 

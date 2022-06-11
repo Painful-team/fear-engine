@@ -3,7 +3,7 @@
 
 #include "GuiWindow.hpp"
 
-#include <render/Camera.hpp>
+#include <components/CameraComponent.hpp>
 
 #include <string>
 
@@ -17,7 +17,8 @@ public:
 	ViewPort();
 	void init();
 
-	void setCamera(Render::Camera* camera);
+	void setCamera(Component::Camera* camera);
+	Component::Camera* getCamera() const;
 
 	void showWindow() final;
 	bool isWindowOpen() const;
@@ -28,8 +29,7 @@ public:
 
 	std::string name; 
 private:
-	Render::Camera* cam;
-
+	Component::Camera* cam;
 
 	bool enabled;
 	bool hovered;

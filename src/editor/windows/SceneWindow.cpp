@@ -119,30 +119,25 @@ void SceneWindow::showWindow()
 		viewPortClass.DockingAllowUnclassed = false;
 		ImGui::DockSpace(sceneDockSpaceId, size, 0, &viewPortClass);
 		
-		if (Engine::getRender()->cameras.size() != cameralistSize && Engine::getRender()->cameras.size() != 0)
+		auto view = Engine::getScene()->view<Component::Camera>();
+
+		for (auto& entity : view)
 		{
-			int tmpCamPos = -1;
-			for (auto& cam : Engine::getRender()->cameras)
+			auto& cam = view.get<Component::Camera>(entity);
+			for (uint32_t i = 0; i < maxViewPorts; ++i)
 			{
-				++tmpCamPos;
-				if (cameraPos > tmpCamPos)
+				if (viewPorts[i].getCamera() == &cam)
 				{
-					continue;
+					break;
 				}
 
-				for (uint32_t i = 0; i < maxViewPorts; ++i)
+				if (!viewPorts[i].isPanelEnabled())
 				{
-					if (!viewPorts[i].isPanelEnabled())
-					{
-						viewPorts[i].setCamera(&cam);
-						viewPorts[i].name = "Viewport " + std::to_string(i);
-						break;
-					}
+					viewPorts[i].setCamera(&cam);
+					viewPorts[i].name = "Viewport " + std::to_string(i);
+					break;
 				}
 			}
-
-			cameralistSize = Engine::getRender()->cameras.size();
-			cameraPos = cameralistSize;
 		}
 
 		focused = false;

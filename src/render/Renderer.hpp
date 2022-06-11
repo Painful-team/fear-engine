@@ -10,7 +10,6 @@
 #include "Layer.hpp"
 
 #include "shader/Shader.hpp"
-#include "Camera.hpp"
 
 namespace FearEngine
 {
@@ -25,9 +24,6 @@ public:
 	void postUpdate();
 
 	void onResize(Events::WindowResize* event, const int x = 0, const int y = 0);
-
-	//Temp member, will be replaced when ECS will be ready.
-	std::list<Render::Camera> cameras;
 
 	~Renderer();
 

@@ -17,6 +17,7 @@
 #include "Window.hpp"
 #include "events.hpp"
 
+#include "Entity.hpp"
 
 namespace FearEngine
 {
@@ -25,6 +26,7 @@ std::unique_ptr<Events::Dispatcher> Engine::eventDispatcher;
 std::unique_ptr<Window> Engine::window;
 std::unique_ptr<CacheManager> Engine::cacheManager;
 std::unique_ptr<Editor> Engine::editor;
+std::unique_ptr<Scene> Engine::scene;
 
 void Engine::onEvent(Events::Event* event) { eventDispatcher->notify(event); }
 
@@ -70,7 +72,10 @@ std::unique_ptr<Events::Dispatcher>& Engine::getDispatcher() { return Engine::ev
 
 std::unique_ptr<CacheManager>& Engine::getCache() { return Engine::cacheManager; }
 
-std::unique_ptr<Editor>& Engine::getEditor() { return editor; }
+std::unique_ptr<Editor>& Engine::getEditor() { return Engine::editor; }
+
+std::unique_ptr<Scene>& Engine::getScene()
+{ return Engine::scene; }
 
 int Engine::init()
 {
@@ -79,6 +84,7 @@ int Engine::init()
 	Engine::window = std::make_unique<Window>();
 	Engine::cacheManager = std::make_unique<CacheManager>();
 	Engine::editor = std::make_unique<Editor>();
+	Engine::scene = std::make_unique<Scene>();
 
 	eventDispatcher->get<Events::WindowRestored>()->attach<&Engine::onRestore>(this);
 
@@ -111,9 +117,6 @@ int Engine::init()
 
 void Engine::run()
 {
-	//TODO will be replaced in future virsion when ecs will be ready
-	Render::Camera cam;
-
 	Render::FrameBufferParams params;
 	params.width = Engine::getWindow()->getWidth();
 	params.height = Engine::getWindow()->getHeight();
@@ -121,14 +124,33 @@ void Engine::run()
 	params.colorFormat = Render::ColorFormat::RGBA8;
 	params.depthFormat = Render::DepthFormat::Depth24;
 	params.stencilFormat = Render::StencilFormat::Stencil8;
-	renderer->cameras.emplace_back(cam);
-	renderer->cameras.back().init(params, {-0.00355635, -0.164256, 2.49057});
-	
-	renderer->cameras.emplace_back(cam);
-	renderer->cameras.back().init(params, {-3.03853, 1.01738, 2.71823}, {-6.40002, -37.9002, 0});
 
-	renderer->cameras.emplace_back(cam);
-	renderer->cameras.back().init(params, {1.88206, -0.279197, 2.37471}, {-6.39998, -128.8, 0});
+
+	Entity cameraA = Engine::getScene()->createEntity("Camera A");
+	{
+		auto& transformA = cameraA.getComponent<Component::Transform>();
+		transformA.pos = {-0.00355635, -0.164256, 2.49057};
+		auto& cameraComponentA = cameraA.addComponent<Component::Camera>(&transformA, params);
+		cameraA.addComponent<Component::NoclipCameraController>(&cameraComponentA).initEvents();
+	}
+
+	Entity cameraB = Engine::getScene()->createEntity("Camera B");
+	{
+		auto& transformB = cameraB.getComponent<Component::Transform>();
+		transformB.pos = {-3.03853, 1.01738, 2.71823};
+		transformB.rotation = {-6.40002, -37.9002, 0};
+		auto& cameraComponentB = cameraB.addComponent<Component::Camera>(&transformB, params);
+		cameraB.addComponent<Component::NoclipCameraController>(&cameraComponentB).initEvents();
+	}
+
+	Entity cameraC = Engine::getScene()->createEntity("Camera C");
+	{
+		auto& transformC = cameraC.getComponent<Component::Transform>();
+		transformC.pos = {1.88206, -0.279197, 2.37471};
+		transformC.rotation = {-6.39998, -128.8, 0};
+		auto& cameraComponentC = cameraC.addComponent<Component::Camera>(&transformC, params);
+		cameraC.addComponent<Component::NoclipCameraController>(&cameraComponentC).initEvents();
+	}
 
 	while (running)
 	{

@@ -10,10 +10,12 @@ FearEngine::EditorUI::windows::ViewPort::ViewPort()
 
 void FearEngine::EditorUI::windows::ViewPort::init() {}
 
-void FearEngine::EditorUI::windows::ViewPort::setCamera(FearEngine::Render::Camera* camera) { 
-	cam = camera; 
+void FearEngine::EditorUI::windows::ViewPort::setCamera(Component::Camera* camera) { 
+	cam = camera;
 	enabled = true;
 }
+
+FearEngine::Component::Camera* FearEngine::EditorUI::windows::ViewPort::getCamera() const { return cam; }
 
 void FearEngine::EditorUI::windows::ViewPort::showWindow()
 {
@@ -27,6 +29,12 @@ void FearEngine::EditorUI::windows::ViewPort::showWindow()
 			ImGui::Image((void*)cam->getFrameBuffer().getColorAttachment(), size, {0, 1}, {1, 0});
 		}
 		hovered |= ImGui::IsItemHovered();
+
+		if (hovered)
+		{
+			auto evnt = Events::ActiveViewport(cam);
+			Engine::getDispatcher()->notify(&evnt);
+		}
 	}
 	ImGui::End();
 }

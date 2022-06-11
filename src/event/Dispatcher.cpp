@@ -50,6 +50,7 @@ casetype(input == Class::staticType())											\
 	cases(else if, 	type,	MouseScrolled, 			func)\
 	cases(else if, type, RenderInitialized, func)\
 	cases(else if, type, MouseRequired, func)\
+	cases(else if, type, ActiveViewport, func)\
 
 Dispatcher::Dispatcher()
 {
@@ -73,6 +74,7 @@ Dispatcher::Dispatcher()
 	registerEvent<MouseMoved>();
 	registerEvent<MouseScrolled>();
 	registerEvent<RenderInitialized>();
+	registerEvent<ActiveViewport>();
 }
 
 void Dispatcher::notify(Event* event)

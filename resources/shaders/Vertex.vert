@@ -7,9 +7,7 @@ layout (location = 3) in vec2 texCord;
 layout(std140, binding = 1) uniform Camera
 {
 	uniform mat4 projection;
-
 	uniform mat4 view;
-
 };
 
 uniform mat4 model;
