@@ -17,20 +17,31 @@ public:
 	Entity createEntity(const std::string& name);
 	void removeEntity(Entity& entity);
 
-	template<class Component, class...Compss>
-	auto view()
+	//TODO replace parameter on from uin32_t to Entity.
+	template<class Component, class... Compss>
+	decltype(auto) get(uint32_t entit)
+	{
+		return entities.get<Component, Compss...>((entt::entity)entit);
+	}
+
+	template<class Component, class... Compss>
+	decltype(auto) view()
 	{
 		return entities.view<Component, Compss...>();
 	}
 
 	template <class Component, class... Compss>
-	auto group() { return entities.group<Component, Compss>(); }
+	decltype(auto) group()
+	{
+		return entities.group<Component, Compss...>();
+	}
 
 private:
 	entt::registry entities;
 
 private:
 	friend class Entity;
+	friend class Engine;
 };
 }  // namespace FearEngine
 #endif

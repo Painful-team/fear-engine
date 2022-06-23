@@ -17,18 +17,26 @@
 #include "Window.hpp"
 #include "events.hpp"
 
+#include <cache/CacheManager.hpp>
+
 #include "Entity.hpp"
+#include "Logger.hpp"
 
 namespace FearEngine
 {
-std::unique_ptr<Renderer> Engine::renderer;
+std::unique_ptr<Logger> Engine::loggers;
 std::unique_ptr<Events::Dispatcher> Engine::eventDispatcher;
-std::unique_ptr<Window> Engine::window;
 std::unique_ptr<CacheManager> Engine::cacheManager;
+std::unique_ptr<Window> Engine::window;
 std::unique_ptr<Editor> Engine::editor;
 std::unique_ptr<Scene> Engine::scene;
+std::unique_ptr<Renderer> Engine::renderer;
 
-void Engine::onEvent(Events::Event* event) { eventDispatcher->notify(event); }
+void Engine::onEvent(Events::Event* event)
+{
+	loggers->log("Event", "{0} occurred.", event->name());
+	eventDispatcher->notify(event);
+}
 
 bool Engine::onMinimized(Events::WindowMinimized* event)
 {
@@ -73,42 +81,46 @@ std::unique_ptr<CacheManager>& Engine::getCache() { return Engine::cacheManager;
 
 std::unique_ptr<Editor>& Engine::getEditor() { return Engine::editor; }
 
-std::unique_ptr<Scene>& Engine::getScene()
-{ return Engine::scene; }
+std::unique_ptr<Scene>& Engine::getScene() { return Engine::scene; }
+
+std::unique_ptr<Logger>& Engine::logs()
+{ return Engine::loggers; }
 
 int Engine::init()
 {
-	Engine::renderer = std::make_unique<Renderer>();
-	Engine::eventDispatcher = std::make_unique<Events::Dispatcher>();
-	Engine::window = std::make_unique<Window>();
-	Engine::cacheManager = std::make_unique<CacheManager>();
-	Engine::editor = std::make_unique<Editor>();
-	Engine::scene = std::make_unique<Scene>();
+	Engine::loggers = std::make_unique<Logger>();
+	auto result = loggers->init();
+	assert(result == 0);
 
+	Engine::eventDispatcher = std::make_unique<Events::Dispatcher>();
 	eventDispatcher->get<Events::WindowRestored>()->attach<&Engine::onRestore>(this);
 
 	eventDispatcher->get<Events::WindowResize>()->attach<&Engine::onResize>(this);
 	eventDispatcher->get<Events::WindowClose>()->attach<&Engine::onClose>(this);
 	eventDispatcher->get<Events::WindowMinimized>()->attach<&Engine::onMinimized>(this);
 	eventDispatcher->get<Events::WindowRestored>()->attach<&Engine::onRestore>(this);
-
-	assert(cacheManager->init() == 0);
-
-	assert(glfwInit());
-
-	window->setEventHandler(Window::handle_type::create<&Engine::onEvent>());
-
-	assert(window->init(true) == 0);
-
-	glfwMakeContextCurrent(window->window);
-	
 	eventDispatcher->get<Events::WindowRestored>()->attach<&Engine::onRestore>(this);
 
+	Engine::cacheManager = std::make_unique<CacheManager>();
+	result = cacheManager->init();
+	assert(result == 0);
+
+	Engine::window = std::make_unique<Window>();
+	result = window->init();
+	assert(result == 0);
+	window->setEventHandler(Window::handle_type::create<&Engine::onEvent>());
+
+	Engine::editor = std::make_unique<Editor>();
 	eventDispatcher->get<Events::RenderInitialized>()->attach([this](Events::RenderInitialized*) {
 		this->getEditor()->init();
 		return false;
 	});
-	assert(renderer->init() == 0);
+
+	Engine::scene = std::make_unique<Scene>();
+
+	Engine::renderer = std::make_unique<Renderer>();
+	result = renderer->init();
+	assert(result == 0);
 
 	return 0;
 }
@@ -122,8 +134,6 @@ void Engine::run()
 	params.colorFormat = Render::ColorFormat::RGBA8;
 	params.depthFormat = Render::DepthFormat::Depth24;
 	params.stencilFormat = Render::StencilFormat::Stencil8;
-
-	std::cout << "Engine RUNNING";
 
 	Entity cameraA = Engine::getScene()->createEntity("Camera A");
 	{

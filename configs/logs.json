@@ -1,0 +1,30 @@
+{
+	"Loggers": 
+	[
+	{
+		"Name": "Core",
+		"Pattern": "%^[%n] [%H:%M:%S:%e]%$ %v",
+		"Enabled": true
+	},
+	{
+		"Name": "Event",
+		"Pattern": "%^[%n] [%H:%M:%S:%e]%$ %v",
+		"Enabled": false
+	},
+	{
+		"Name": "Render",
+		"Pattern": "%^[%n] [%H:%M:%S:%e]%$ %v",
+		"Enabled": true
+	},
+	{
+		"Name": "Cache",
+		"Pattern": "%^[%n] [%H:%M:%S:%e]%$ %v",
+		"Enabled": true
+	},
+	{
+		"Name": "Entity",
+		"Pattern": "%^[%n] [%H:%M:%S:%e]%$ %v",
+		"Enabled": true
+	}
+	]
+}

@@ -1,9 +1,13 @@
+#include <core/Engine.hpp>
 #include "Window.hpp"
 
 #include <GLFW/glfw3.h>
 
 #include "Input.hpp"
 #include "events.hpp"
+
+#include <core/Logger.hpp>
+#include <render/ErrorCodes.hpp>
 
 namespace FearEngine
 {
@@ -43,10 +47,10 @@ void Window::setVsync(const bool vsync)
 bool Window::isCursorBlocked()
 { return blocked; }
 
-void Window::blockCursor() 
-{ 
+void Window::blockCursor()
+{
 	blocked = true;
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); 
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
 void Window::unblockCursor()
@@ -55,8 +59,17 @@ void Window::unblockCursor()
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 }
 
+void glfwCallbackFunction(int glfwErrorCode, const char* description) { Engine::logs()->error("Core", fmt::format(fmt::fg(fmt::color::red), "Window API error occured with Error code {0} it means \"{1}\".", glfwErrorCode, description)); }
+
 int Window::init(const bool resizeAble)
 {
+	Engine::logs()->log("Core", "Window initialization has begun.");
+
+	glfwSetErrorCallback(glfwCallbackFunction);
+
+	auto apiResult = glfwInit();
+	assert(apiResult);
+
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -65,7 +78,9 @@ int Window::init(const bool resizeAble)
 	window = glfwCreateWindow(data.width, data.height, data.title.c_str(), NULL, NULL);
 	if (!window)
 	{
-		return -1;
+		Engine::logs()->error("Core", "Window initialization has failed.");
+
+		return Render::errorCodes::WINDOW_INITIALIZATION_FAILED;
 	}
 
 	glfwSetWindowUserPointer(window, &data);
@@ -171,7 +186,11 @@ int Window::init(const bool resizeAble)
 		data->eventHandler(&evnt);
 	});
 
-	return 0;
+	glfwMakeContextCurrent(window);
+
+	Engine::logs()->log("Core", "Window initialization has ended successfully.");
+
+	return Render::errorCodes::OK;
 }
 
 void Window::onUpdate()

@@ -45,7 +45,7 @@ public:
 	void blockCursor();
 	void unblockCursor();
 
-	int init(const bool resizeAble);
+	int init(const bool resizeAble = true);
 
 	void onUpdate();
 

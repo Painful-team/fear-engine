@@ -2,7 +2,6 @@
 #define FEARENGINE_CORE_ENGINE_H__
 #include <render/FrameBuffer.hpp>
 
-#include <Cache/CacheManager.hpp>
 #include <event/Dispatcher.hpp>
 #include <render/Renderer.hpp>
 #include <editor/Editor.hpp>
@@ -11,9 +10,12 @@
 #include "events.hpp"
 
 #include "Scene.hpp"
+#include "Logger.hpp"
 
 namespace FearEngine
 {
+class CacheManager;
+
 class Engine
 {
 public:
@@ -25,6 +27,7 @@ public:
 	static std::unique_ptr<CacheManager>& getCache();
 	static std::unique_ptr<Editor>& getEditor();
 	static std::unique_ptr<Scene>& getScene();
+	static std::unique_ptr<Logger>& logs();
 
 	int init();
 	void run();
@@ -46,6 +49,7 @@ private:
 	static std::unique_ptr<Editor> editor;
 
 	static std::unique_ptr<Scene> scene;
+	static std::unique_ptr<Logger> loggers;
 };
 }  // namespace FearEngine
 
