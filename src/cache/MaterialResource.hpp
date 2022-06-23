@@ -7,12 +7,20 @@
 #include <tinyobj_loader_opt.h>
 #include <glm/glm.hpp>
 
+#include "ErrorCodes.hpp"
+
 namespace FearEngine::Cache
 {
 class Material: public ResourceExtra
 {
 public:
-	static std::shared_ptr<Material> create(const tinyobj_opt::material_t& material);
+	static errorCode create(const tinyobj_opt::material_t& material,
+		 std::shared_ptr<Material>& materialRef);
+
+	Material() = default;
+
+	Material(Material&& other) noexcept;
+	Material& operator=(Material&& other) noexcept;
 
 	glm::vec3 ambient;
 	glm::vec3 diffuse;
