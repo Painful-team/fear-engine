@@ -6,6 +6,7 @@
 #include "CoreEvent.hpp"
 #include "Event.hpp"
 #include "Observer.hpp"
+#include "EntityEvent.hpp"
 
 namespace FearEngine::Events
 {
@@ -51,6 +52,10 @@ casetype(input == Class::staticType())											\
 	cases(else if, type, RenderInitialized, func)\
 	cases(else if, type, MouseRequired, func)\
 	cases(else if, type, ActiveViewport, func)\
+	cases(else if, type, EntityCreated, func)\
+	cases(else if, type, EntityOnAttached, func)\
+	cases(else if, type, EntityOnDettached, func)\
+	cases(else if, type, EntityRemoved, func)\
 
 Dispatcher::Dispatcher()
 {
@@ -63,6 +68,7 @@ Dispatcher::Dispatcher()
 	registerEvent<WindowRestored>();
 
 	registerEvent<GuiUpdate>();
+	registerEvent<ActiveViewport>();
 
 	registerEvent<KeyPressed>();
 	registerEvent<KeyReleased>();
@@ -74,7 +80,11 @@ Dispatcher::Dispatcher()
 	registerEvent<MouseMoved>();
 	registerEvent<MouseScrolled>();
 	registerEvent<RenderInitialized>();
-	registerEvent<ActiveViewport>();
+
+	registerEvent<EntityCreated>();
+	registerEvent<EntityOnAttached>();
+	registerEvent<EntityOnDettached>();
+	registerEvent<EntityRemoved>();
 }
 
 void Dispatcher::notify(Event* event)

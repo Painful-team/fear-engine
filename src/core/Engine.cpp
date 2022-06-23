@@ -22,6 +22,10 @@
 #include "Entity.hpp"
 #include "Logger.hpp"
 
+#include <utils/PointerCasts.hpp>
+#include <components/MaterialComponent.hpp>
+#include <cache/ObjResource.hpp>
+
 namespace FearEngine
 {
 std::unique_ptr<Logger> Engine::loggers;
@@ -127,6 +131,23 @@ int Engine::init()
 
 void Engine::run()
 {
+	std::shared_ptr<Cache::Resource> resource;
+	Engine::getCache()->getResource("resources/models/backpack.obj", resource);
+	auto model = utils::static_pointer_cast<Cache::ObjData>(resource->extra);
+	auto entity1 = Engine::getScene()->createEntity("BackPack 1");
+	{
+		auto& component = entity1.addComponent<Component::Renderable>();
+		component.mesh = resource;
+		component.materials = model->materials;
+	}
+
+	auto entity2 = Engine::getScene()->createEntity("BackPack 2");
+	{
+		auto& component = entity2.addComponent<Component::Renderable>();
+		component.mesh = resource;
+		component.materials = model->materials;
+	}
+
 	Render::FrameBufferParams params;
 	params.width = Engine::getWindow()->getWidth();
 	params.height = Engine::getWindow()->getHeight();

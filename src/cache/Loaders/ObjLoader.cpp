@@ -1,5 +1,7 @@
 #include "ObjLoader.hpp"
 
+#include <glm/gtx/norm.hpp>
+
 #include <vector>
 
 #include <tinyobj_loader_opt.h>
@@ -7,28 +9,26 @@
 #include <cache/ObjResource.hpp>
 #include <utils/PointerCasts.hpp>
 
-int FearEngine::Cache::Loaders::ObjLoader::init() { return errorCodes::OK; }
+#include <core/Engine.hpp>
+
+FearEngine::Cache::errorCode FearEngine::Cache::Loaders::ObjLoader::init()
+{
+	Engine::logs()->log("Cache", "{0} loader initialization has begun.", getPattern());
+
+	Engine::logs()->log("Cache", "{0} loader initialization has ended successfully.", getPattern());
+	return errorCodes::OK;
+}
 
 std::string FearEngine::Cache::Loaders::ObjLoader::getPattern() const { return "*.obj"; }
 
-// TODO rewrite into optimized glm::version.
-void CalcNormal(float normal[3], float v0[3], float v1[3], float v2[3])
+void CalcNormal(glm::vec3 normal, glm::vec3 v[3])
 {
-	float v10[3];
-	v10[0] = v1[0] - v0[0];
-	v10[1] = v1[1] - v0[1];
-	v10[2] = v1[2] - v0[2];
+	glm::vec3 v10 = v[1] - v[0];
+	glm::vec3 v20 = v[2] - v[0];
 
-	float v20[3];
-	v20[0] = v2[0] - v0[0];
-	v20[1] = v2[1] - v0[1];
-	v20[2] = v2[2] - v0[2];
+	normal = glm::cross(v20, v10);
 
-	normal[0] = v20[1] * v10[2] - v20[2] * v10[1];
-	normal[1] = v20[2] * v10[0] - v20[0] * v10[2];
-	normal[2] = v20[0] * v10[1] - v20[1] * v10[0];
-	
-	float len2 = normal[0] * normal[0] + normal[1] * normal[1] + normal[2] * normal[2];
+	float len2 = glm::length2(normal);
 	if (len2 > 0.0f)
 	{
 		float len = sqrtf(len2);
@@ -38,26 +38,80 @@ void CalcNormal(float normal[3], float v0[3], float v1[3], float v2[3])
 	}
 }
 
-const char* get_file_data(size_t& len, const char* filename)
+//Todo add destruction ability to be able to close file
+FearEngine::Cache::errorCode get_file_data(size_t& len, const char* filename, const char*& data)
 {
-	const char* ext = strrchr(filename, '.');
-
 	size_t data_len = 0;
-	const char* data = nullptr;
 
 	len = 0;
 
 	HANDLE file = CreateFileA(
 		 filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, NULL);
-	assert(file != INVALID_HANDLE_VALUE);
+	if (file == INVALID_HANDLE_VALUE)
+	{
+#ifdef _DEBUG
+		LPSTR messageBuffer = nullptr;
+
+		size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL,
+			 GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&messageBuffer, 0, NULL);
+
+		// To remove \n\r from the end of the message
+		messageBuffer[size - 2] = '\0';
+
+		FearEngine::Engine::logs()->error("Cache", "Loading of {0} has failed with error \"{1}\".", filename, messageBuffer);
+
+		LocalFree(messageBuffer);
+#endif	// _DEBUG
+
+		return FearEngine::Cache::errorCodes::FILE_OPEN_FAILED;
+	}
 
 	HANDLE fileMapping = CreateFileMapping(file, NULL, PAGE_READONLY, 0, 0, NULL);
-	assert(fileMapping != INVALID_HANDLE_VALUE);
+	if (fileMapping == INVALID_HANDLE_VALUE)
+	{
+		CloseHandle(file);
+
+#ifdef _DEBUG
+		LPSTR messageBuffer = nullptr;
+
+		size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL,
+			 GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&messageBuffer, 0, NULL);
+
+		// To remove \n\r from the end of the message
+		messageBuffer[size - 2] = '\0';
+
+		FearEngine::Engine::logs()->error("Cache", "Loading of {0} has failed with error \"{1}\".", filename, messageBuffer);
+
+		LocalFree(messageBuffer);
+#endif	// _DEBUG
+
+		return FearEngine::Cache::errorCodes::FILEMAPPING_FAILED;
+	}
 
 	LPVOID fileMapView = MapViewOfFile(fileMapping, FILE_MAP_READ, 0, 0, 0);
-	assert(fileMapView != nullptr);
+	if (fileMapView == nullptr)
+	{
+		CloseHandle(file);
+		CloseHandle(fileMapping);
 
-	data = (const char*)fileMapView;
+		#ifdef _DEBUG
+		LPSTR messageBuffer = nullptr;
+
+		size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL,
+			 GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&messageBuffer, 0, NULL);
+
+		// To remove \n\r from the end of the message
+		messageBuffer[size - 2] = '\0';
+
+		FearEngine::Engine::logs()->error("Cache", "Loading of {0} has failed with error \"{1}\".", filename, messageBuffer);
+
+		LocalFree(messageBuffer);
+#endif	// _DEBUG
+
+		return FearEngine::Cache::errorCodes::MAPPEDFILEVIEW_FAILED;
+	}
+
+	data = reinterpret_cast<const char*>(fileMapView);
 
 	LARGE_INTEGER fileSize;
 	fileSize.QuadPart = 0;
@@ -65,31 +119,26 @@ const char* get_file_data(size_t& len, const char* filename)
 
 	len = static_cast<size_t>(fileSize.QuadPart);
 
-	return data;
+	return FearEngine::Cache::errorCodes::OK;
 }
 
 FearEngine::Cache::errorCode FearEngine::Cache::Loaders::ObjLoader::load(const std::string_view& filename,
 	 std::shared_ptr<Resource>& resource,
 	 ResourceFlags flags)
 {
+	Engine::logs()->log("Cache", "Loading of {0} with flags {1} has begun.", filename, flags);
+
 	tinyobj_opt::attrib_t attrib;
 
 	auto load_t_begin = std::chrono::high_resolution_clock::now();
 	size_t data_len = 0;
-	const char* data = get_file_data(data_len, filename.data());
-	if (data == nullptr)
+	const char* data = nullptr;
+	auto result = get_file_data(data_len, filename.data(), data);
+	if (result != errorCodes::OK)
 	{
-		return Cache::errorCodes::RESOURCE_NOT_FOUND;
+		Engine::logs()->error("Cache", "Loading of {0} with flags {1} has failed.", filename, flags);
+		return result;
 	}
-
-	bool verbose = false;
-#ifdef DEBUG
-	verbose = true;
-	auto load_t_end = std::chrono::high_resolution_clock::now();
-	std::chrono::duration<double, std::milli> load_ms = load_t_end - load_t_begin;
-	std::cout << "filesize: " << data_len << std::endl;
-	std::cout << "load time: " << load_ms.count() << " [msecs]" << std::endl;
-#endif
 
 	tinyobj_opt::LoadOption option;
 	option.req_num_threads = ObjLoader::Threads;
@@ -98,125 +147,96 @@ FearEngine::Cache::errorCode FearEngine::Cache::Loaders::ObjLoader::load(const s
 	std::vector<tinyobj_opt::shape_t> shapes;
 	std::vector<tinyobj_opt::material_t> materials;
 
-	option.verbose = verbose;
+	option.verbose = false;
 	bool ret = parseObj(&attrib, &shapes, &materials, data, data_len, option);
-
 	if (!ret)
 	{
-		return false;
+		Engine::logs()->error("Cache", "Loading of {0} with flags {1} has failed with error \"Failed to parse obj file.\".", filename, flags);
+		return errorCodes::OBJECT_PARSE_FAILED;
 	}
 
+	constexpr const uint8_t posVertices = 3;
+	constexpr const uint8_t normals = 3;
+	constexpr const uint8_t colors = 3;
+	constexpr const uint8_t texCoords = 2;
+	constexpr const uint8_t vertices = 3;
+
 	auto& vb = extra->vertices;	 // pos(3float), normal(3float), color(3float), texCoord(2float)
-	size_t face_offset = 0;
-	for (size_t v = 0; v < attrib.face_num_verts.size(); v++)
+	vb.reserve(attrib.face_num_verts.size() * vertices * posVertices * normals * colors * texCoords);
+	for (size_t v = 0, face_offset = 0; v < attrib.face_num_verts.size(); ++v)
 	{
-		assert(attrib.face_num_verts[v] % 3 == 0);	// assume all triangle face(multiple of 3).
-		for (size_t f = 0; f < attrib.face_num_verts[v] / 3; f++)
+		assert(attrib.face_num_verts[v] % vertices == 0);  // assume all triangle face(multiple of 3).
+		for (size_t f = 0; f < attrib.face_num_verts[v] / vertices; ++f)
 		{
-			tinyobj_opt::index_t idx0 = attrib.indices[face_offset + 3 * f + 0];
-			tinyobj_opt::index_t idx1 = attrib.indices[face_offset + 3 * f + 1];
-			tinyobj_opt::index_t idx2 = attrib.indices[face_offset + 3 * f + 2];
+			tinyobj_opt::index_t* idx0 = attrib.indices.data() + face_offset + vertices * f;
 
-			float v[3][3];
-			for (int k = 0; k < 3; k++)
+			glm::vec3 v[vertices];
+			for (uint8_t k = 0; k < vertices; ++k)
 			{
-				int f0 = idx0.vertex_index;
-				int f1 = idx1.vertex_index;
-				int f2 = idx2.vertex_index;
-				assert(f0 >= 0);
-				assert(f1 >= 0);
-				assert(f2 >= 0);
-
-				v[0][k] = attrib.vertices[3 * f0 + k];
-				v[1][k] = attrib.vertices[3 * f1 + k];
-				v[2][k] = attrib.vertices[3 * f2 + k];
+				v[k] = *reinterpret_cast<glm::vec3*>(&attrib.vertices[posVertices * (idx0 + k)->vertex_index]);
 			}
 
-			float vt[3][2];
-			for (int k = 0; k < 2; k++)
+			glm::vec2 vt[vertices];
+			for (uint8_t k = 0; k < vertices; ++k)
 			{
-				int f0 = idx0.texcoord_index;
-				int f1 = idx1.texcoord_index;
-				int f2 = idx2.texcoord_index;
-				assert(f0 >= 0);
-				assert(f1 >= 0);
-				assert(f2 >= 0);
-
-				vt[0][k] = attrib.texcoords[2 * f0 + k];
-				vt[1][k] = attrib.texcoords[2 * f1 + k];
-				vt[2][k] = attrib.texcoords[2 * f2 + k];
+				vt[k] = *reinterpret_cast<glm::vec2*>(&attrib.texcoords[texCoords * (idx0 + k)->texcoord_index]);
 			}
 
-			float n[3][3];
+			glm::vec3 n[vertices];
 			if (attrib.normals.size() > 0)
 			{
-				int nf0 = idx0.normal_index;
-				int nf1 = idx1.normal_index;
-				int nf2 = idx2.normal_index;
-
-				if (nf0 >= 0 && nf1 >= 0 && nf2 >= 0)
+				if (idx0->normal_index >= 0 && (idx0 + 1)->normal_index >= 0 && (idx0 + 2)->normal_index >= 0)
 				{
-					assert(3 * nf0 + 2 < attrib.normals.size());
-					assert(3 * nf1 + 2 < attrib.normals.size());
-					assert(3 * nf2 + 2 < attrib.normals.size());
-					for (int k = 0; k < 3; k++)
+					for (uint8_t k = 0; k < vertices; ++k)
 					{
-						n[0][k] = attrib.normals[3 * nf0 + k];
-						n[1][k] = attrib.normals[3 * nf1 + k];
-						n[2][k] = attrib.normals[3 * nf2 + k];
+						n[k] = *reinterpret_cast<glm::vec3*>(&attrib.normals[normals * (idx0 + k)->normal_index]);
 					}
 				}
 				else
 				{
-					// compute geometric normal
-					CalcNormal(n[0], v[0], v[1], v[2]);
-					n[1][0] = n[0][0];
-					n[1][1] = n[0][1];
-					n[1][2] = n[0][2];
-					n[2][0] = n[0][0];
-					n[2][1] = n[0][1];
-					n[2][2] = n[0][2];
+					CalcNormal(n[0], v);
+					n[1] = n[0];
+					n[2] = n[0];
 				}
 			}
 			else
 			{
-				// compute geometric normal
-				CalcNormal(n[0], v[0], v[1], v[2]);
-				n[1][0] = n[0][0];
-				n[1][1] = n[0][1];
-				n[1][2] = n[0][2];
-				n[2][0] = n[0][0];
-				n[2][1] = n[0][1];
-				n[2][2] = n[0][2];
+				CalcNormal(n[0], v);
+				n[1] = n[0];
+				n[2] = n[0];
 			}
 
-			for (int k = 0; k < 3; k++)
+			for (uint8_t k = 0; k < vertices; ++k)
 			{
-				vb.push_back(v[k][0]);
-				vb.push_back(v[k][1]);
-				vb.push_back(v[k][2]);
-				vb.push_back(n[k][0]);
-				vb.push_back(n[k][1]);
-				vb.push_back(n[k][2]);
+				vb.emplace_back(v[k].x);
+				vb.emplace_back(v[k].y);
+				vb.emplace_back(v[k].z);
+
+				vb.emplace_back(n[k].x);
+				vb.emplace_back(n[k].y);
+				vb.emplace_back(n[k].z);
 				// Use normal as color.
-				float c[3] = {n[k][0], n[k][1], n[k][2]};
-				float len2 = c[0] * c[0] + c[1] * c[1] + c[2] * c[2];
+				glm::vec3 c = n[0];
+				float len2 = glm::length2(c);
 				if (len2 > 1.0e-6f)
 				{
 					float len = sqrtf(len2);
 
-					c[0] /= len;
-					c[1] /= len;
-					c[2] /= len;
+					c /= len;
 				}
-				vb.push_back(c[0] * 0.5 + 0.5);
-				vb.push_back(c[1] * 0.5 + 0.5);
-				vb.push_back(c[2] * 0.5 + 0.5);
 
-				vb.push_back(vt[k][0]);
-				vb.push_back(vt[k][1]);
+				c *= 0.5;
+				c += 0.5;
+
+				vb.emplace_back(c.x);
+				vb.emplace_back(c.y);
+				vb.emplace_back(c.z);
+
+				vb.emplace_back(vt[k].x);
+				vb.emplace_back(vt[k].y);
 			}
 		}
+
 		face_offset += attrib.face_num_verts[v];
 	}
 
@@ -224,18 +244,37 @@ FearEngine::Cache::errorCode FearEngine::Cache::Loaders::ObjLoader::load(const s
 	resource->filename = filename.data();
 	resource->flags = flags;
 
+	errorCode materialLoadResult = errorCodes::OK;
 	std::vector<std::shared_ptr<Material>> materialRefs;
 	materialRefs.resize(materials.size());
 	for (uint8_t i = 0; i < materials.size(); ++i)
 	{
-		materialRefs[i] = Material::create(materials[i]);
+		errorCode result = Material::create(materials[i], materialRefs[i]);
+		if (result != errorCodes::OK)
+		{
+			materialLoadResult = result;
+		}
+	}
+
+	if (materialLoadResult == errorCodes::OK)
+	{
+		Engine::logs()->log("Cache", "Loading of {0} with flags {1} materials has ended successfully.", filename, flags);
+	}
+	else
+	{
+		Engine::logs()->error("Cache", "Loading of {0} with flags {1} materials has ended with error {2}.", filename, flags, materialLoadResult);
 	}
 
 	extra->materials = std::move(materialRefs);
 	resource->extra = utils::reinterpret_pointer_cast<ResourceExtra>(extra);
 	resource->data = reinterpret_cast<int8_t*>(vb.data());
 	resource->size = vb.size() * sizeof(vb[0]);
-	return errorCodes::OK;
+
+	Engine::logs()->log("Cache", "Loading of {0} with flags {1} has ended successfully.\nFilename:{0}\nFlags:{1}\nSize:{2}\nVertices:{3}\nMaterials:{4}",
+		filename, flags, resource->size,vb.size(), extra->materials.size());
+
+
+	return materialLoadResult;
 }
 
 FearEngine::Cache::Loaders::ObjLoader::~ObjLoader() {}

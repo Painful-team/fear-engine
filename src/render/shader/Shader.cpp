@@ -23,29 +23,38 @@ Shader::Shader()
 	res.first->second.name = res.first->first;
 }
 
-void Shader::readShader(const char* path, GLenum shaderType)
+errorCode Shader::readShader(const char* path, GLenum shaderType)
 {
+	Engine::logs()->log("Render", "[Shader System] {0} read has begun.");
+
 	std::string result;
 	std::ifstream in(path, std::ios::in);
 	if (!in)
 	{
-		std::cerr << in.flags();
-		return;
+		Engine::logs()->error("Render", "[Shader System] Read of {0} has failed with error \"No such file.\"");
+		return errorCodes::SHADER_FILE_NOT_EXIST;
 	}
 
 	in.seekg(0, std::ios::end);
 	size_t size = in.tellg();
-	if (size != -1)
-	{}
+	if (size == 0)
+	{
+		Engine::logs()->error("Render", "[Shader System] Read of {0} has failed with error \"File is empty.\"");
+		return errorCodes::SHADER_FILE_EMPTY;
+	}
 
 	result.resize(size);
 	in.seekg(0, std::ios::beg);
 	in.read(result.data(), size);
 
-	sources.insert({shaderType, result});
+	sources.emplace(shaderType, std::move(result));
+
+	Engine::logs()->log("Render", "[Shader System] {0} read has ended successfully.");
+
+	return errorCodes::OK;
 }
 
-std::string& Shader::getSource(GLenum shaderType) { return sources[shaderType]; }
+std::string& Shader::getSource(ShaderType shaderType) { return sources[shaderType]; }
 
 Uniform& Shader::findUniform(const std::string& name)
 {
@@ -82,8 +91,7 @@ void Shader::linkBuffer(const std::string& bufferName, Shader& shader)
 }
 
 std::vector<std::string_view> Shader::getBufferNames() const
-{ 
-
+{
 	std::vector<std::string_view> names;
 	names.resize(buffers.size());
 	for (auto& buf: buffers)
@@ -91,7 +99,7 @@ std::vector<std::string_view> Shader::getBufferNames() const
 		names.emplace_back(buf.first);
 	}
 
-	return names; 
+	return names;
 }
 
 void Shader::updateBuffers()
@@ -117,10 +125,12 @@ void Shader::updateBuffers()
 	}
 }
 
-void Shader::compile()
+errorCode Shader::compile()
 {
 	uint32_t program = glCreateProgram();
-	std::vector<uint32_t> vec(sources.size());
+
+	uint8_t index = 0;
+	uint32_t* shaders = reinterpret_cast<uint32_t*>(alloca(sizeof(uint32_t) * sources.size()));
 	for (const auto& it : sources)
 	{
 		uint32_t shader = glCreateShader(it.first);
@@ -129,15 +139,24 @@ void Shader::compile()
 		glCompileShader(shader);
 
 		int success;
-		char infoLog[512];
 		glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
 		if (!success)
 		{
+#ifdef _DEBUG
+			char infoLog[512];
 			glGetShaderInfoLog(shader, 512, NULL, infoLog);
-			std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
+			Engine::logs()->error("Render", "[Shader System] Compilation has failed with error \"{0}\"", infoLog);
+#endif	// _DEBUG
+
+			for (uint8_t i = 0 ; i < index; ++i)
+			{
+				glDeleteShader(shaders[i]);
+			}
+
+			return errorCodes::SHADER_COMPILATION_FAILED;
 		}
 
-		vec.push_back(shader);
+		shaders[index++] = shader;
 
 		glAttachShader(program, shader);
 	}
@@ -145,21 +164,33 @@ void Shader::compile()
 	glLinkProgram(program);
 
 	int success;
-	char infoLog[512];
 	glGetProgramiv(program, GL_LINK_STATUS, &success);
 	if (!success)
 	{
+#ifdef _DEBUG
+		char infoLog[512];
 		glGetProgramInfoLog(program, 512, NULL, infoLog);
-		std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+
+		for (uint8_t i = 0; i < index; ++i)
+		{
+			glDeleteShader(shaders[i]);
+		}
+
+		Engine::logs()->error("Render", "[Shader System] Linking has failed with error \"{0}\"", infoLog);
+#endif	// _DEBUG
+
+		return errorCodes::SHADER_LINKAGE_FAILED;
 	}
 
 	shaderId = program;
 	initUniforms();
 
-	for (auto it : vec)
+	for (uint8_t i = 0; i < index; ++i)
 	{
-		glDeleteShader(it);
+		glDeleteShader(shaders[i]);
 	}
+
+	return errorCodes::OK;
 }
 
 void Shader::use() { glUseProgram(shaderId); }
@@ -266,7 +297,7 @@ void Shader::initUniforms()
 			glGetActiveUniformBlockiv(shaderId, blockIndex, GL_UNIFORM_BLOCK_BINDING, &binding);
 
 			glUniformBlockBinding(shaderId, blockIndex, binding);
-			
+
 			if (buffers.find(blockname) != buffers.end())
 			{
 				continue;
@@ -285,7 +316,7 @@ void Shader::initUniforms()
 			blockData.blockIndex = blockIndex;
 			blockData.blockSize = blockSize;
 			blockData.binding = binding;
-			
+
 			blockData.bufferMemory = std::shared_ptr<int8_t[]>(new int8_t[blockData.blockSize]);
 
 			glGenBuffers(1, &blockData.bufferBlockId);
@@ -306,7 +337,7 @@ void Shader::initUniforms()
 					{
 						//Todo Remove buf.find
 						auto inserted = res.first->second.uniforms.insert(buffers[baseBufferName].uniforms.extract(names[k]));
-						
+
 						auto& uniform = inserted.position->second;
 						uniform.index = uniformIndices[k];
 						uniform.offset = offsets[k];
@@ -329,24 +360,20 @@ void Shader::initUniforms()
 			}
 		}
 
-#ifdef DEBUG
+#ifdef _DEBUG
 		for (auto& buf : buffers)
 		{
-			std::cout << "Buffer:\t" << buf.first << " bi: " << buf.second.binding 
-				 << ' ' << buf.second.blockSize << "b\n ";
+			Engine::logs()->log("Render", fmt::format(fmt::fg(fmt::color::green), "[Shader System] buffer: {0}, buffer index: {1}, buffer binding: {2}, buffer size: {3}",
+				 buf.first, buf.second.blockIndex, buf.second.binding, buf.second.blockSize));
 
 			for (auto& uniform : buf.second.uniforms)
 			{
-				std::cout << "\t" << uniform.first << ' ' << "i:" << uniform.second.index << " o: " << uniform.second.offset
-						  << " l:" << uniform.second.location << '\n';
+				Engine::logs()->log("Render", fmt::format(fmt::fg(fmt::color::blue), "[Shader System] Uniform: {0}, uniform index: {1}, uniform offset: {2}, uniform location: {3}",
+					 uniform.first, uniform.second.index, uniform.second.offset, uniform.second.location));
 			}
-
-			std::cout << '\n';
 		}
 #endif	// DEBUG
 	}
-	
-	std::cout << std::endl;
 }
 
 Shader::BlockData::BlockData()
@@ -385,7 +412,7 @@ Shader::BlockData& Shader::BlockData::operator=(BlockData& other) noexcept
 
 Shader::BlockData& Shader::BlockData::operator=(BlockData&& other) noexcept
 {
-	name = other.name;
+	name = std::move(other.name);
 
 	blockIndex = other.blockIndex;
 

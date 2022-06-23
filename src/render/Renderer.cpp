@@ -71,7 +71,7 @@ void Renderer::update()
 	auto cameraView = Engine::getScene()->view<Component::Camera>();
 	for (auto& entity : cameraView)
 	{
-		auto& camera = cameraView.get<Component::Camera>(entity); 
+		auto& camera = cameraView.get<Component::Camera>(entity);
 		for (auto it = m_layers.rbegin(); it != m_layers.rend(); ++it)
 		{
 			(*it)->preUpdate(camera);
@@ -81,8 +81,8 @@ void Renderer::update()
 	}
 }
 
-void Renderer::onResize(Events::WindowResize* event, const int x, const int y) 
-{ 
+void Renderer::onResize(Events::WindowResize* event, const int x, const int y)
+{
 	if (static_cast<int>(event->getWidth()) > 1 && static_cast<int>(event->getHeight()) > 1)
 	{
 		glViewport(x, y, event->getWidth(), event->getHeight());
@@ -104,8 +104,8 @@ Renderer::~Renderer()
 	m_layers.clear();
 }
 
-int Renderer::initGraphicData() 
-{ 
+int Renderer::initGraphicData()
+{
 	GLint maxBindings = 0;
 	glGetIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS, &maxBindings);
 

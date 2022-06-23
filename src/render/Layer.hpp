@@ -9,7 +9,7 @@ namespace FearEngine::Render
 class Layer
 {
 public:
-	virtual void init() = 0;
+	virtual errorCode init() = 0;
 	virtual void resize(int width, int height) = 0;
 	virtual void preUpdate(Component::Camera& cam) = 0;
 	virtual void update(Component::Camera& cam) = 0;

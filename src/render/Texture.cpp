@@ -7,7 +7,7 @@ FearEngine::Render::Texture::Texture()
  : textureId(-1)
 {}
 
-FearEngine::Render::Texture::~Texture() 
+FearEngine::Render::Texture::~Texture()
 {
 	if (textureId != -1)
 	{
@@ -32,10 +32,10 @@ FearEngine::Render::Texture& FearEngine::Render::Texture::operator=(Texture&& te
 }
 
 // Todo think about caching mipmap to reduce texture loading time
-void FearEngine::Render::Texture::init(std::shared_ptr<Cache::Resource>& resource) 
-{ 
+void FearEngine::Render::Texture::init(std::shared_ptr<Cache::Resource>& resource)
+{
 	texRes = resource;
-	
+
 	glGenTextures(1, &textureId);
 	glBindTexture(GL_TEXTURE_2D, textureId);
 
@@ -46,7 +46,7 @@ void FearEngine::Render::Texture::init(std::shared_ptr<Cache::Resource>& resourc
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	auto extra = utils::reinterpret_pointer_cast<Cache::ImageData>(resource->extra);
-	
+
 	assert(resource->size != 0);
 
 	GLint format;
@@ -73,13 +73,14 @@ void FearEngine::Render::Texture::init(std::shared_ptr<Cache::Resource>& resourc
 	glGenerateMipmap(GL_TEXTURE_2D);
 }
 
-uint32_t FearEngine::Render::Texture::getTexHandle() const { return textureId; };
+uint32_t FearEngine::Render::Texture::getTexHandle() const { return textureId; }
+const std::shared_ptr<FearEngine::Cache::Resource>& FearEngine::Render::Texture::getResource() const { return texRes; };
 
-void FearEngine::Render::Texture::enable(uint8_t slot) 
-{ 
+void FearEngine::Render::Texture::enable(uint8_t slot)
+{
 	glBindTextureUnit(slot, textureId);
 }
 
-void FearEngine::Render::Texture::disable() 
+void FearEngine::Render::Texture::disable()
 {}
 

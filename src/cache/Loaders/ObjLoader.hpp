@@ -10,7 +10,7 @@ namespace FearEngine::Cache::Loaders
 class ObjLoader: public Loader
 {
 public:
-	int init() override final;
+	errorCode init() override final;
 	std::string getPattern() const override final;
 	Cache::errorCode load(const std::string_view& filename,
 		 std::shared_ptr<Resource>& resource,

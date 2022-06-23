@@ -5,6 +5,7 @@
 #include <event/Dispatcher.hpp>
 #include <render/Renderer.hpp>
 #include <editor/Editor.hpp>
+#include <cache/CacheManager.hpp>
 
 #include "Window.hpp"
 #include "events.hpp"
@@ -14,8 +15,6 @@
 
 namespace FearEngine
 {
-class CacheManager;
-
 class Engine
 {
 public:

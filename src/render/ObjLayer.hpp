@@ -18,20 +18,19 @@ class ModelLayer: public Layer
 public:
 	ModelLayer();
 
-	void init() override;
+	errorCode init() override;
 
 	void resize(int width, int height) override;
 	void preUpdate(Component::Camera& cam) override;
 	void update(Component::Camera& cam) override;
 	void postUpdate(Component::Camera& cam) override;
-	void linkTexture(std::shared_ptr<Texture>& texture);
+	uint32_t linkTexture(std::shared_ptr<Texture>& texture);
+	uint32_t getEnabledTexture(std::shared_ptr<Cache::Resource>& resource);
 
 private:
 	Render::VertexBuffer vertex;
 	Render::Shaders::Shader shader;
 	Render::VertexArray arr;
-
-	std::shared_ptr<Cache::ObjData> model;
 
 	Render::Shaders::Uniform projUniform;
 	Render::Shaders::Uniform viewUniform;

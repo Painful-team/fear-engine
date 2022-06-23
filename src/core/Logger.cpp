@@ -97,6 +97,4 @@ void FearEngine::Logger::disableLogger(const std::string_view& name) {}
 FearEngine::Logger::~Logger()
 {
 	flushAll();
-	loggers.clear();
-	spdlog::shutdown();
 }

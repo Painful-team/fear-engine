@@ -39,7 +39,9 @@ project "Engine"
 		"include/glm/glm/**.*",
 		"include/boost/**.*",
 		"include/stb/**.*",
-		"include/entt/**.*"
+		"include/entt/**.*",
+		"include/json/**.*",
+		"include/spdlog/include/**.*"
 	}
 
 	includedirs
@@ -53,7 +55,9 @@ project "Engine"
 		"include/boost",
        	"include/imgui",
        	"include/stb",
-		"include/entt"
+		"include/entt",
+		"include/spdlog/include/",
+		"include/json"
     }
 		
 	links 
@@ -66,7 +70,9 @@ project "Engine"
 
 	defines 
 	{
-		"ENTT_NOEXCEPTION"
+		"ENTT_NOEXCEPTION",
+		"NOMINMAX",
+		"SPDLOG_NOEXPECTION"
 	}
 
 	filter { "system:windows" }
@@ -81,14 +87,24 @@ project "Engine"
 		}
 
 	filter "configurations:Debug"
-		defines "DEBUG" 
+		defines
+		{
+			"_DEBUG",
+			"SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_DEBUG"
+		}		
+		
 		runtime "Debug"
 		symbols "On"
 
 	filter "configurations:Release"
 		runtime "Release"
 		optimize "On"
-
+		defines
+		{
+			"NDEBUG",
+			"SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_OFF",
+			"STBI_NO_FAILURE_STRINGS"
+		}
 
 newaction {
    trigger     = "clean",

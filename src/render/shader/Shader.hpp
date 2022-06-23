@@ -1,6 +1,8 @@
 #ifndef FEARENGINE_RENDER_SHADER_SHADER_H__
 #define FEARENGINE_RENDER_SHADER_SHADER_H__
 
+#include <glad/glad.h>
+
 #include "Uniform.hpp"
 
 #include <string>
@@ -8,16 +10,22 @@
 #include <memory>
 #include <unordered_map>
 
+#include <render/ErrorCodes.hpp>
+
 #include <render/Texture.hpp>
 
 namespace FearEngine::Render::Shaders
 {
-using GLenum = uint32_t;
+enum ShaderType
+{
+	None = 0,
+	Vertex = GL_VERTEX_SHADER,
+	Fragment = GL_FRAGMENT_SHADER
+};
 
 class Shader
 {
 private:
-	
 	//Todo think about replacing it on dynamic value even in the shaders
 	static constexpr const char* baseBufferName = "base";
 
@@ -52,8 +60,8 @@ public:
 
 	Shader();
 
-	void readShader(const char* path, GLenum shaderType);
-	std::string& getSource(GLenum shaderType);
+	errorCode readShader(const char* path, GLenum shaderType);
+	std::string& getSource(ShaderType shaderType);
 
 	Uniform& findUniform(const std::string& name);
 	UniformStorage& findBuffer(const std::string& name);
@@ -63,7 +71,7 @@ public:
 	std::vector<std::string_view> getBufferNames() const;
 
 	void updateBuffers();
-	void compile();
+	errorCode compile();
 	void use();
 
 	uint32_t getId();

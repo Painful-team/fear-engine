@@ -21,6 +21,7 @@ public:
 	void init(std::shared_ptr<Cache::Resource>& resource);
 
 	uint32_t getTexHandle() const;
+	const std::shared_ptr<Cache::Resource>& getResource() const;
 
 	void enable(uint8_t slot);
 	void disable();

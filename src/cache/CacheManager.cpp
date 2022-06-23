@@ -9,27 +9,37 @@
 #include "Loaders/ImageLoader.hpp"
 #include "Loaders/ObjLoader.hpp"
 
+#include <core/Engine.hpp>
+
 FearEngine::Cache::errorCode FearEngine::CacheManager::init()
 {
+	Engine::logs()->log("Cache", "Cache Manager initialization has begun.");
 	loaders.emplace("*.obj", new Cache::Loaders::ObjLoader);
 	loaders.emplace("*.jpg", new Cache::Loaders::ImageLoader("*.jpg"));
 	loaders.emplace("*.png", new Cache::Loaders::ImageLoader("*.png"));
 
 	for (auto& pair : loaders)
 	{
-		pair.second->init();
+		auto result = pair.second->init();
+		assert(result == Cache::errorCodes::OK);
 	}
+
+	Engine::logs()->log("Cache", "Cache Manager initialization has ended.");
 
 	return Cache::errorCodes::OK;
 }
 
-FearEngine::Cache::errorCode FearEngine::CacheManager::getResource(const std::string_view& file_name,
+FearEngine::Cache::errorCode FearEngine::CacheManager::getResource(const std::string_view& fileName,
 	 std::shared_ptr<Cache::Resource>& resource,
 	 Cache::ResourceFlags flags)
 {
-	if (resources.find({file_name.data(), flags}) != resources.end())
+	Engine::logs()->log("Cache", "{0} with flags {1} has requested.", fileName, flags);
+
+	if (resources.find({fileName.data(), flags}) != resources.end())
 	{
-		resource = resources.at({file_name.data(), flags});
+		resource = resources.at({fileName.data(), flags});
+
+		Engine::logs()->log("Cache", "{0} with flags {1} has found.", fileName, flags);
 
 		updatePriority(resource);
 		return Cache::errorCodes::OK;
@@ -37,9 +47,9 @@ FearEngine::Cache::errorCode FearEngine::CacheManager::getResource(const std::st
 
 	for (auto& pair : loaders)
 	{
-		if (utils::WildcardMatch(pair.first.c_str(), file_name.data()))
+		if (utils::WildcardMatch(pair.first.c_str(), fileName.data()))
 		{
-			auto result = pair.second->load(file_name, resource, flags);
+			auto result = pair.second->load(fileName, resource, flags);
 			if (result == Cache::errorCodes::OK)
 			{
 				addNewResource(resource, flags);
@@ -49,19 +59,23 @@ FearEngine::Cache::errorCode FearEngine::CacheManager::getResource(const std::st
 		}
 	}
 
+	Engine::logs()->error("Cache", "No loader found for {0} with flags {1}.", fileName, flags);
+
 	return Cache::errorCodes::LOADER_NOT_FOUND;
 }
 
-int FearEngine::CacheManager::prepare(const std::string_view& file_name)
+int FearEngine::CacheManager::prepare(const std::string_view& fileName, Cache::ResourceFlags flags)
 {
 	std::shared_ptr<Cache::Resource> resource;
 
-	return getResource(file_name, resource);
+	Engine::logs()->log("Cache", "{0} with flags {1} has requested to prepare.", fileName, flags);
+
+	return getResource(fileName, resource, flags);
 }
 
-FearEngine::Cache::errorCode FearEngine::CacheManager::releaseResource(const std::string_view& file_name, Cache::ResourceFlags flags)
+FearEngine::Cache::errorCode FearEngine::CacheManager::releaseResource(const std::string_view& fileName, Cache::ResourceFlags flags)
 {
-	auto resource = resources.find({file_name.data(), flags});
+	auto resource = resources.find({fileName.data(), flags});
 	if (resource == resources.end())
 	{
 		return Cache::errorCodes::RESOURCE_NOT_FOUND;
@@ -119,6 +133,6 @@ void FearEngine::CacheManager::free(std::shared_ptr<Cache::Resource>& resource, 
 }
 
 std::size_t FearEngine::Cache::detail::__hasher::operator()(const std::pair<std::string_view, Cache::ResourceFlags>& pair) const
-{ 
+{
 	return boost::hash_value(pair);
 }

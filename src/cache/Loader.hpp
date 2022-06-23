@@ -12,7 +12,7 @@ namespace FearEngine::Cache
 class Loader
 {
 public:
-	virtual int init() = 0;
+	virtual errorCode init() = 0;
 	virtual std::string getPattern() const = 0;
 	virtual Cache::errorCode load(const std::string_view& filename,
 		 std::shared_ptr<Resource>& resource,

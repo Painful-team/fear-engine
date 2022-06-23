@@ -268,7 +268,7 @@ NoclipCameraController::NoclipCameraController(NoclipCameraController&& other) n
 
 NoclipCameraController& NoclipCameraController::operator=(NoclipCameraController && other) noexcept
 {
-	camera = std::move(other.camera);
+	camera = other.camera;
 	flyInitialized = other.flyInitialized;
 	flyActive = other.flyActive;
 	speed = other.speed;

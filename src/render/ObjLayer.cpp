@@ -13,8 +13,10 @@
 #include <cache/ObjResource.hpp>
 #include <utils/PointerCasts.hpp>
 
+#include <components/MaterialComponent.hpp>
 
 #include <core/Scene.hpp>
+#include <core/Entity.hpp>
 
 namespace FearEngine::Render
 {
@@ -23,11 +25,26 @@ ModelLayer::ModelLayer()
  , enabledTextures(0)
 {}
 
-void ModelLayer::init()
+errorCode ModelLayer::init()
 {
-	shader.readShader("resources/shaders/Vertex.vert", GL_VERTEX_SHADER);
-	shader.readShader("resources/shaders/Fragment.frag", GL_FRAGMENT_SHADER);
-	shader.compile();
+	auto result = shader.readShader("resources/shaders/Vertex.vert", Shaders::ShaderType::Vertex);
+	if (result != errorCodes::OK)
+	{
+		return result;
+	}
+
+	result = shader.readShader("resources/shaders/Fragment.frag", Shaders::ShaderType::Fragment);
+	if (result != errorCodes::OK)
+	{
+		return result;
+	}
+
+	result = shader.compile();
+	if (result != errorCodes::OK)
+	{
+		return result;
+	}
+
 	shader.use();
 
 	vertex.genBuffer();
@@ -35,20 +52,7 @@ void ModelLayer::init()
 
 	arr.bind();
 
-	std::shared_ptr<Cache::Resource> resource;
-	auto result = Engine::getCache()->getResource("resources/models/backpack.obj", resource);
-	model = utils::static_pointer_cast<Cache::ObjData>(resource->extra);
-	vertex.bindData((float*)resource->data, resource->size);
-	{
-		auto texture = std::make_shared<Texture>();
-		texture->init(model->materials.back()->diffuseRes);
-		linkTexture(texture);
-	}
-	{
-		auto texture = std::make_shared<Texture>();
-		texture->init(model->materials.back()->specularRes);
-		linkTexture(texture);
-	}
+	vertex.bindData(100 * 1024 * 1024);
 
 	arr.addVertexBuffer(vertex);
 
@@ -62,13 +66,9 @@ void ModelLayer::init()
 	modelUniform = shader.findUniform("model");
 
 	frame = shader.findUniform("wireframe");
-	material = shader.findBuffer("Material");
-	material["ambientStrength"].setVec3(model->materials.back()->ambient);
-	material["shininess"].setFloat(model->materials.back()->shininess);
-	material["diffuseTextureId"].setInt(0);
-	material["specularTextureId"].setInt(1);
+	frame.setFloat(0);
 
-	modelUniform.setMat4(glm::mat4(1.0f));
+	material = shader.findBuffer("Material");
 
 	shader.findUniform("dirLight.dir").setVec3(-1.8, -1.8, -1);
 	shader.findUniform("dirLight.lightColor").setVec3(1, 1, 1);
@@ -82,19 +82,17 @@ void ModelLayer::init()
 	shader.findUniform("textures").setInt(samplers, Shaders::Shader::maxTextureSlots);
 }
 
-void ModelLayer::resize(int width, int height) 
+void ModelLayer::resize(int width, int height)
 {}
 
 void ModelLayer::preUpdate(Component::Camera& cam)
 {
-	arr.bind();
 	cam.setUniforms(projUniform, viewUniform);
 	cam.beginView();
 }
 
 void ModelLayer::update(Component::Camera& cam)
 {
-
 	//frame.setFloat(1);
 	//
 	//shader.updateBuffers();
@@ -104,34 +102,79 @@ void ModelLayer::update(Component::Camera& cam)
 	//glPolygonOffset(1, 0.1);
 	//glDrawArrays(GL_TRIANGLES, 0, model->vertices.size());
 	// glDrawElements(GL_TRIANGLES, chunk.triangles.size(), GL_UNSIGNED_INT, 0);
-	
-	frame.setFloat(0);
+	arr.bind();
 
-	modelUniform.setMat4(glm::mat4(1.0f));
-
-	for (uint8_t i = 0; i < enabledTextures; ++i)
+	auto& view = Engine::getScene()->view<Component::Renderable, Component::Transform>();
+	for (auto& entity: view)
 	{
-		textures[i]->enable(i);
+		auto& [tranform, renderable] = Engine::getScene()->get<Component::Transform, Component::Renderable>((uint32_t)entity);
+		modelUniform.setMat4(tranform.getTransformMatrix());
+
+		{
+			uint32_t unit = getEnabledTexture(renderable.materials.back()->diffuseRes);
+			if (unit == -1)
+			{
+				auto texture = std::make_shared<Texture>();
+				texture->init(renderable.materials.back()->diffuseRes);
+				unit = linkTexture(texture);
+			}
+			material["diffuseTextureId"].setInt(unit);
+		}
+
+		{
+			uint32_t unit = getEnabledTexture(renderable.materials.back()->specularRes);
+			if (unit == -1)
+			{
+				auto texture = std::make_shared<Texture>();
+				texture->init(renderable.materials.back()->specularRes);
+				unit = linkTexture(texture);
+			}
+			material["specularTextureId"].setInt(unit);
+		}
+
+		material["ambientStrength"].setVec3(renderable.materials.back()->ambient);
+		material["shininess"].setFloat(renderable.materials.back()->shininess);
+
+		vertex.bindData(reinterpret_cast<float*>(renderable.mesh->data), renderable.mesh->size);
+		for (uint8_t i = 0; i < enabledTextures; ++i)
+		{
+			textures[i]->enable(i);
+		}
+
+		shader.updateBuffers();
+
+		// glDrawElements(GL_TRIANGLES, chunk.triangles.size(), GL_UNSIGNED_INT, 0);
+
+		glDrawArrays(GL_TRIANGLES, 0, renderable.mesh->size / sizeof(float));
 	}
-
-	shader.updateBuffers();
-
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	glPolygonOffset(1, 0);
-	// glDrawElements(GL_TRIANGLES, chunk.triangles.size(), GL_UNSIGNED_INT, 0);
-
-	glDrawArrays(GL_TRIANGLES, 0, model->vertices.size());
 }
 
 void ModelLayer::postUpdate(Component::Camera& cam)
 {
-	glBindVertexArray(0);
+	arr.unBind();
 	cam.end();
 }
 
-void ModelLayer::linkTexture(std::shared_ptr<Texture>& texture)
+uint32_t ModelLayer::linkTexture(std::shared_ptr<Texture>& texture)
 {
 	textures[enabledTextures] = texture;
-	++enabledTextures;
+
+	uint8_t prev = enabledTextures;
+	enabledTextures = enabledTextures + 1 % textures.size();
+	return prev;
 }
+
+uint32_t ModelLayer::getEnabledTexture(std::shared_ptr<Cache::Resource>& resource)
+{
+	for (uint8_t i = 0; i < textures.size() && textures[i]; ++i)
+	{
+		if (textures[i]->getResource().get() == resource.get())
+		{
+			return i;
+		}
+	}
+
+	return -1;
+}
+
 }  // namespace FearEngine::Render

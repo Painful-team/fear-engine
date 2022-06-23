@@ -1,3 +1,5 @@
+#ifndef FEARENGINE_CACHE_CACHEMANAGER_H__
+#define FEARENGINE_CACHE_CACHEMANAGER_H__
 
 #include <list>
 #include <memory>
@@ -23,12 +25,12 @@ class CacheManager
 {
 public:
 	Cache::errorCode init();
-	Cache::errorCode getResource(const std::string_view& file_name,
+	Cache::errorCode getResource(const std::string_view& fileName,
 		 std::shared_ptr<Cache::Resource>& resource,
 		 Cache::ResourceFlags flags = Cache::resourceFlag::None);
-	int prepare(const std::string_view& file_name);
+	int prepare(const std::string_view& fileName, Cache::ResourceFlags flags = Cache::resourceFlag::None);
 
-	Cache::errorCode releaseResource(const std::string_view& file_name, Cache::ResourceFlags flags);
+	Cache::errorCode releaseResource(const std::string_view& fileName, Cache::ResourceFlags flags);
 	void clear();
 
 	void addLoader(const std::string_view& filter, Cache::Loader* loader);
@@ -46,3 +48,5 @@ private:
 	std::unordered_map<std::string, Cache::Loader*> loaders;
 };
 }  // namespace FearEngine
+
+#endif	// FEARENGINE_CACHE_CACHEMANAGER_H__

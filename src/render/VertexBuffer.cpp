@@ -33,7 +33,7 @@ void VertexBuffer::bindData(float* vertices, const uint32_t size)
 void VertexBuffer::setData(float* vertices, const uint32_t size)
 {
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glGetBufferSubData(GL_ARRAY_BUFFER, 0, size, vertices);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, size, vertices);
 }
 
 const std::vector<BufferElement>& VertexBuffer::GetElements() const { return elements; }
