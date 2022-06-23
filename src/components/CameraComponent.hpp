@@ -17,7 +17,7 @@
 
 namespace FearEngine::Component
 {
-struct Camera
+class Camera
 {
 public:
 	Camera() = delete;
@@ -49,7 +49,8 @@ public:
 	void setFar(float camFarPlane);
 
 	Render::FrameBuffer& getFrameBuffer();
-	void setFrameBuffer(Render::FrameBuffer& buffer);
+	//Todo Think if that function is necessary.
+	//void setFrameBuffer(Render::FrameBuffer& buffer);
 
 	bool isOrthograpic();
 	void setProjection(const bool orthographic);
@@ -59,11 +60,12 @@ public:
 	void updateCameraPos();
 	void updateUniformData();
 
+	GENCOMPONENTESSENTIALS(camera)
 private:
 	Transform* transform;
 
 	// Todo think about moving it out of the CameraComponent
-	Render::Shaders::Uniform camera;
+	Render::Shaders::Uniform cameraUn;
 	Render::Shaders::Uniform viewUn;
 
 	Render::FrameBuffer frameBuffer;
@@ -97,14 +99,6 @@ public:
 	void initEvents();
 	void detachEvents();
 
-	float getSpeed() const;
-	void setSpeed(const float camSpeed);
-
-	const glm::vec2& getSensivity() const;
-	void setXSensivity(float x);
-	void setYSensivity(float y);
-	void setSensivity(float x, float y);
-
 	bool onMove(Events::MouseMoved* evnt);
 	bool onMousePressed(Events::MouseButtonPressed* evnt);
 	bool onMouseReleased(Events::MouseButtonReleased* evnt);
@@ -116,11 +110,12 @@ public:
 
 	void onResize(int width, int height);
 
+	GENCOMPONENTESSENTIALS(noclipCameraController)
+
+	float speed;
+	glm::vec2 sensivity;
 private:
 	Camera* camera;
-	float speed;
-
-	glm::vec2 sensivity;
 
 	glm::vec2 mousePos;
 
@@ -131,7 +126,7 @@ private:
 
 	bool eventInitialized = false;
 
-	static constexpr uint8_t EventAttached = 8; 
+	static constexpr uint8_t EventAttached = 8;
 	std::array<std::pair<uint32_t, uint32_t>, EventAttached> attachedEventHandles;
 };
 }  // namespace FearEngine::Component

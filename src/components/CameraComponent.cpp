@@ -34,7 +34,7 @@ void Camera::end() { frameBuffer.disable(); }
 
 void Camera::setUniforms(const Render::Shaders::Uniform& uniform, const Render::Shaders::Uniform& view)
 {
-	camera = uniform;
+	cameraUn = uniform;
 	viewUn = view;
 	setFOV(fov);
 	updateCameraPos();
@@ -84,7 +84,7 @@ void Camera::updateCameraPos()
 }
 
 Render::FrameBuffer& Camera::getFrameBuffer() { return frameBuffer; };
-void Camera::setFrameBuffer(Render::FrameBuffer& buffer) {}	 // frameBuffer = buffer; }
+//void Camera::setFrameBuffer(Render::FrameBuffer& buffer) {}	 // frameBuffer = buffer; }
 
 bool Camera::isOrthograpic() { return orthographic; }
 
@@ -213,23 +213,11 @@ bool NoclipCameraController::onKeyTyped(Events::KeyTyped* evnt)
 	return true;
 }
 
-bool NoclipCameraController::onActiveCamera(Events::ActiveViewport* ent) 
+bool NoclipCameraController::onActiveCamera(Events::ActiveViewport* ent)
 {
 	isInputEnabled = ent->getActive()->transform == camera->transform;
 
-	return true; 
-}
-
-void NoclipCameraController::setXSensivity(float x) { sensivity.x = x; }
-
-void NoclipCameraController::setYSensivity(float y) { sensivity.y = y; }
-
-NoclipCameraController::~NoclipCameraController() { detachEvents(); }
-
-void NoclipCameraController::setSensivity(float x, float y)
-{
-	sensivity.x = x;
-	sensivity.y = y;
+	return true;
 }
 
 void NoclipCameraController::onResize(int width, int height)
@@ -247,7 +235,7 @@ void NoclipCameraController::onResize(int width, int height)
 
 Camera& Camera::operator=(Camera&& other) noexcept
 {
-	camera = std::move(other.camera);
+	cameraUn = std::move(other.cameraUn);
 	farPlane = other.farPlane;
 	fov = other.fov;
 	frameBuffer = std::move(other.frameBuffer);
@@ -258,16 +246,15 @@ Camera& Camera::operator=(Camera&& other) noexcept
 	transform = other.transform;
 	viewUn = std::move(other.viewUn);
 
-	//Todo discover bug with other.transform = nullptr causing events stop working
 	//other.transform = nullptr;
 
-	return *this; 
+	return *this;
 }
 
 void Camera::updateUniformData()
 {
 	viewUn.setMat4(glm::lookAt(transform->pos, transform->pos + front, cameraUp));
-	camera.setMat4(projection);
+	cameraUn.setMat4(projection);
 }
 
 NoclipCameraController::NoclipCameraController(Camera* cam, float camSpeed, const glm::vec2& camSensivity)
@@ -276,18 +263,12 @@ NoclipCameraController::NoclipCameraController(Camera* cam, float camSpeed, cons
  , sensivity(camSensivity)
 {}
 
-float NoclipCameraController::getSpeed() const { return speed; }
-
-void NoclipCameraController::setSpeed(const float camSpeed) { speed = camSpeed; }
-
-const glm::vec2& NoclipCameraController::getSensivity() const { return sensivity; }
-
 NoclipCameraController::NoclipCameraController(NoclipCameraController&& other) noexcept
 { *this = std::move(other); }
 
 NoclipCameraController& NoclipCameraController::operator=(NoclipCameraController && other) noexcept
 {
-	camera = other.camera;
+	camera = std::move(other.camera);
 	flyInitialized = other.flyInitialized;
 	flyActive = other.flyActive;
 	speed = other.speed;
@@ -300,7 +281,7 @@ NoclipCameraController& NoclipCameraController::operator=(NoclipCameraController
 	other.flyActive = false;
 
 	other.detachEvents();
-	
+
 	return *this;
 }
 
@@ -333,4 +314,8 @@ void NoclipCameraController::detachEvents()
 	Engine::getDispatcher()->get<Events::KeyTyped>()->detach(attachedEventHandles[6]);
 	Engine::getDispatcher()->get<Events::ActiveViewport>()->detach(attachedEventHandles[7]);
 }
+
+NoclipCameraController::~NoclipCameraController()
+{ detachEvents(); }
+
 }  // namespace FearEngine::Component

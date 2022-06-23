@@ -7,8 +7,34 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/quaternion.hpp>
 
+
+
 namespace FearEngine::Component
 {
+//Todo think about replacing that enum on hash map f.e to support user Components
+enum ComponentType
+{
+	transform,
+	tag,
+
+	camera,
+	noclipCameraController,
+
+	renderable,
+	light,
+	directionalLight,
+
+	invalid
+};
+
+#define GENCOMPONENTESSENTIALS(classType)                     \
+	static ComponentType staticType() { return ComponentType::classType; } \
+                                                                   \
+	ComponentType type() const { return staticType(); }                \
+                                                                   \
+	const char* name() const { return #classType; }
+
+
 struct Transform
 {
 	glm::vec3 pos;
@@ -18,6 +44,8 @@ struct Transform
 	Transform();
 
 	glm::mat4 getTransformMatrix() const;
+
+	GENCOMPONENTESSENTIALS(transform)
 };
 
 struct Tag
@@ -26,6 +54,8 @@ struct Tag
 
 	Tag() = delete;
 	Tag(const std::string& nameTag);
+
+	GENCOMPONENTESSENTIALS(tag)
 };
 };	// namespace FearEngine::Component
 #endif
