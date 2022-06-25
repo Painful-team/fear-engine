@@ -1,5 +1,6 @@
 #include "ObjLoader.hpp"
 
+#include <glm/glm.hpp>
 #include <glm/gtx/norm.hpp>
 
 #include <vector>
@@ -21,21 +22,42 @@ FearEngine::Cache::errorCode FearEngine::Cache::Loaders::ObjLoader::init()
 
 std::string FearEngine::Cache::Loaders::ObjLoader::getPattern() const { return "*.obj"; }
 
-void CalcNormal(glm::vec3 normal, glm::vec3 v[3])
+static float angle(glm::vec3& v1, glm::vec3& v2)
 {
-	glm::vec3 v10 = v[1] - v[0];
-	glm::vec3 v20 = v[2] - v[0];
+	float dt = dot(v1, v2);
+	float v1Len = length(v1);
+	float v2Len = length(v2);
+	float lenMul = v1Len * v2Len;
+	float div = dt / lenMul;
 
-	normal = glm::cross(v20, v10);
+	return cos(div);
+}
 
-	float len2 = glm::length2(normal);
-	if (len2 > 0.0f)
-	{
-		float len = sqrtf(len2);
+void CalcNormal(glm::vec3 normal[3], glm::vec3 v[3])
+{
+	auto v10 = v[1] - v[0];
+	auto v20 = v[2] - v[0];
+	auto cross = glm::cross(v10, v20);
 
-		normal[0] /= len;
-		normal[1] /= len;
-	}
+	auto v21 = v[2] - v[1];
+	auto v01 = v[0] - v[1];
+	auto v02 = v[0] - v[2];
+	auto v12 = v[1] - v[2];
+
+	auto a0 = angle(v10, v20);
+	auto a1 = angle(v21, v02);
+	auto a2 = angle(v02, v12);
+
+	auto c0 = cross * a0;
+	auto c1 = cross * a1;
+	auto c2 = cross * a2;
+	auto hitWSum = c0 + c1 + c2;
+
+	auto hitWnorm = glm::normalize(hitWSum);
+
+	normal[0] = hitWnorm;
+	normal[1] = normal[0];
+	normal[2] = normal[0];
 }
 
 //Todo add destruction ability to be able to close file
@@ -187,23 +209,26 @@ FearEngine::Cache::errorCode FearEngine::Cache::Loaders::ObjLoader::load(const s
 			{
 				if (idx0->normal_index >= 0 && (idx0 + 1)->normal_index >= 0 && (idx0 + 2)->normal_index >= 0)
 				{
-					for (uint8_t k = 0; k < vertices; ++k)
+					if (flags & ResourceFlag::RecalcNormals)
 					{
-						n[k] = *reinterpret_cast<glm::vec3*>(&attrib.normals[normals * (idx0 + k)->normal_index]);
+						CalcNormal(n, v);
+					}
+					else
+					{
+						for (uint8_t k = 0; k < vertices; ++k)
+						{
+							n[k] = *reinterpret_cast<glm::vec3*>(&attrib.normals[normals * (idx0 + k)->normal_index]);
+						}
 					}
 				}
 				else
 				{
-					CalcNormal(n[0], v);
-					n[1] = n[0];
-					n[2] = n[0];
+					CalcNormal(n, v);
 				}
 			}
 			else
 			{
-				CalcNormal(n[0], v);
-				n[1] = n[0];
-				n[2] = n[0];
+				CalcNormal(n, v);
 			}
 
 			for (uint8_t k = 0; k < vertices; ++k)

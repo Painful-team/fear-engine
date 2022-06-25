@@ -15,6 +15,7 @@
 
 #include <Editor/Editor.hpp>
 #include "ObjLayer.hpp"
+#include "DebugNormalLayer.hpp"
 
 #include <core/Engine.hpp>
 #include <event/CoreEvent.hpp>
@@ -36,6 +37,8 @@ int Renderer::init()
 
 	initGraphicData();
 
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_DEBUG_OUTPUT);
 	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
@@ -44,12 +47,13 @@ int Renderer::init()
 	auto evnt = Events::RenderInitialized();
 	Engine::getDispatcher()->notify(&evnt);
 
+	m_layers.emplace_back(new Render::DebugNormalsLayer);
 	m_layers.emplace_back(new Render::ModelLayer);
-	//m_layers.emplace_back(new Render::ModelLayer);
 
 	for (auto it = m_layers.rbegin(); it != m_layers.rend(); ++it)
 	{
-		(*it)->init();
+		auto result = (*it)->init();
+		assert(result == Render::errorCodes::OK);
 	}
 
 	return 0;
@@ -72,7 +76,8 @@ void Renderer::update()
 	for (auto& entity : cameraView)
 	{
 		auto& camera = cameraView.get<Component::Camera>(entity);
-		for (auto it = m_layers.rbegin(); it != m_layers.rend(); ++it)
+		camera.getFrameBuffer().clear();
+		for (auto it = m_layers.begin(); it != m_layers.end(); ++it)
 		{
 			(*it)->preUpdate(camera);
 			(*it)->update(camera);
@@ -88,7 +93,7 @@ void Renderer::onResize(Events::WindowResize* event, const int x, const int y)
 		glViewport(x, y, event->getWidth(), event->getHeight());
 	}
 
-	for (auto it = m_layers.rbegin(); it != m_layers.rend(); ++it)
+	for (auto it = m_layers.begin(); it != m_layers.end(); ++it)
 	{
 		(*it)->resize(event->getWidth(), event->getHeight());
 	}
@@ -96,7 +101,7 @@ void Renderer::onResize(Events::WindowResize* event, const int x, const int y)
 
 Renderer::~Renderer()
 {
-	for (auto it = m_layers.rbegin(); it != m_layers.rend(); ++it)
+	for (auto it = m_layers.begin(); it != m_layers.end(); ++it)
 	{
 		delete (*it);
 	}

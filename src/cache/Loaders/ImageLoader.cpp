@@ -30,7 +30,7 @@ FearEngine::Cache::errorCode FearEngine::Cache::Loaders::ImageLoader::load(const
 	int height;
 	int channels;
 
-	stbi_set_flip_vertically_on_load(flags & resourceFlag::FlipImageVertically);
+	stbi_set_flip_vertically_on_load(flags & ResourceFlag::FlipImageVertically);
 
 	auto data = reinterpret_cast<int8_t*>(stbi_load(filename.data(), &width, &height, &channels, 0));
 	if (data == nullptr)

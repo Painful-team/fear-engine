@@ -162,7 +162,7 @@ bool Editor::onKeyPressed(Events::KeyPressed* e)
 	ImGuiIO& io = ImGui::GetIO();
 	io.AddKeyEvent(translateKeyToImGui(e->keyCode()), true);
 
-	if (windows.sceneWindow.isFocused() && !io.WantCaptureKeyboard)
+	if (windows.sceneWindow.isFocused())
 	{
 		return true;
 	}

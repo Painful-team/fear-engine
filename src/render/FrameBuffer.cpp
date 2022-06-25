@@ -196,7 +196,7 @@ void FearEngine::Render::FrameBuffer::onResize()
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void FearEngine::Render::FrameBuffer::enable()
+void FearEngine::Render::FrameBuffer::enable(bool cl)
 {
 	enabled = FrameBufferType::None;
 	if (glIsEnabled(GL_DEPTH_TEST))
@@ -225,8 +225,10 @@ void FearEngine::Render::FrameBuffer::enable()
 		glEnable(GL_STENCIL_TEST);
 	}
 
-	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	if (cl)
+	{
+		clear();
+	}
 }
 
 void FearEngine::Render::FrameBuffer::disable() {
@@ -250,6 +252,16 @@ void FearEngine::Render::FrameBuffer::disable() {
 	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0); 
+}
+
+void FearEngine::Render::FrameBuffer::clear() 
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, frameBufferId);
+
+	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 bool FearEngine::Render::FrameBuffer::isInitialized() const { return initialized; }
