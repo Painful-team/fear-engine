@@ -99,7 +99,7 @@ const glm::mat4& Camera::getProjection() const { return projection; }
 
 glm::mat4 Camera::getView() const { return glm::lookAt(transform->pos, transform->pos + front, cameraUp); }
 
-bool NoclipCameraController::onMove(FearEngine::Events::MouseMoved* evnt)
+bool EditorCamera::onMove(FearEngine::Events::MouseMoved* evnt)
 {
 	if (camera == nullptr || !flyActive || !isInputEnabled)
 	{
@@ -139,7 +139,7 @@ bool NoclipCameraController::onMove(FearEngine::Events::MouseMoved* evnt)
 	return true;
 }
 
-bool NoclipCameraController::onMousePressed(Events::MouseButtonPressed* evnt)
+bool EditorCamera::onMousePressed(Events::MouseButtonPressed* evnt)
 {
 	if (!isInputEnabled || camera == nullptr || evnt->getButton() != Events::Mouse::BUTTON_RIGHT)
 	{
@@ -155,7 +155,7 @@ bool NoclipCameraController::onMousePressed(Events::MouseButtonPressed* evnt)
 	return true;
 }
 
-bool NoclipCameraController::onMouseReleased(Events::MouseButtonReleased* evnt)
+bool EditorCamera::onMouseReleased(Events::MouseButtonReleased* evnt)
 {
 	if (!isInputEnabled || camera == nullptr || evnt->getButton() != Events::Mouse::BUTTON_RIGHT)
 	{
@@ -173,14 +173,14 @@ bool NoclipCameraController::onMouseReleased(Events::MouseButtonReleased* evnt)
 	return true;
 }
 
-bool NoclipCameraController::onMouseScrolled(Events::MouseScrolled* evnt) { return true; }
+bool EditorCamera::onMouseScrolled(Events::MouseScrolled* evnt) { return true; }
 
-bool NoclipCameraController::onKeyPressed(Events::KeyPressed* evnt) { return true; }
+bool EditorCamera::onKeyPressed(Events::KeyPressed* evnt) { return true; }
 
-bool NoclipCameraController::onKeyReleased(Events::KeyReleased* evnt) { return true; }
+bool EditorCamera::onKeyReleased(Events::KeyReleased* evnt) { return true; }
 
 // Todo add timebased movement to be able to stop relying on frames
-bool NoclipCameraController::onKeyTyped(Events::KeyTyped* evnt)
+bool EditorCamera::onKeyTyped(Events::KeyTyped* evnt)
 {
 	if (camera == nullptr || !isInputEnabled)
 	{
@@ -213,23 +213,18 @@ bool NoclipCameraController::onKeyTyped(Events::KeyTyped* evnt)
 	return true;
 }
 
-bool NoclipCameraController::onActiveCamera(Events::ActiveViewport* ent)
+bool EditorCamera::onActiveCamera(Events::ActiveViewport* ent)
 {
 	isInputEnabled = ent->getActive()->transform == camera->transform;
 
 	return true;
 }
 
-void NoclipCameraController::onResize(int width, int height)
+void EditorCamera::onResize(int width, int height)
 {
-	if (camera != nullptr && width > 1 && height > 1)
+	if (camera != nullptr)
 	{
-		auto params = camera->frameBuffer.getParams();
-		params.width = width;
-		params.height = height;
-
-		camera->frameBuffer.setParams(params);
-		camera->setFOV(camera->fov);
+		camera->onResize(width, height);
 	}
 }
 
@@ -257,16 +252,29 @@ void Camera::updateUniformData()
 	cameraUn.setMat4(projection);
 }
 
-NoclipCameraController::NoclipCameraController(Camera* cam, float camSpeed, const glm::vec2& camSensivity)
+void Camera::onResize(int width, int height)
+{
+	if (width > 1 && height > 1)
+	{
+		auto params = frameBuffer.getParams();
+		params.width = width;
+		params.height = height;
+
+		frameBuffer.setParams(params);
+		setFOV(fov);
+	}
+}
+
+EditorCamera::EditorCamera(Camera* cam, float camSpeed, const glm::vec2& camSensivity)
  : camera(cam)
  , speed(camSpeed)
  , sensivity(camSensivity)
 {}
 
-NoclipCameraController::NoclipCameraController(NoclipCameraController&& other) noexcept
+EditorCamera::EditorCamera(EditorCamera&& other) noexcept
 { *this = std::move(other); }
 
-NoclipCameraController& NoclipCameraController::operator=(NoclipCameraController && other) noexcept
+EditorCamera& EditorCamera::operator=(EditorCamera && other) noexcept
 {
 	camera = other.camera;
 	flyInitialized = other.flyInitialized;
@@ -285,20 +293,20 @@ NoclipCameraController& NoclipCameraController::operator=(NoclipCameraController
 	return *this;
 }
 
-void NoclipCameraController::initEvents()
+void EditorCamera::initEvents()
 {
 	eventInitialized = true;
-	attachedEventHandles[0] = Engine::getDispatcher()->get<Events::MouseMoved>()->attach<&NoclipCameraController::onMove>(this);
-	attachedEventHandles[1] = Engine::getDispatcher()->get<Events::MouseButtonPressed>()->attach<&NoclipCameraController::onMousePressed>(this);
-	attachedEventHandles[2] = Engine::getDispatcher()->get<Events::MouseButtonReleased>()->attach<&NoclipCameraController::onMouseReleased>(this);
-	attachedEventHandles[3] = Engine::getDispatcher()->get<Events::MouseScrolled>()->attach<&NoclipCameraController::onMouseScrolled>(this);
-	attachedEventHandles[4] = Engine::getDispatcher()->get<Events::KeyPressed>()->attach<&NoclipCameraController::onKeyPressed>(this);
-	attachedEventHandles[5] = Engine::getDispatcher()->get<Events::KeyReleased>()->attach<&NoclipCameraController::onKeyReleased>(this);
-	attachedEventHandles[6] = Engine::getDispatcher()->get<Events::KeyTyped>()->attach<&NoclipCameraController::onKeyTyped>(this);
-	attachedEventHandles[7] = Engine::getDispatcher()->get<Events::ActiveViewport>()->attach<&NoclipCameraController::onActiveCamera>(this);
+	attachedEventHandles[0] = Engine::getDispatcher()->get<Events::MouseMoved>()->attach<&EditorCamera::onMove>(this);
+	attachedEventHandles[1] = Engine::getDispatcher()->get<Events::MouseButtonPressed>()->attach<&EditorCamera::onMousePressed>(this);
+	attachedEventHandles[2] = Engine::getDispatcher()->get<Events::MouseButtonReleased>()->attach<&EditorCamera::onMouseReleased>(this);
+	attachedEventHandles[3] = Engine::getDispatcher()->get<Events::MouseScrolled>()->attach<&EditorCamera::onMouseScrolled>(this);
+	attachedEventHandles[4] = Engine::getDispatcher()->get<Events::KeyPressed>()->attach<&EditorCamera::onKeyPressed>(this);
+	attachedEventHandles[5] = Engine::getDispatcher()->get<Events::KeyReleased>()->attach<&EditorCamera::onKeyReleased>(this);
+	attachedEventHandles[6] = Engine::getDispatcher()->get<Events::KeyTyped>()->attach<&EditorCamera::onKeyTyped>(this);
+	attachedEventHandles[7] = Engine::getDispatcher()->get<Events::ActiveViewport>()->attach<&EditorCamera::onActiveCamera>(this);
 }
 
-void NoclipCameraController::detachEvents()
+void EditorCamera::detachEvents()
 {
 	if (!eventInitialized)
 	{
@@ -315,7 +323,7 @@ void NoclipCameraController::detachEvents()
 	Engine::getDispatcher()->get<Events::ActiveViewport>()->detach(attachedEventHandles[7]);
 }
 
-NoclipCameraController::~NoclipCameraController()
+EditorCamera::~EditorCamera()
 { detachEvents(); }
 
 }  // namespace FearEngine::Component

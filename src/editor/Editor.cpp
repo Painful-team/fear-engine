@@ -10,6 +10,8 @@
 #include <core/Engine.hpp>
 #include <event/GuiEvent.hpp>
 
+#include <core/Input.hpp>
+
 namespace FearEngine
 {
 Editor::Editor()
@@ -61,8 +63,8 @@ void Editor::begin()
 	windows.showAllWindows();
 }
 
-void Editor::end() 
-{ 
+void Editor::end()
+{
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
@@ -97,6 +99,25 @@ bool Editor::onMousePressed(Events::MouseButtonPressed* e)
 
 	if (windows.sceneWindow.isFocused())
 	{
+		if (e->getButton() == Events::Mouse::BUTTON_LEFT)
+		{
+			auto pos = Input::getMousePos();
+
+			auto& comp = windows.sceneWindow.editorCamera.getComponent<Component::Camera>();
+			pos -= windows.sceneWindow.viewPorts[0].contentRegion[0];
+
+			glm::vec2 viewportSize = windows.sceneWindow.viewPorts[0].contentRegion[1] - windows.sceneWindow.viewPorts[0].contentRegion[0];
+			pos.y = viewportSize.y - pos.y;
+
+			auto data = comp.getFrameBuffer().getPixel(Render::FrameBufferType::Additional, pos);
+			char udata[4]{static_cast<char>(data.x), static_cast<char>(data.y), static_cast<char>(data.z), static_cast<char>(data.w)};
+			int EntityNum = *reinterpret_cast<uint32_t*>(udata);
+			if (EntityNum != -1)
+			{
+				windows.inspectorWindow.chosenEntity = Engine::getScene()->getEntity(EntityNum);
+			}
+		}
+
 		return true;
 	}
 
@@ -117,7 +138,7 @@ bool Editor::onMouseReleased(Events::MouseButtonReleased* e)
 	{
 		return true;
 	}
-	
+
 	if (!windows.sceneWindow.isFocused() && Engine::getWindow()->isCursorBlocked())
 	{
 		Engine::getWindow()->unblockCursor();
@@ -126,10 +147,10 @@ bool Editor::onMouseReleased(Events::MouseButtonReleased* e)
 	return false;
 }
 
-bool Editor::onMouseRequired(Events::MouseRequired* e) 
-{ 
+bool Editor::onMouseRequired(Events::MouseRequired* e)
+{
 	mouseReq = e->isRequired();
-	return true; 
+	return true;
 }
 
 bool Editor::onScroll(Events::MouseScrolled* e)
@@ -458,6 +479,39 @@ void EditorMainWindows::init()
 
 	bottomPanel.init();
 	dockingArea.init();
+}
+
+void EditorMainWindows::showAllWindows()
+{
+	if (sceneWindow.isWindowOpen())
+	{
+		sceneWindow.showWindow();
+	}
+
+	if (hierarchyWindow.isWindowOpen())
+	{
+		hierarchyWindow.showWindow();
+	}
+
+	if (projectWindow.isWindowOpen())
+	{
+		projectWindow.showWindow();
+	}
+
+	if (inspectorWindow.isWindowOpen())
+	{
+		inspectorWindow.showWindow();
+	}
+
+	if (helpWindow.isWindowOpen())
+	{
+		helpWindow.showWindow();
+	}
+
+	if (bottomPanel.isPanelEnabled())
+	{
+		bottomPanel.showWindow();
+	}
 }
 
 ImGuiKey translateKeyToImGui(FearEngine::Events::keys key)

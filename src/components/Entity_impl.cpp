@@ -1,19 +1,13 @@
 #include "Entity_impl.hpp"
-#include <event/EntityEvent.hpp>
-
 
 FearEngine::Entity::Entity()
  : scene(nullptr)
  , entity(entt::null)
 {}
 
-FearEngine::Entity::Entity(const Entity& other)
-{ *this = other; }
+FearEngine::Entity::Entity(const Entity& other) { *this = other; }
 
-FearEngine::Entity::Entity(Entity&& other) noexcept
-{
-	*this = std::move(other);
-}
+FearEngine::Entity::Entity(Entity&& other) noexcept { *this = std::move(other); }
 
 FearEngine::Entity& FearEngine::Entity::operator=(const Entity& other)
 {
@@ -33,6 +27,8 @@ FearEngine::Entity& FearEngine::Entity::operator=(Entity&& other) noexcept
 
 	return *this;
 }
+
+bool FearEngine::Entity::isValid() const { return scene->entities.valid(entity); }
 
 FearEngine::Entity::Entity(entt::entity ent, Scene* scn)
  : entity(ent)

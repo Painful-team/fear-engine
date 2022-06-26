@@ -17,12 +17,7 @@ public:
 	Entity createEntity(const std::string& name);
 	void removeEntity(Entity& entity);
 
-	//TODO replace parameter on from uin32_t to Entity.
-	template<class Component, class... Compss>
-	decltype(auto) get(uint32_t entit)
-	{
-		return entities.get<Component, Compss...>((entt::entity)entit);
-	}
+	Entity getEntity(uint32_t enttNum);
 
 	template<class Component, class... Compss>
 	decltype(auto) view()

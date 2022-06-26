@@ -37,9 +37,11 @@ int Renderer::init()
 	initGraphicData();
 
 	glEnable(GL_DEPTH_TEST);
+#if _DEBUG
 	glEnable(GL_DEBUG_OUTPUT);
 	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 	glDebugMessageCallback(MessageCallback, 0);
+#endif
 
 	auto evnt = Events::RenderInitialized();
 	Engine::getDispatcher()->notify(&evnt);

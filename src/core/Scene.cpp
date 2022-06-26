@@ -32,3 +32,5 @@ void FearEngine::Scene::removeEntity(Entity& entity)
 	entity.entity = entt::null;
 	entity.scene = nullptr;
 }
+
+FearEngine::Entity FearEngine::Scene::getEntity(uint32_t enttNum) { return {static_cast<entt::entity>(enttNum), this}; }

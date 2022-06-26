@@ -6,6 +6,7 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 
+#include <components/CameraComponent.hpp>
 #include <core/Engine.hpp>
 
 namespace FearEngine::EditorUI::windows
@@ -17,10 +18,29 @@ SceneWindow::SceneWindow()
  , windowSize(0, 0)
  , statsItemSize(260.0f, 150.0f)
  , cameralistSize(0)
- , cameraPos(0)
 {}
 
-void SceneWindow::init() {};
+void SceneWindow::init()
+{
+	Render::FrameBufferParams params;
+	params.width = Engine::getWindow()->getWidth();
+	params.height = Engine::getWindow()->getHeight();
+	params.bufferTypes = Render::FrameBufferType::Color | Render::FrameBufferType::Depth | Render::FrameBufferType::Stencil | Render::FrameBufferType::Additional;
+	params.colorFormat = Render::ColorFormat::RGBA8;
+	params.depthFormat = Render::DepthFormat::Depth24;
+	params.stencilFormat = Render::StencilFormat::Stencil8;
+	params.additionalBufferFormat = Render::ColorFormat::R32;
+
+	editorCamera = Engine::getScene()->createEntity("Scene Camera");
+	auto& transform = editorCamera.getComponent<Component::Transform>();
+	transform.pos = {1.88206, -0.279197, 2.37471};
+	transform.rotation = {-6.39998, -128.8, 0};
+	auto& cameraComponent = editorCamera.addComponent<Component::Camera>(&transform, params);
+	editorCamera.addComponent<Component::EditorCamera>(&cameraComponent).initEvents();
+
+	viewPorts[0].setCamera(&cameraComponent);
+	viewPorts[0].name = "Scene Camera";
+};
 
 void SceneWindow::showWindow()
 {
@@ -118,12 +138,11 @@ void SceneWindow::showWindow()
 		viewPortClass.DockNodeFlagsOverrideSet = 0;
 		viewPortClass.DockingAllowUnclassed = false;
 		ImGui::DockSpace(sceneDockSpaceId, size, 0, &viewPortClass);
-		
-		auto view = Engine::getScene()->view<Component::Camera>();
+		auto view = Engine::getScene()->view<Component::Camera, Component::Tag>();
 
 		for (auto& entity : view)
 		{
-			auto& cam = view.get<Component::Camera>(entity);
+			auto& [cam, tag] = view.get<Component::Camera, Component::Tag>(entity);
 			for (uint32_t i = 0; i < maxViewPorts; ++i)
 			{
 				if (viewPorts[i].getCamera() == &cam)
@@ -134,7 +153,7 @@ void SceneWindow::showWindow()
 				if (!viewPorts[i].isPanelEnabled())
 				{
 					viewPorts[i].setCamera(&cam);
-					viewPorts[i].name = "Viewport " + std::to_string(i);
+					viewPorts[i].name = "Viewport " + tag.tag;
 					break;
 				}
 			}
@@ -152,9 +171,8 @@ void SceneWindow::showWindow()
 				focused |= viewPorts[i].isFocused();
 				focused |= ImGui::IsItemHovered();
 			}
-			
 		}
-		
+
 		ImGui::End();
 	}
 	ImGui::PopStyleVar();

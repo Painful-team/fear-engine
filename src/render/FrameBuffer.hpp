@@ -8,6 +8,7 @@
 
 #include <core/Window.hpp>
 
+#include <glm/glm.hpp>
 
 namespace FearEngine::Render
 {
@@ -20,6 +21,7 @@ enum : short
 	Color = 1 << 0,
 	Depth = 1 << 1,
 	Stencil = 1 << 2,
+	Additional = 1 << 3
 };
 }
 
@@ -31,6 +33,7 @@ enum : ColorFormats
 	None = 0,
 	RGBA8 = GL_RGBA8,
 	RGBA16 = GL_RGBA16,
+	R32 = GL_R32I,
 	RGBA32F = GL_RGBA32F,
 	RGB8 = GL_RGB8,
 	RGB16 = GL_RGB16,
@@ -74,12 +77,14 @@ struct FrameBufferParams
 {
 	uint32_t width = Window::defaultWidth;
 	uint32_t height = Window::defaultHeight;
-	
+
 	FrameBufferTypes bufferTypes;
-	
+
 	ColorFormats colorFormat;
 	DepthFormats depthFormat;
 	StencilFormats stencilFormat;
+
+	ColorFormats additionalBufferFormat;
 };
 
 class FrameBuffer
@@ -91,10 +96,13 @@ public:
 	FrameBuffer& operator=(const FrameBuffer& other) = delete;
 	FrameBuffer& operator=(FrameBuffer&& other) noexcept;
 
+	glm::vec4 getPixel(FrameBufferTypes type, glm::vec2& pos);
+
 	void init(const FrameBufferParams& params);
 	uint32_t getColorAttachment() const;
 	uint32_t getDepthAttachment() const;
 	uint32_t getStencilAttachment() const;
+	uint32_t getAdditionalAttachment() const;
 
 	const FrameBufferParams& getParams() const;
 	void setParams(const FrameBufferParams& params);
@@ -114,6 +122,7 @@ private:
 	uint32_t colorId;
 	uint32_t depthId;
 	uint32_t stencilId;
+	uint32_t additionalId;
 
 	uint32_t frameBufferId;
 

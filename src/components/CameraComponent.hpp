@@ -49,8 +49,8 @@ public:
 	void setFar(float camFarPlane);
 
 	Render::FrameBuffer& getFrameBuffer();
-	//Todo Think if that function is necessary.
-	//void setFrameBuffer(Render::FrameBuffer& buffer);
+	// Todo Think if that function is necessary.
+	// void setFrameBuffer(Render::FrameBuffer& buffer);
 
 	bool isOrthograpic();
 	void setProjection(const bool orthographic);
@@ -59,6 +59,8 @@ public:
 
 	void updateCameraPos();
 	void updateUniformData();
+
+	void onResize(int width, int height);
 
 	GENCOMPONENTESSENTIALS(camera)
 private:
@@ -82,19 +84,19 @@ private:
 
 	static constexpr const glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
-	friend class NoclipCameraController;
+	friend class EditorCamera;
 };
 
-class NoclipCameraController
+class EditorCamera
 {
 public:
-	NoclipCameraController() = delete;
-	NoclipCameraController(Camera* cam, float camSpeed = 0.1, const glm::vec2& camSensivity = {0.1, 0.1});
-	NoclipCameraController(const NoclipCameraController& other) = delete;
-	NoclipCameraController(NoclipCameraController&& other) noexcept;
-	NoclipCameraController& operator=(const NoclipCameraController& other) = delete;
-	NoclipCameraController& operator=(NoclipCameraController&& other) noexcept;
-	~NoclipCameraController();
+	EditorCamera() = delete;
+	EditorCamera(Camera* cam, float camSpeed = 0.1, const glm::vec2& camSensivity = {0.1, 0.1});
+	EditorCamera(const EditorCamera& other) = delete;
+	EditorCamera(EditorCamera&& other) noexcept;
+	EditorCamera& operator=(const EditorCamera& other) = delete;
+	EditorCamera& operator=(EditorCamera&& other) noexcept;
+	~EditorCamera();
 
 	void initEvents();
 	void detachEvents();
@@ -110,10 +112,11 @@ public:
 
 	void onResize(int width, int height);
 
-	GENCOMPONENTESSENTIALS(noclipCameraController)
+	GENCOMPONENTESSENTIALS(editorCamera)
 
 	float speed;
 	glm::vec2 sensivity;
+
 private:
 	Camera* camera;
 

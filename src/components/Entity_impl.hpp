@@ -30,6 +30,8 @@ public:
 	Entity& operator=(const Entity& other);
 	Entity& operator=(Entity&& other) noexcept;
 
+	bool isValid() const;
+
 	template<class Component>
 	bool hasComponent()
 	{

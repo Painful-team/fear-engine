@@ -7,6 +7,13 @@
 
 #include <array>
 
+#include <core/Entity.hpp>
+
+namespace FearEngine
+{
+class Editor;
+};
+
 namespace FearEngine::EditorUI::windows
 {
 class SceneWindow final : public GuiWindow
@@ -36,13 +43,15 @@ private:
 
 	void showStatsDialog();
 
+	Entity editorCamera;
+
 	std::array<ViewPort, 16> viewPorts;
 
-	//It has to be removed when ECS will be avaible
-	uint32_t cameraPos;
 	uint32_t cameralistSize;
-	
+
 	ImVec2 windowSize;
+
+	friend class Editor;
 };
 }
 #endif

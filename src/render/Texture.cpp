@@ -76,6 +76,7 @@ void FearEngine::Render::Texture::init(std::shared_ptr<Cache::Resource>& resourc
 uint32_t FearEngine::Render::Texture::getTexHandle() const { return textureId; }
 const std::shared_ptr<FearEngine::Cache::Resource>& FearEngine::Render::Texture::getResource() const { return texRes; };
 
+#include <core/Engine.hpp>
 void FearEngine::Render::Texture::enable(uint8_t slot)
 {
 	glBindTextureUnit(slot, textureId);

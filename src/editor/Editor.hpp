@@ -21,39 +21,8 @@ namespace FearEngine
 struct EditorMainWindows
 {
 	void init();
-	
-	void showAllWindows()
-	{
-		if (sceneWindow.isWindowOpen())
-		{
-			sceneWindow.showWindow();
-		}
 
-		if (hierarchyWindow.isWindowOpen())
-		{
-			hierarchyWindow.showWindow();
-		}
-
-		if (projectWindow.isWindowOpen())
-		{
-			projectWindow.showWindow();
-		}
-
-		if (inspectorWindow.isWindowOpen())
-		{
-			inspectorWindow.showWindow();
-		}
-
-		if (helpWindow.isWindowOpen())
-		{
-			helpWindow.showWindow();
-		}
-
-		if (bottomPanel.isPanelEnabled())
-		{
-			bottomPanel.showWindow();
-		}
-	}
+	void showAllWindows();
 
 	EditorUI::windows::SceneWindow sceneWindow;
 
@@ -90,6 +59,7 @@ public:
 
 	~Editor();
 
+	EditorMainWindows windows;
 private:
 	void applyInitialSettings();
 
@@ -98,8 +68,6 @@ private:
 	void setMainColors();
 
 	void showMainMenuBar();
-
-	EditorMainWindows windows;
 
 	bool mouseReq;
 };

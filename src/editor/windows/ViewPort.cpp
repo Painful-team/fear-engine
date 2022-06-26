@@ -10,7 +10,8 @@ FearEngine::EditorUI::windows::ViewPort::ViewPort()
 
 void FearEngine::EditorUI::windows::ViewPort::init() {}
 
-void FearEngine::EditorUI::windows::ViewPort::setCamera(Component::Camera* camera) { 
+void FearEngine::EditorUI::windows::ViewPort::setCamera(Component::Camera* camera)
+{
 	cam = camera;
 	enabled = true;
 }
@@ -20,15 +21,30 @@ FearEngine::Component::Camera* FearEngine::EditorUI::windows::ViewPort::getCamer
 void FearEngine::EditorUI::windows::ViewPort::showWindow()
 {
 	ImGui::Begin(name.c_str());
+
+	ImGui::SetWindowSize({400, 400}, ImGuiCond_::ImGuiCond_Once);
+
 	hovered = ImGui::IsItemHovered();
 	if (enabled)
 	{
-		auto size = ImGui::GetContentRegionAvail();
+		auto imPos = ImGui::GetWindowPos();
+		auto imContentMin = ImGui::GetWindowContentRegionMin();
+		auto imContentMax = ImGui::GetWindowContentRegionMax();
+		contentRegion[0] = {imContentMin.x + imPos.x, imContentMin.y + imPos.y};
+		contentRegion[1] = {imContentMax.x + imPos.x, imContentMax.y + imPos.y};
+
+		auto imSize = ImGui::GetContentRegionAvail();
 		if (cam->getFrameBuffer().isInitialized())
 		{
-			ImGui::Image((void*)cam->getFrameBuffer().getColorAttachment(), size, {0, 1}, {1, 0});
+			ImGui::Image((void*)cam->getFrameBuffer().getColorAttachment(), imSize, {0, 1}, {1, 0});
 		}
 		hovered |= ImGui::IsItemHovered();
+
+		if (size != contentRegion[1] - contentRegion[0])
+		{
+			cam->onResize(size.x, size.y);
+		}
+		size = contentRegion[1] - contentRegion[0];
 
 		if (hovered)
 		{

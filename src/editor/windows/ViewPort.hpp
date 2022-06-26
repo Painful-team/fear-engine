@@ -9,6 +9,11 @@
 
 #include <memory>
 
+namespace FearEngine
+{
+class Editor;
+}
+
 namespace FearEngine::EditorUI::windows
 {
 class ViewPort final: public GuiWindow
@@ -27,12 +32,17 @@ public:
 	bool isFocused() const;
 	void togglePanel(const bool showPanel);
 
-	std::string name; 
+	std::string name;
 private:
 	Component::Camera* cam;
 
+	glm::vec2 size;
+	glm::vec2 contentRegion[2];
+
 	bool enabled;
 	bool hovered;
+
+	friend class Editor;
 };
 }  // namespace FearEngine::EditorUI::windows
 

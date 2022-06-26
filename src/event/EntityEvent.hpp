@@ -5,7 +5,7 @@
 
 #include <event/Event.hpp>
 #include <components/Base.hpp>
-#include <core/Entity.hpp>
+#include <components/Entity_impl.hpp>
 
 namespace FearEngine::Events
 {

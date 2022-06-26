@@ -22,6 +22,8 @@
 #include "Entity.hpp"
 #include "Logger.hpp"
 
+#include <editor/Editor.hpp>
+
 #include <utils/PointerCasts.hpp>
 #include <components/MaterialComponent.hpp>
 #include <cache/ObjResource.hpp>
@@ -161,7 +163,7 @@ void Engine::run()
 		auto& transformA = cameraA.getComponent<Component::Transform>();
 		transformA.pos = {-0.00355635, -0.164256, 2.49057};
 		auto& cameraComponentA = cameraA.addComponent<Component::Camera>(&transformA, params);
-		cameraA.addComponent<Component::NoclipCameraController>(&cameraComponentA).initEvents();
+		cameraA.addComponent<Component::EditorCamera>(&cameraComponentA).initEvents();
 	}
 
 	Entity cameraB = Engine::getScene()->createEntity("Camera B");
@@ -170,7 +172,7 @@ void Engine::run()
 		transformB.pos = {-3.03853, 1.01738, 2.71823};
 		transformB.rotation = {-6.40002, -37.9002, 0};
 		auto& cameraComponentB = cameraB.addComponent<Component::Camera>(&transformB, params);
-		cameraB.addComponent<Component::NoclipCameraController>(&cameraComponentB).initEvents();
+		cameraB.addComponent<Component::EditorCamera>(&cameraComponentB).initEvents();
 	}
 
 	Entity cameraC = Engine::getScene()->createEntity("Camera C");
@@ -179,10 +181,12 @@ void Engine::run()
 		transformC.pos = {1.88206, -0.279197, 2.37471};
 		transformC.rotation = {-6.39998, -128.8, 0};
 		auto& cameraComponentC = cameraC.addComponent<Component::Camera>(&transformC, params);
-		cameraC.addComponent<Component::NoclipCameraController>(&cameraComponentC).initEvents();
+		cameraC.addComponent<Component::EditorCamera>(&cameraComponentC).initEvents();
 	}
 
 	scene->removeEntity(cameraA);
+
+	editor->windows.inspectorWindow.chosenEntity = entity1;
 
 	while (running)
 	{

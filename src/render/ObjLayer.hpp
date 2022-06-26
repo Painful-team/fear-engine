@@ -37,6 +37,7 @@ private:
 	Render::Shaders::Uniform modelUniform;
 
 	Render::Shaders::Uniform frame;
+	Render::Shaders::Uniform entityIndex;
 	Shaders::Shader::UniformStorage material;
 
 	std::array<std::shared_ptr<Texture>, FearEngine::Render::Shaders::Shader::maxTextureSlots> textures;

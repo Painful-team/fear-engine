@@ -18,7 +18,7 @@ enum ComponentType
 	tag,
 
 	camera,
-	noclipCameraController,
+	editorCamera,
 
 	renderable,
 	light,

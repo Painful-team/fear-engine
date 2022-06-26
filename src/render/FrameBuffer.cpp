@@ -1,6 +1,8 @@
 #include "FrameBuffer.hpp"
 #include <glad/glad.h>
 
+#include <iostream>
+
 #include <assert.h>
 
 FearEngine::Render::FrameBuffer::FrameBuffer()
@@ -8,20 +10,19 @@ FearEngine::Render::FrameBuffer::FrameBuffer()
  , colorId(-1)
  , depthId(-1)
  , stencilId(-1)
+ , additionalId(-1)
  , initialized(false)
 {}
 
-FearEngine::Render::FrameBuffer::FrameBuffer(FrameBuffer&& other) noexcept
-{
-	*this = std::move(other);
-}
+FearEngine::Render::FrameBuffer::FrameBuffer(FrameBuffer&& other) noexcept { *this = std::move(other); }
 
 FearEngine::Render::FrameBuffer& FearEngine::Render::FrameBuffer::operator=(FrameBuffer&& other) noexcept
-{ 
+{
 	data = other.data;
 	colorId = other.colorId;
 	depthId = other.depthId;
 	stencilId = other.stencilId;
+	additionalId = other.additionalId;
 	frameBufferId = other.frameBufferId;
 	initialized = other.initialized;
 	enabled = other.enabled;
@@ -30,10 +31,11 @@ FearEngine::Render::FrameBuffer& FearEngine::Render::FrameBuffer::operator=(Fram
 	other.depthId = -1;
 	other.stencilId = -1;
 	other.frameBufferId = -1;
+	other.additionalId = -1;
 
 	other.initialized = false;
 
-	return *this; 
+	return *this;
 }
 
 void FearEngine::Render::FrameBuffer::init(const FrameBufferParams& params) { setParams(params); }
@@ -54,6 +56,12 @@ uint32_t FearEngine::Render::FrameBuffer::getStencilAttachment() const
 
 	assert(stencilId != -1);
 	return stencilId;
+}
+
+uint32_t FearEngine::Render::FrameBuffer::getAdditionalAttachment() const
+{
+	assert(additionalId != -1);
+	return additionalId;
 }
 
 uint32_t FearEngine::Render::FrameBuffer::getColorAttachment() const
@@ -91,9 +99,56 @@ uint32_t getInternalFormat(FearEngine::Render::ColorFormats type)
 	case FearEngine::Render::ColorFormat::RGBA16:
 	case FearEngine::Render::ColorFormat::RGBA32F:
 		return GL_RGBA;
+	case FearEngine::Render::ColorFormat::R32:
+		return GL_RED_INTEGER;
 	default:
 		return 0;
 	}
+}
+
+glm::vec4 FearEngine::Render::FrameBuffer::getPixel(FrameBufferTypes bufferType, glm::vec2& pos)
+{
+	uint32_t type = -1;
+	uint32_t format;
+	if (bufferType & FrameBufferType::Color)
+	{
+		type = GL_COLOR_ATTACHMENT0;
+		format = data.colorFormat;
+	}
+	else if (bufferType & FrameBufferType::Additional)
+	{
+		type = GL_COLOR_ATTACHMENT1;
+		format = data.additionalBufferFormat;
+	}
+	else if (bufferType & (FrameBufferType::Depth | FrameBufferType::Stencil))
+	{
+		type = GL_DEPTH_STENCIL_ATTACHMENT;
+		format = GL_DEPTH24_STENCIL8;
+	}
+	else if (bufferType & FrameBufferType::Depth)
+	{
+		type = GL_DEPTH_ATTACHMENT;
+		format = data.depthFormat;
+	}
+	else if (bufferType & FrameBufferType::Stencil)
+	{
+		type = GL_STENCIL_ATTACHMENT;
+		format = data.stencilFormat;
+	}
+
+	assert(type != -1 && "Undefined framebuffer type");
+	glBindFramebuffer(GL_FRAMEBUFFER, frameBufferId);
+
+	glReadBuffer(type);
+	uint32_t pixelData = 0;
+
+	//Todo add ability to set read internal size
+	glReadPixels(pos.x, pos.y, 1, 1, getInternalFormat(format), GL_INT, &pixelData);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	char* data = reinterpret_cast<char*>(&pixelData);
+	return glm::vec4(data[0], data[1], data[2], data[2]);
 }
 
 void FearEngine::Render::FrameBuffer::onResize()
@@ -118,7 +173,8 @@ void FearEngine::Render::FrameBuffer::onResize()
 		}
 
 		glBindTexture(GL_TEXTURE_2D, colorId);
-		glTexImage2D(GL_TEXTURE_2D, 0, data.colorFormat, data.width, data.height, 0, getInternalFormat(data.colorFormat), GL_UNSIGNED_BYTE, nullptr);
+		glTexImage2D(GL_TEXTURE_2D, 0, data.colorFormat, data.width, data.height, 0, getInternalFormat(data.colorFormat), GL_UNSIGNED_BYTE,
+			 nullptr);
 
 		// Todo think about adding ability to filtering
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -151,7 +207,8 @@ void FearEngine::Render::FrameBuffer::onResize()
 		}
 
 		glBindTexture(GL_TEXTURE_2D, stencilId);
-		glTexImage2D(GL_TEXTURE_2D, 0, data.stencilFormat, data.width, data.height, 0, getInternalFormat(data.colorFormat), GL_UNSIGNED_BYTE, nullptr);
+		glTexImage2D(GL_TEXTURE_2D, 0, data.stencilFormat, data.width, data.height, 0, getInternalFormat(data.colorFormat),
+			 GL_UNSIGNED_BYTE, nullptr);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
@@ -191,7 +248,27 @@ void FearEngine::Render::FrameBuffer::onResize()
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, depthId, 0);
 	}
 
-	assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE && "FrameBuffer cration failed!");
+	if (data.bufferTypes & FrameBufferType::Additional)
+	{
+		if (additionalId == -1)
+		{
+			glCreateTextures(GL_TEXTURE_2D, 1, &additionalId);
+		}
+
+		glBindTexture(GL_TEXTURE_2D, additionalId);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_R32I, data.width, data.height, 0, GL_RED_INTEGER, GL_INT, nullptr);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		// If colorId is -1 but additional color buffer is enabled we have to set it on the 0 position
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1 - (colorId == -1), GL_TEXTURE_2D, additionalId, 0);
+	}
+
+	uint32_t buffers[] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
+	glDrawBuffers((colorId != -1) + (additionalId != -1), buffers);
+
+	assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE && "FrameBuffer creation has failed!");
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -216,7 +293,7 @@ void FearEngine::Render::FrameBuffer::enable()
 		{
 			glEnable(GL_STENCIL_TEST);
 		}
-		
+
 		glEnable(GL_DEPTH_TEST);
 	}
 
@@ -229,8 +306,8 @@ void FearEngine::Render::FrameBuffer::enable()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void FearEngine::Render::FrameBuffer::disable() {
-
+void FearEngine::Render::FrameBuffer::disable()
+{
 	if (depthId != -1)
 	{
 		if (data.bufferTypes & FrameBufferType::Stencil && !(enabled & FrameBufferType::Stencil))
@@ -249,7 +326,7 @@ void FearEngine::Render::FrameBuffer::disable() {
 		glDisable(GL_STENCIL_TEST);
 	}
 
-	glBindFramebuffer(GL_FRAMEBUFFER, 0); 
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 bool FearEngine::Render::FrameBuffer::isInitialized() const { return initialized; }
@@ -269,6 +346,11 @@ FearEngine::Render::FrameBuffer::~FrameBuffer()
 	if (stencilId == -1)
 	{
 		glDeleteTextures(1, &stencilId);
+	}
+
+	if (additionalId == -1)
+	{
+		glDeleteTextures(1, &additionalId);
 	}
 
 	if (frameBufferId != -1)

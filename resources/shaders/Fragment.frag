@@ -7,7 +7,7 @@ layout(std140, binding = 2) uniform Material
 {
 	int specularTextureId;
 	float shininess;
-	
+
 	vec3 ambientStrength;
 
 	int diffuseTextureId;
@@ -48,7 +48,10 @@ layout(std140, binding = 4) uniform DirLightBuffer
 
 layout(binding = 10) uniform sampler2D textures[32];
 
-out vec4 FragColor;
+uniform int entityIndex;
+
+layout(location = 0) out vec4 FragColor;
+layout(location = 1) out int EnityMap;
 in float frame;
 in vec3 normal;
 in vec3 color;
@@ -80,6 +83,8 @@ void main()
 	{
 		FragColor = vec4(0, 0, 0, 1.0f);
 	}
+
+	EnityMap = entityIndex;
 }
 
 vec3 calcLight(Light light, vec3 norm, vec3 viewDir)
@@ -94,7 +99,7 @@ vec3 calcLight(Light light, vec3 norm, vec3 viewDir)
 	float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
 	// attenuation
 	float distance = length(light.pos - fragPos);
-	float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));    
+	float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
 	// spotlight intensity
 	float theta = dot(lightDir, normalize(-light.dir)); 
 	float epsilon = light.cutOff - light.outerCutOff;

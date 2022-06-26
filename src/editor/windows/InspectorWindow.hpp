@@ -8,6 +8,8 @@
 
 #include "GuiWindow.hpp"
 
+#include <core/Entity.hpp>
+
 namespace FearEngine::EditorUI::windows
 {
 class InspectorWindow final: public GuiWindow
@@ -25,6 +27,7 @@ public:
 	void updateObjectPicked(const bool objectPicked);
 	void updateShowPickedObject(const bool showPicked);
 
+	Entity chosenEntity;
 private:
 	enum InspectorComponents
 	{
@@ -46,9 +49,6 @@ private:
 	std::vector<bool> componentsOpen;
 	std::vector<std::string> componentsNames;
 
-	glm::vec3 positionVec3;
-	glm::vec3 rotateVec3;
-	glm::vec3 scaleVec3;
 	std::string modelPath;
 
 	void showAddComponentBtn();

@@ -3,7 +3,6 @@
 
 #include <imgui.h>
 
-
 namespace FearEngine::EditorUI::windows
 {
 class GuiWindow

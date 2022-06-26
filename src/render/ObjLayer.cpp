@@ -66,6 +66,7 @@ errorCode ModelLayer::init()
 	modelUniform = shader.findUniform("model");
 
 	frame = shader.findUniform("wireframe");
+	entityIndex = shader.findUniform("entityIndex");
 	frame.setFloat(0);
 
 	material = shader.findBuffer("Material");
@@ -76,6 +77,7 @@ errorCode ModelLayer::init()
 	int32_t samplers[Shaders::Shader::maxTextureSlots];
 	for (uint8_t i = 0; i < Shaders::Shader::maxTextureSlots; ++i)
 	{
+		//Todo disable warning about empty sampler with enabling empty textures
 		samplers[i] = i;
 	}
 
@@ -107,9 +109,9 @@ void ModelLayer::update(Component::Camera& cam)
 	auto& view = Engine::getScene()->view<Component::Renderable, Component::Transform>();
 	for (auto& entity: view)
 	{
-		auto& [tranform, renderable] = Engine::getScene()->get<Component::Transform, Component::Renderable>((uint32_t)entity);
+		auto& [renderable, tranform] = view.get<Component::Renderable, Component::Transform>(entity);
 		modelUniform.setMat4(tranform.getTransformMatrix());
-
+		//entityIndex.setInt((uint32_t)entity);
 		{
 			uint32_t unit = getEnabledTexture(renderable.materials.back()->diffuseRes);
 			if (unit == -1)

@@ -12,10 +12,7 @@ namespace FearEngine::EditorUI::windows
 		showPickedObject(true),
 		pickedObjectName(""),
 		componentsOpen({ true, true, true, true, true }),
-		componentsNames({ "Transform", "Color", "Mesh", "Interaction", "Shader" }),
-		positionVec3({ 0.0f, 0.0f, 0.0f }),
-		rotateVec3({ 0.0f, 0.0f, 0.0f }),
-		scaleVec3({ 0.0f, 0.0f, 0.0f })
+		componentsNames({ "Transform", "Color", "Mesh", "Interaction", "Shader" })
 	{
 		const int nPickedObjectColor = 4;
 		for (int i = 0; i < nPickedObjectColor; ++i)
@@ -36,7 +33,7 @@ namespace FearEngine::EditorUI::windows
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 		ImGui::Begin("Inspector", &windowOpen, ImGuiWindowFlags_NoCollapse);
 		{
-			if (true)
+			if (chosenEntity.isValid())
 			{
 				{
 					const float childOffsetTopY = 2.0f;
@@ -104,14 +101,16 @@ namespace FearEngine::EditorUI::windows
 					ImGui::Text("Position");
 					ImGui::SameLine(inputSameLineOffset);
 
+					auto& tranforms = chosenEntity.getComponent<Component::Transform>();
+
 					// Transform position value windows
 					{
 						ImGui::PushItemWidth(inputFloatCustomWidth);
-						ImGui::InputFloat("X##PositionInspectorX", &positionVec3.x, 0.0f, 0.0f, "%.2f");
+						ImGui::InputFloat("X##PositionInspectorX", &tranforms.pos.x, 0.0f, 0.0f, "%.2f");
 						ImGui::SameLine();
-						ImGui::InputFloat("Y##PositionInspectorY", &positionVec3.y, 0.0f, 0.0f, "%.2f");
+						ImGui::InputFloat("Y##PositionInspectorY", &tranforms.pos.y, 0.0f, 0.0f, "%.2f");
 						ImGui::SameLine();
-						ImGui::InputFloat("Z##PositionInspectorZ", &positionVec3.z, 0.0f, 0.0f, "%.2f");
+						ImGui::InputFloat("Z##PositionInspectorZ", &tranforms.pos.z, 0.0f, 0.0f, "%.2f");
 						ImGui::PopItemWidth();
 					}
 
@@ -123,11 +122,11 @@ namespace FearEngine::EditorUI::windows
 					// Transform rotate value windows
 					{
 						ImGui::PushItemWidth(inputFloatCustomWidth);
-						ImGui::InputFloat("X##RotateInspectorX", &rotateVec3.x, 0.0f, 0.0f, "%.2f");
+						ImGui::InputFloat("X##RotateInspectorX", &tranforms.rotation.x, 0.0f, 0.0f, "%.2f");
 						ImGui::SameLine();
-						ImGui::InputFloat("Y##RotateInspectorY", &rotateVec3.y, 0.0f, 0.0f, "%.2f");
+						ImGui::InputFloat("Y##RotateInspectorY", &tranforms.rotation.y, 0.0f, 0.0f, "%.2f");
 						ImGui::SameLine();
-						ImGui::InputFloat("Z##RotateInspectorZ", &rotateVec3.z, 0.0f, 0.0f, "%.2f");
+						ImGui::InputFloat("Z##RotateInspectorZ", &tranforms.rotation.z, 0.0f, 0.0f, "%.2f");
 						ImGui::PopItemWidth();
 					}
 
@@ -139,11 +138,11 @@ namespace FearEngine::EditorUI::windows
 					// Transform scale value windows
 					{
 						ImGui::PushItemWidth(inputFloatCustomWidth);
-						ImGui::InputFloat("X##ScaleInspectorX", &rotateVec3.x, 0.0f, 0.0f, "%.2f");
+						ImGui::InputFloat("X##ScaleInspectorX", &tranforms.scale.x, 0.0f, 0.0f, "%.2f");
 						ImGui::SameLine();
-						ImGui::InputFloat("Y##ScaleInspectorY", &rotateVec3.y, 0.0f, 0.0f, "%.2f");
+						ImGui::InputFloat("Y##ScaleInspectorY", &tranforms.scale.y, 0.0f, 0.0f, "%.2f");
 						ImGui::SameLine();
-						ImGui::InputFloat("Z##ScaleInspectorZ", &rotateVec3.z, 0.0f, 0.0f, "%.2f");
+						ImGui::InputFloat("Z##ScaleInspectorZ", &tranforms.scale.z, 0.0f, 0.0f, "%.2f");
 						ImGui::PopItemWidth();
 					}
 				}
