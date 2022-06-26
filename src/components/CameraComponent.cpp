@@ -173,7 +173,7 @@ bool EditorCamera::onMouseReleased(Events::MouseButtonReleased* evnt)
 	return true;
 }
 
-bool NoclipCameraController::onMouseScrolled(Events::MouseScrolled* evnt) { return true; }
+bool EditorCamera::onMouseScrolled(Events::MouseScrolled* evnt) { return true; }
 
 bool EditorCamera::onKeyPressed(Events::KeyPressed* evnt) { return true; }
 
@@ -210,18 +210,10 @@ bool EditorCamera::onKeyTyped(Events::KeyTyped* evnt)
 	}
 
 	camera->updateCameraPos();
-	return true; 
-}
-
-bool NoclipCameraController::onKeyReleased(Events::KeyReleased* evnt) { return true; }
-
-// Todo add timebased movement to be able to stop relying on frames
-bool NoclipCameraController::onKeyTyped(Events::KeyTyped* evnt)
-{
 	return true;
 }
 
-bool NoclipCameraController::onActiveCamera(Events::ActiveViewport* ent)
+bool EditorCamera::onActiveCamera(Events::ActiveViewport* ent)
 {
 	isInputEnabled = ent->getActive()->transform == camera->transform;
 
