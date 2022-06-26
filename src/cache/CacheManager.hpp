@@ -27,8 +27,8 @@ public:
 	Cache::errorCode init();
 	Cache::errorCode getResource(const std::string_view& fileName,
 		 std::shared_ptr<Cache::Resource>& resource,
-		 Cache::ResourceFlags flags = Cache::resourceFlag::None);
-	int prepare(const std::string_view& fileName, Cache::ResourceFlags flags = Cache::resourceFlag::None);
+		 Cache::ResourceFlags flags = Cache::ResourceFlag::None);
+	int prepare(const std::string_view& fileName, Cache::ResourceFlags flags = Cache::ResourceFlag::None);
 
 	Cache::errorCode releaseResource(const std::string_view& fileName, Cache::ResourceFlags flags);
 	void clear();

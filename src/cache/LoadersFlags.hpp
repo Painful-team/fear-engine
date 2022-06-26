@@ -6,12 +6,13 @@ namespace FearEngine::Cache
 
 using ResourceFlags = uint64_t;
 
-namespace resourceFlag
+namespace ResourceFlag
 {
 enum : ResourceFlags
 {
 	None = 0,
-	FlipImageVertically = 1 << 0
+	FlipImageVertically = 1 << 0,
+	RecalcNormals = 1 << 1,
 };
 }
 }  // namespace FearEngine::Cache

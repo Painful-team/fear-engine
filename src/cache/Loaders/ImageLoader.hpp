@@ -16,7 +16,7 @@ public:
 	std::string getPattern() const override final;
 	Cache::errorCode load(const std::string_view& filename,
 		 std::shared_ptr<Resource>& resource,
-		 ResourceFlags flags = resourceFlag::None) override final;
+		 ResourceFlags flags = ResourceFlag::None) override final;
 
 	~ImageLoader() override final{};
 

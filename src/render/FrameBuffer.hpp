@@ -109,8 +109,9 @@ public:
 
 	void onResize();
 
-	void enable();
+	void enable(bool clear = false);
 	void disable();
+	void clear();
 
 	bool isInitialized() const;
 

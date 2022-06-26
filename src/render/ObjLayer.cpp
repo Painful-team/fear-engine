@@ -82,6 +82,8 @@ errorCode ModelLayer::init()
 	}
 
 	shader.findUniform("textures").setInt(samplers, Shaders::Shader::maxTextureSlots);
+
+	return Render::errorCodes::OK;
 }
 
 void ModelLayer::resize(int width, int height)
@@ -89,6 +91,7 @@ void ModelLayer::resize(int width, int height)
 
 void ModelLayer::preUpdate(Component::Camera& cam)
 {
+	shader.use();
 	cam.setUniforms(projUniform, viewUniform);
 	cam.beginView();
 }
@@ -106,12 +109,13 @@ void ModelLayer::update(Component::Camera& cam)
 	// glDrawElements(GL_TRIANGLES, chunk.triangles.size(), GL_UNSIGNED_INT, 0);
 	arr.bind();
 
-	auto& view = Engine::getScene()->view<Component::Renderable, Component::Transform>();
-	for (auto& entity: view)
+	auto view = Engine::getScene()->view<Component::Renderable, Component::Transform>();
+	for (auto entity: view)
 	{
+
 		auto& [renderable, tranform] = view.get<Component::Renderable, Component::Transform>(entity);
 		modelUniform.setMat4(tranform.getTransformMatrix());
-		//entityIndex.setInt((uint32_t)entity);
+		entityIndex.setInt((uint32_t)entity);
 		{
 			uint32_t unit = getEnabledTexture(renderable.materials.back()->diffuseRes);
 			if (unit == -1)
@@ -137,7 +141,7 @@ void ModelLayer::update(Component::Camera& cam)
 		material["ambientStrength"].setVec3(renderable.materials.back()->ambient);
 		material["shininess"].setFloat(renderable.materials.back()->shininess);
 
-		vertex.bindData(reinterpret_cast<float*>(renderable.mesh->data), renderable.mesh->size);
+		vertex.setData(reinterpret_cast<float*>(renderable.mesh->data), renderable.mesh->size);
 		for (uint8_t i = 0; i < enabledTextures; ++i)
 		{
 			textures[i]->enable(i);

@@ -134,10 +134,12 @@ int Engine::init()
 void Engine::run()
 {
 	std::shared_ptr<Cache::Resource> resource;
-	Engine::getCache()->getResource("resources/models/backpack.obj", resource);
+	Engine::getCache()->getResource("resources/models/backpack.obj", resource, Cache::ResourceFlag::RecalcNormals);
 	auto model = utils::static_pointer_cast<Cache::ObjData>(resource->extra);
 	auto entity1 = Engine::getScene()->createEntity("BackPack 1");
 	{
+		auto& transform = entity1.getComponent<Component::Transform>();
+		transform.pos = {3, 0, 0};
 		auto& component = entity1.addComponent<Component::Renderable>();
 		component.mesh = resource;
 		component.materials = model->materials;
