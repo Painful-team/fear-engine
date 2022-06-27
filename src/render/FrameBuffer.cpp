@@ -275,6 +275,9 @@ void FearEngine::Render::FrameBuffer::onResize()
 
 void FearEngine::Render::FrameBuffer::enable(bool cl)
 {
+	glViewport(0, 0, data.width, data.height);
+
+
 	enabled = FrameBufferType::None;
 	if (glIsEnabled(GL_DEPTH_TEST))
 	{
@@ -287,6 +290,11 @@ void FearEngine::Render::FrameBuffer::enable(bool cl)
 	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, frameBufferId);
+	if (cl)
+	{
+		clear();
+	}
+
 	if (depthId != -1)
 	{
 		if (data.bufferTypes & FrameBufferType::Stencil)
@@ -301,29 +309,16 @@ void FearEngine::Render::FrameBuffer::enable(bool cl)
 	{
 		glEnable(GL_STENCIL_TEST);
 	}
-
-	if (cl)
-	{
-		clear();
-	}
 }
 
 void FearEngine::Render::FrameBuffer::disable()
 {
-	if (depthId != -1)
+	if (!(enabled & FrameBufferType::Depth))
 	{
-		if (data.bufferTypes & FrameBufferType::Stencil && !(enabled & FrameBufferType::Stencil))
-		{
-			glDisable(GL_STENCIL_TEST);
-		}
-
-		if (!(enabled & FrameBufferType::Depth))
-		{
-			glDisable(GL_DEPTH_TEST);
-		}
+		glDisable(GL_DEPTH_TEST);
 	}
 
-	if (stencilId != -1 && !(enabled & FrameBufferType::Stencil))
+	if (!(enabled & FrameBufferType::Stencil))
 	{
 		glDisable(GL_STENCIL_TEST);
 	}
@@ -336,7 +331,13 @@ void FearEngine::Render::FrameBuffer::clear()
 	glBindFramebuffer(GL_FRAMEBUFFER, frameBufferId);
 
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear((GL_COLOR_BUFFER_BIT * (colorId != -1)) | (GL_DEPTH_BUFFER_BIT * (depthId != -1)) | (GL_STENCIL_BUFFER_BIT * (stencilId != -1)));
+
+	if (additionalId != -1)
+	{
+		int value = -1;
+		glClearTexImage(additionalId, 0, getInternalFormat(data.additionalBufferFormat), GL_INT, &value);
+	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

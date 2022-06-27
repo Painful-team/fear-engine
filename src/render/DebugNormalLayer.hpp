@@ -23,6 +23,7 @@ public:
 	void preUpdate(Component::Camera& cam) override;
 	void update(Component::Camera& cam) override;
 	void postUpdate(Component::Camera& cam) override;
+	Render::debugProperty debugProperty() const override;
 
 private:
 	Render::VertexBuffer vertex;
@@ -34,6 +35,7 @@ private:
 	Render::Shaders::Uniform modelUniform;
 
 	Render::Shaders::Uniform color;
+
 };
 }	// namespace FearEngine::Render
 #endif

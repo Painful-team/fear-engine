@@ -1,4 +1,4 @@
-#include "SceneWindow.hpp"
+﻿#include "SceneWindow.hpp"
 #include <Editor/Editor.hpp>
 
 #include <iostream>
@@ -68,6 +68,7 @@ void SceneWindow::showWindow()
 				showStatsDialog();
 				ImGui::EndMenu();
 			}
+
 			{
 				const float btnOffset = 5.0f;
 				const ImVec2 btnSize = ImVec2(24.0f, 24.0f);
@@ -136,6 +137,35 @@ void SceneWindow::showWindow()
 				ImGui::PopItemFlag();
 				ImGui::PopItemFlag();
 			}
+
+			//Todo a
+			ImGui::SameLine(ImGui::GetWindowWidth() - ImGui::CalcTextSize("Debug").x - 10);
+			if (ImGui::BeginMenu("Debug"))
+			{
+				ImGui::BeginChild("DebugChild", ImVec2(260.0f, 150.0f), false, ImGuiWindowFlags_NoBackground);
+				{
+					static bool debugProperty = true;
+					bool normals = debugProperty;
+					ImGui::Checkbox("Normals", &normals);
+
+					if (debugProperty != normals)
+					{
+						debugProperty = normals;
+						if (debugProperty)
+						{
+							Engine::getRender()->enabledDebugProperties |= Render::debugProperties::Normals;
+						}
+						else
+						{
+							Engine::getRender()->enabledDebugProperties -= Render::debugProperties::Normals;
+						}
+					}
+				}
+
+				ImGui::EndChild();
+				ImGui::EndMenu();
+			}
+
 			ImGui::EndMenuBar();
 		}
 

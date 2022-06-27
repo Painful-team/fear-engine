@@ -26,6 +26,7 @@ public:
 	void postUpdate(Component::Camera& cam) override;
 	uint32_t linkTexture(std::shared_ptr<Texture>& texture);
 	uint32_t getEnabledTexture(std::shared_ptr<Cache::Resource>& resource);
+	Render::debugProperty debugProperty() const override;
 
 private:
 	Render::VertexBuffer vertex;

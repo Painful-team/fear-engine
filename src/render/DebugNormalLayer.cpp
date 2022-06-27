@@ -100,4 +100,5 @@ void DebugNormalsLayer::postUpdate(Component::Camera& cam)
 	arr.unBind();
 	cam.end();
 }
+Render::debugProperty DebugNormalsLayer::debugProperty() const { return Render::debugProperties::Normals; }
 }  // namespace FearEngine::Render

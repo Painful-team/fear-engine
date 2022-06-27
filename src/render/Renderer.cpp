@@ -39,7 +39,6 @@ int Renderer::init()
 
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
-	glEnable(GL_DEPTH_TEST);
 #if _DEBUG
 	glEnable(GL_DEBUG_OUTPUT);
 	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
@@ -57,6 +56,8 @@ int Renderer::init()
 		auto result = (*it)->init();
 		assert(result == Render::errorCodes::OK);
 	}
+
+	enabledDebugProperties = Render::debugProperties::Normals;
 
 	return 0;
 }
@@ -81,9 +82,12 @@ void Renderer::update()
 		camera.getFrameBuffer().clear();
 		for (auto it = m_layers.begin(); it != m_layers.end(); ++it)
 		{
-			(*it)->preUpdate(camera);
-			(*it)->update(camera);
-			(*it)->postUpdate(camera);
+			if ((*it)->debugProperty() == Render::debugProperties::None || ((*it)->debugProperty() & enabledDebugProperties))
+			{
+				(*it)->preUpdate(camera);
+				(*it)->update(camera);
+				(*it)->postUpdate(camera);
+			}
 		}
 	}
 }
@@ -95,7 +99,7 @@ void Renderer::onResize(Events::WindowResize* event, const int x, const int y)
 		glViewport(x, y, event->getWidth(), event->getHeight());
 	}
 
-	for (auto it = m_layers.begin(); it != m_layers.end(); ++it)
+	for (auto it = m_layers.rbegin(); it != m_layers.rend(); ++it)
 	{
 		(*it)->resize(event->getWidth(), event->getHeight());
 	}
@@ -103,7 +107,7 @@ void Renderer::onResize(Events::WindowResize* event, const int x, const int y)
 
 Renderer::~Renderer()
 {
-	for (auto it = m_layers.begin(); it != m_layers.end(); ++it)
+	for (auto it = m_layers.rbegin(); it != m_layers.rend(); ++it)
 	{
 		delete (*it);
 	}

@@ -98,6 +98,7 @@ void ModelLayer::preUpdate(Component::Camera& cam)
 
 void ModelLayer::update(Component::Camera& cam)
 {
+
 	//frame.setFloat(1);
 	//
 	//shader.updateBuffers();
@@ -112,7 +113,6 @@ void ModelLayer::update(Component::Camera& cam)
 	auto view = Engine::getScene()->view<Component::Renderable, Component::Transform>();
 	for (auto entity: view)
 	{
-
 		auto& [renderable, tranform] = view.get<Component::Renderable, Component::Transform>(entity);
 		modelUniform.setMat4(tranform.getTransformMatrix());
 		entityIndex.setInt((uint32_t)entity);
@@ -182,5 +182,7 @@ uint32_t ModelLayer::getEnabledTexture(std::shared_ptr<Cache::Resource>& resourc
 
 	return -1;
 }
+
+debugProperty ModelLayer::debugProperty() const { return debugProperties::None; }
 
 }  // namespace FearEngine::Render

@@ -13,6 +13,19 @@
 
 namespace FearEngine
 {
+namespace Render
+{
+using debugProperty = short;
+namespace debugProperties
+{
+enum : short
+{
+	None = 0,
+	Normals = 1 << 0
+};
+}
+};
+
 class Renderer
 {
 public:
@@ -27,6 +40,7 @@ public:
 
 	~Renderer();
 
+	Render::debugProperty enabledDebugProperties;
 private:
 	int initGraphicData();
 
