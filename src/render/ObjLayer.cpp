@@ -92,6 +92,7 @@ void ModelLayer::resize(int width, int height)
 void ModelLayer::preUpdate(Component::Camera& cam)
 {
 	shader.use();
+	arr.bind();
 	cam.setUniforms(projUniform, viewUniform);
 	cam.beginView();
 }
@@ -108,8 +109,6 @@ void ModelLayer::update(Component::Camera& cam)
 	//glPolygonOffset(1, 0.1);
 	//glDrawArrays(GL_TRIANGLES, 0, model->vertices.size());
 	// glDrawElements(GL_TRIANGLES, chunk.triangles.size(), GL_UNSIGNED_INT, 0);
-	arr.bind();
-
 	auto view = Engine::getScene()->view<Component::Renderable, Component::Transform>();
 	for (auto entity: view)
 	{
@@ -159,6 +158,7 @@ void ModelLayer::update(Component::Camera& cam)
 
 void ModelLayer::postUpdate(Component::Camera& cam)
 {
+	vertex.unbind();
 	arr.unBind();
 	cam.end();
 }

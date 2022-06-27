@@ -51,6 +51,7 @@ public:
 private:
 	uint32_t VBO;
 
+	//Todo could be replaced with just an array
 	std::vector<BufferElement> elements;
 };
 }  // namespace FearEngine::Render

@@ -72,10 +72,10 @@ void DebugNormalsLayer::resize(int width, int height) {}
 void DebugNormalsLayer::preUpdate(Component::Camera& cam)
 {
 	shader.use();
+	arr.bind();
 	cam.setUniforms(projUniform, viewUniform);
 	cam.beginView();
 
-	arr.bind();
 }
 
 void DebugNormalsLayer::update(Component::Camera& cam)
@@ -90,13 +90,13 @@ void DebugNormalsLayer::update(Component::Camera& cam)
 		shader.updateBuffers();
 
 		// glDrawElements(GL_TRIANGLES, chunk.triangles.size(), GL_UNSIGNED_INT, 0);
-
 		glDrawArrays(GL_TRIANGLES, 0, renderable.mesh->size / sizeof(float));
 	}
 }
 
 void DebugNormalsLayer::postUpdate(Component::Camera& cam)
 {
+	vertex.unbind();
 	arr.unBind();
 	cam.end();
 }

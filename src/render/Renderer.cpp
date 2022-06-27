@@ -48,8 +48,9 @@ int Renderer::init()
 	auto evnt = Events::RenderInitialized();
 	Engine::getDispatcher()->notify(&evnt);
 
-	m_layers.emplace_back(new Render::ModelLayer);
+	//Todo fix order
 	m_layers.emplace_back(new Render::DebugNormalsLayer);
+	m_layers.emplace_back(new Render::ModelLayer);
 
 	for (auto it = m_layers.rbegin(); it != m_layers.rend(); ++it)
 	{
@@ -84,7 +85,7 @@ void Renderer::update()
 	{
 		auto& camera = cameraView.get<Component::Camera>(entity);
 		camera.getFrameBuffer().clear();
-		for (auto it = m_layers.rbegin(); it != m_layers.rend(); ++it)
+		for (auto it = m_layers.begin(); it != m_layers.end(); ++it)
 		{
 			if ((*it)->debugProperty() == Render::debugProperties::None || ((*it)->debugProperty() & enabledDebugProperties))
 			{
