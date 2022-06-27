@@ -122,12 +122,17 @@ namespace FearEngine::EditorUI::windows
 					// Transform rotate value windows
 					{
 						ImGui::PushItemWidth(inputFloatCustomWidth);
-						ImGui::InputFloat("X##RotateInspectorX", &tranforms.rotation.x, 0.0f, 0.0f, "%.2f");
+
+						glm::vec3 rot = glm::degrees(tranforms.rotation);
+
+						ImGui::InputFloat("X##RotateInspectorX", &rot.x, 0.0f, 0.0f, "%.2f");
 						ImGui::SameLine();
-						ImGui::InputFloat("Y##RotateInspectorY", &tranforms.rotation.y, 0.0f, 0.0f, "%.2f");
+						ImGui::InputFloat("Y##RotateInspectorY", &rot.y, 0.0f, 0.0f, "%.2f");
 						ImGui::SameLine();
-						ImGui::InputFloat("Z##RotateInspectorZ", &tranforms.rotation.z, 0.0f, 0.0f, "%.2f");
+						ImGui::InputFloat("Z##RotateInspectorZ", &rot.z, 0.0f, 0.0f, "%.2f");
 						ImGui::PopItemWidth();
+
+						tranforms.rotation = glm::radians(rot);
 					}
 
 					ImGui::SetCursorPosX(ImGui::GetCursorPosX() + childObjectOffsetLeftX);

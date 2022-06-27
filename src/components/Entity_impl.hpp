@@ -49,10 +49,10 @@ public:
 		return component;
 	}
 
-	template <class Component>
+	template <class Component, typename... Args>
 	decltype(auto) getComponent()
 	{
-		return scene->entities.get<Component>(entity);
+		return scene->entities.get<Component, Args...>(entity);
 	}
 
 	template <class Component>

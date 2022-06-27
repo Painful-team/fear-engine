@@ -175,13 +175,8 @@ bool EditorCamera::onMouseReleased(Events::MouseButtonReleased* evnt)
 
 bool EditorCamera::onMouseScrolled(Events::MouseScrolled* evnt) { return true; }
 
-bool EditorCamera::onKeyPressed(Events::KeyPressed* evnt) { return true; }
-
-bool EditorCamera::onKeyReleased(Events::KeyReleased* evnt) { return true; }
-
-// Todo add timebased movement to be able to stop relying on frames
-bool EditorCamera::onKeyTyped(Events::KeyTyped* evnt)
-{
+bool EditorCamera::onKeyPressed(Events::KeyPressed* evnt)
+{ 
 	if (camera == nullptr || !isInputEnabled)
 	{
 		return true;
@@ -210,6 +205,15 @@ bool EditorCamera::onKeyTyped(Events::KeyTyped* evnt)
 	}
 
 	camera->updateCameraPos();
+	
+	return true;
+}
+
+bool EditorCamera::onKeyReleased(Events::KeyReleased* evnt) { return true; }
+
+// Todo add timebased movement to be able to stop relying on frames
+bool EditorCamera::onKeyTyped(Events::KeyTyped* evnt)
+{
 	return true;
 }
 

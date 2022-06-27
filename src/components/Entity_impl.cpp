@@ -28,7 +28,7 @@ FearEngine::Entity& FearEngine::Entity::operator=(Entity&& other) noexcept
 	return *this;
 }
 
-bool FearEngine::Entity::isValid() const { return scene->entities.valid(entity); }
+bool FearEngine::Entity::isValid() const { return scene != nullptr && scene->entities.valid(entity); }
 
 FearEngine::Entity::Entity(entt::entity ent, Scene* scn)
  : entity(ent)

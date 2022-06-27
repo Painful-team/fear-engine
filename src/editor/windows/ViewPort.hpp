@@ -16,6 +16,8 @@ class Editor;
 
 namespace FearEngine::EditorUI::windows
 {
+class SceneWindow;
+
 class ViewPort final: public GuiWindow
 {
 public:
@@ -40,9 +42,11 @@ private:
 	glm::vec2 contentRegion[2];
 
 	bool enabled;
+	bool enabledGizmo;
 	bool hovered;
 
 	friend class Editor;
+	friend class SceneWindow;
 };
 }  // namespace FearEngine::EditorUI::windows
 

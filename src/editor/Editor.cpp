@@ -12,6 +12,8 @@
 
 #include <core/Input.hpp>
 
+#include <ImGuizmo/ImGuizmo.h>
+
 namespace FearEngine
 {
 Editor::Editor()
@@ -56,6 +58,7 @@ void Editor::begin()
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
+	ImGuizmo::BeginFrame();
 
 	windows.dockingArea.showWindow();
 
@@ -97,9 +100,9 @@ bool Editor::onMousePressed(Events::MouseButtonPressed* e)
 	ImGuiIO& io = ImGui::GetIO();
 	io.AddMouseButtonEvent(e->getButton(), true);
 
-	if (windows.sceneWindow.isFocused())
+	if (windows.sceneWindow.viewPorts[0].isFocused())
 	{
-		if (e->getButton() == Events::Mouse::BUTTON_LEFT)
+		if (e->getButton() == Events::Mouse::BUTTON_LEFT && !ImGuizmo::IsOver())
 		{
 			auto pos = Input::getMousePos();
 
@@ -112,9 +115,14 @@ bool Editor::onMousePressed(Events::MouseButtonPressed* e)
 			auto data = comp.getFrameBuffer().getPixel(Render::FrameBufferType::Additional, pos);
 			char udata[4]{static_cast<char>(data.x), static_cast<char>(data.y), static_cast<char>(data.z), static_cast<char>(data.w)};
 			int EntityNum = *reinterpret_cast<uint32_t*>(udata);
-			if (EntityNum != -1)
+
+			if (EntityNum > 0)
 			{
 				windows.inspectorWindow.chosenEntity = Engine::getScene()->getEntity(EntityNum);
+			}
+			else
+			{
+				windows.inspectorWindow.chosenEntity = Entity{};
 			}
 		}
 
@@ -185,6 +193,26 @@ bool Editor::onKeyPressed(Events::KeyPressed* e)
 
 	if (windows.sceneWindow.isFocused())
 	{
+		if (!windows.inspectorWindow.chosenEntity.isValid())
+		{
+			return true;
+		}
+
+		if (e->keyCode() == Events::Key::E)
+		{
+			windows.sceneWindow.gizmoOperation = ImGuizmo::OPERATION::SCALE;
+		}
+
+		if (e->keyCode() == Events::Key::R)
+		{
+			windows.sceneWindow.gizmoOperation = ImGuizmo::OPERATION::ROTATE;
+		}
+
+		if (e->keyCode() == Events::Key::T)
+		{
+			windows.sceneWindow.gizmoOperation = ImGuizmo::OPERATION::TRANSLATE;
+		}
+
 		return true;
 	}
 

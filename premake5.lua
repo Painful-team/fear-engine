@@ -41,7 +41,9 @@ project "Engine"
 		"include/stb/**.*",
 		"include/entt/**.*",
 		"include/json/**.*",
-		"include/spdlog/include/**.*"
+		"include/spdlog/include/**.*",
+		"include/ImGuizmo/**.h",
+		"include/ImGuizmo/**.cpp"
 	}
 
 	includedirs
@@ -57,7 +59,8 @@ project "Engine"
        	"include/stb",
 		"include/entt",
 		"include/spdlog/include/",
-		"include/json"
+		"include/json",
+		"include/ImGuizmo"
     }
 		
 	links 

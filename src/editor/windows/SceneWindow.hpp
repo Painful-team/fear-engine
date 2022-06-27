@@ -12,6 +12,7 @@
 namespace FearEngine
 {
 class Editor;
+class ViewPort;
 };
 
 namespace FearEngine::EditorUI::windows
@@ -44,6 +45,7 @@ private:
 	void showStatsDialog();
 
 	Entity editorCamera;
+	uint64_t gizmoOperation;
 
 	std::array<ViewPort, 16> viewPorts;
 
@@ -52,6 +54,7 @@ private:
 	ImVec2 windowSize;
 
 	friend class Editor;
+	friend class ViewPort;
 };
 }
 #endif

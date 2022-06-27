@@ -9,6 +9,12 @@
 #include <components/CameraComponent.hpp>
 #include <core/Engine.hpp>
 
+#include <core/Input.hpp>
+
+#include <glm/glm.hpp>
+#include <ImGuizmo/ImGuizmo.h>
+#include <glm/gtc/type_ptr.hpp>
+
 namespace FearEngine::EditorUI::windows
 {
 SceneWindow::SceneWindow()
@@ -18,6 +24,7 @@ SceneWindow::SceneWindow()
  , windowSize(0, 0)
  , statsItemSize(260.0f, 150.0f)
  , cameralistSize(0)
+ , gizmoOperation(ImGuizmo::OPERATION::TRANSLATE)
 {}
 
 void SceneWindow::init()
@@ -40,6 +47,7 @@ void SceneWindow::init()
 
 	viewPorts[0].setCamera(&cameraComponent);
 	viewPorts[0].name = "Scene Camera";
+	viewPorts[0].enabledGizmo = true;
 };
 
 void SceneWindow::showWindow()

@@ -3,9 +3,15 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <core/Engine.hpp>
+#include <components/CameraComponent.hpp>
+#include <editor/Editor.hpp>
+#include <ImGuizmo/ImGuizmo.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 FearEngine::EditorUI::windows::ViewPort::ViewPort()
  : enabled(false)
+ , enabledGizmo(false)
 {}
 
 void FearEngine::EditorUI::windows::ViewPort::init() {}
@@ -46,12 +52,50 @@ void FearEngine::EditorUI::windows::ViewPort::showWindow()
 		}
 		size = contentRegion[1] - contentRegion[0];
 
-		if (hovered)
+		if (hovered && !ImGuizmo::IsOver())
 		{
 			auto evnt = Events::ActiveViewport(cam);
 			Engine::getDispatcher()->notify(&evnt);
 		}
 	}
+	
+	if (enabledGizmo)
+	{
+		auto& entity = Engine::getEditor()->windows.inspectorWindow.chosenEntity;
+
+		if (entity.isValid())
+		{
+			auto& comp = Engine::getEditor()->windows.sceneWindow.editorCamera.getComponent<Component::Camera>();
+			auto& trans = entity.getComponent<Component::Transform>();
+
+			auto transform = trans.getTransformMatrix();
+
+			// Todo add ability to change perspective on orthographic
+			ImGuizmo::SetOrthographic(false);
+			ImGuizmo::SetDrawlist();
+
+			ImGuizmo::SetRect(contentRegion[0].x, contentRegion[0].y,
+				 contentRegion[1].x - contentRegion[0].x,
+				 contentRegion[1].y - contentRegion[0].y);
+
+			ImGuizmo::Manipulate(glm::value_ptr(comp.getView()), glm::value_ptr(comp.getProjection()),
+				 static_cast<ImGuizmo::OPERATION>(Engine::getEditor()->windows.sceneWindow.gizmoOperation), ImGuizmo::MODE::LOCAL, glm::value_ptr(transform));
+			if (ImGuizmo::IsUsing())
+			{
+				glm::vec3 pos;
+				glm::vec3 rotation;
+				glm::vec3 scale;
+				ImGuizmo::DecomposeMatrixToComponents(
+					 glm::value_ptr(transform), glm::value_ptr(pos), glm::value_ptr(rotation), glm::value_ptr(scale));
+
+				trans.pos = pos;
+				glm::vec3 deltaRotation = rotation - trans.rotation;
+				trans.rotation += deltaRotation;
+				trans.scale = scale;
+			}
+		}
+	}
+
 	ImGui::End();
 }
 
