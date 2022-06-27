@@ -48,8 +48,8 @@ int Renderer::init()
 	auto evnt = Events::RenderInitialized();
 	Engine::getDispatcher()->notify(&evnt);
 
-	m_layers.emplace_back(new Render::DebugNormalsLayer);
 	m_layers.emplace_back(new Render::ModelLayer);
+	m_layers.emplace_back(new Render::DebugNormalsLayer);
 
 	for (auto it = m_layers.rbegin(); it != m_layers.rend(); ++it)
 	{
@@ -63,11 +63,15 @@ int Renderer::init()
 }
 
 void Renderer::postUpdate()
-{
-}
+{}
+
+const Render::RenderStats& Renderer::getStats() const { return stats; }
 
 void Renderer::preUpdate()
 {
+	stats.drawCalls = 0;
+	stats.polygons = 0;
+
 	assert(!m_layers.empty() && "Renderer not initialized");
 }
 
@@ -80,7 +84,7 @@ void Renderer::update()
 	{
 		auto& camera = cameraView.get<Component::Camera>(entity);
 		camera.getFrameBuffer().clear();
-		for (auto it = m_layers.begin(); it != m_layers.end(); ++it)
+		for (auto it = m_layers.rbegin(); it != m_layers.rend(); ++it)
 		{
 			if ((*it)->debugProperty() == Render::debugProperties::None || ((*it)->debugProperty() & enabledDebugProperties))
 			{

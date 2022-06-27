@@ -12,6 +12,7 @@
 FearEngine::EditorUI::windows::ViewPort::ViewPort()
  : enabled(false)
  , enabledGizmo(false)
+ , size(0, 0)
 {}
 
 void FearEngine::EditorUI::windows::ViewPort::init() {}
@@ -46,7 +47,9 @@ void FearEngine::EditorUI::windows::ViewPort::showWindow()
 		}
 		hovered |= ImGui::IsItemHovered();
 
-		if (size != contentRegion[1] - contentRegion[0])
+
+		auto par = cam->getFrameBuffer().getParams();
+		if (size.x != par.width || size.y != par.height)
 		{
 			cam->onResize(size.x, size.y);
 		}

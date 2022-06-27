@@ -23,7 +23,15 @@ enum : short
 	None = 0,
 	Normals = 1 << 0
 };
-}
+};
+
+struct RenderStats
+{
+	uint32_t polygons;
+	uint32_t drawCalls;
+};
+
+class ModelLayer;
 };
 
 class Renderer
@@ -36,6 +44,8 @@ public:
 	void update();
 	void postUpdate();
 
+	const Render::RenderStats& getStats() const;
+
 	void onResize(Events::WindowResize* event, const int x = 0, const int y = 0);
 
 	~Renderer();
@@ -44,11 +54,14 @@ public:
 private:
 	int initGraphicData();
 
+	Render::RenderStats stats;
+
 	std::list<Render::Layer*> m_layers;
 
 	std::unordered_map<int, int> graphicsData;
 
 	friend class Render::Shaders::Shader;
+	friend class Render::ModelLayer;
 };
 }  // namespace FearEngine
 

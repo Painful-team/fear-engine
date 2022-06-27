@@ -152,6 +152,8 @@ void ModelLayer::update(Component::Camera& cam)
 		// glDrawElements(GL_TRIANGLES, chunk.triangles.size(), GL_UNSIGNED_INT, 0);
 
 		glDrawArrays(GL_TRIANGLES, 0, renderable.mesh->size / sizeof(float));
+		Engine::getRender()->stats.polygons += renderable.mesh->size / sizeof(float);
+		++Engine::getRender()->stats.drawCalls;
 	}
 }
 

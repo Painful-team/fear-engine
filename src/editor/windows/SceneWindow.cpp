@@ -7,6 +7,7 @@
 #include <imgui_internal.h>
 
 #include <components/CameraComponent.hpp>
+#include <components/MaterialComponent.hpp>
 #include <core/Engine.hpp>
 
 #include <core/Input.hpp>
@@ -63,7 +64,7 @@ void SceneWindow::showWindow()
 	{
 		if (ImGui::BeginMenuBar())
 		{
-			if (ImGui::BeginMenu("Stats"))
+			if (ImGui::BeginMenu("Scene stats"))
 			{
 				showStatsDialog();
 				ImGui::EndMenu();
@@ -228,9 +229,9 @@ void SceneWindow::showStatsDialog()
 {
 	ImGui::BeginChild("child", statsItemSize, false, ImGuiWindowFlags_NoBackground);
 	{
-		ImGui::Text("Polygons: %d", 1);
-		ImGui::Text("Objects: %d", 1);
-		ImGui::Text("Screen: %d", 1);
+		ImGui::Text("Polygons: %d", Engine::getRender()->getStats().polygons);
+		ImGui::Text("DrawCalls: %d", Engine::getRender()->getStats().drawCalls);
+		ImGui::Text("Objects: %d", Engine::getScene()->view<Component::Renderable>().size());
 	}
 	ImGui::EndChild();
 }

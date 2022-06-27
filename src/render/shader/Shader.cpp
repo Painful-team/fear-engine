@@ -153,6 +153,8 @@ errorCode Shader::compile()
 				glDeleteShader(shaders[i]);
 			}
 
+			glDeleteProgram(program);
+
 			return errorCodes::SHADER_COMPILATION_FAILED;
 		}
 
@@ -175,6 +177,8 @@ errorCode Shader::compile()
 		{
 			glDeleteShader(shaders[i]);
 		}
+
+		glDeleteProgram(program);
 
 		Engine::logs()->error("Render", "[Shader System] Linking has failed with error \"{0}\"", infoLog);
 #endif	// _DEBUG
