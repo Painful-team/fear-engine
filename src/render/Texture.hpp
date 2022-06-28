@@ -19,6 +19,9 @@ public:
 	Texture& operator=(Texture&& tex) noexcept;
 
 	void init(std::shared_ptr<Cache::Resource>& resource);
+	
+	void initEmpty(uint8_t textureColor[3]);
+	bool isEmpty() const;
 
 	uint32_t getTexHandle() const;
 	const std::shared_ptr<Cache::Resource>& getResource() const;

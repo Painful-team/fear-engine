@@ -134,7 +134,8 @@ int Engine::init()
 void Engine::run()
 {
 	std::shared_ptr<Cache::Resource> resource;
-	Engine::getCache()->getResource("resources/models/backpack.obj", resource, Cache::ResourceFlag::RecalcNormals);
+	Engine::getCache()->getResource("resources/models/cube.obj", resource, Cache::ResourceFlag::RecalcNormals);
+
 	auto model = utils::static_pointer_cast<Cache::ObjData>(resource->extra);
 	auto entity1 = Engine::getScene()->createEntity("BackPack 1");
 	{

@@ -10,6 +10,7 @@
 
 #include <cache/ObjResource.hpp>
 #include "Texture.hpp"
+#include <cache/MaterialResource.hpp>
 
 namespace FearEngine::Render
 {
@@ -25,7 +26,8 @@ public:
 	void update(Component::Camera& cam) override;
 	void postUpdate(Component::Camera& cam) override;
 	uint32_t linkTexture(std::shared_ptr<Texture>& texture);
-	uint32_t getEnabledTexture(std::shared_ptr<Cache::Resource>& resource);
+	uint32_t getEnabledTextureResource(std::shared_ptr<Cache::Resource>& resource);
+	uint32_t getEnabledTexture(std::shared_ptr<Texture>& texture);
 	Render::debugProperty debugProperty() const override;
 
 private:
@@ -42,7 +44,8 @@ private:
 	Shaders::Shader::UniformStorage material;
 
 	std::array<std::shared_ptr<Texture>, FearEngine::Render::Shaders::Shader::maxTextureSlots> textures;
-
+	Cache::Material defaultMaterial;
+	std::shared_ptr<Texture> emptyTexture;
 	uint8_t enabledTextures;
 };
 }  // namespace FearEngine::Render

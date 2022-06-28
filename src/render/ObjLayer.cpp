@@ -74,6 +74,7 @@ errorCode ModelLayer::init()
 	shader.findUniform("dirLight.dir").setVec3(-1.8, -1.8, -1);
 	shader.findUniform("dirLight.lightColor").setVec3(1, 1, 1);
 
+	//TODO Get Texture Slots from GPU
 	int32_t samplers[Shaders::Shader::maxTextureSlots];
 	for (uint8_t i = 0; i < Shaders::Shader::maxTextureSlots; ++i)
 	{
@@ -82,6 +83,18 @@ errorCode ModelLayer::init()
 	}
 
 	shader.findUniform("textures").setInt(samplers, Shaders::Shader::maxTextureSlots);
+
+	emptyTexture = std::make_shared<Texture>();
+	uint8_t texColor[] = {128, 128, 128};
+	emptyTexture->initEmpty(texColor);
+	for (uint32_t i = 0; i < textures.size(); ++i)
+	{
+		textures[i] = emptyTexture;
+	}
+
+	defaultMaterial.ambient = glm::vec3(1);
+	defaultMaterial.diffuse = glm::vec3(0.8);
+	defaultMaterial.shininess = 32;
 
 	return Render::errorCodes::OK;
 }
@@ -115,33 +128,47 @@ void ModelLayer::update(Component::Camera& cam)
 		auto& [renderable, tranform] = view.get<Component::Renderable, Component::Transform>(entity);
 		modelUniform.setMat4(tranform.getTransformMatrix());
 		entityIndex.setInt((uint32_t)entity);
+		
+		if (!renderable.materials.empty())
 		{
-			uint32_t unit = getEnabledTexture(renderable.materials.back()->diffuseRes);
-			if (unit == -1)
+			auto& materialData = renderable.materials.back();
 			{
-				auto texture = std::make_shared<Texture>();
-				texture->init(renderable.materials.back()->diffuseRes);
-				unit = linkTexture(texture);
+				uint32_t unit = getEnabledTextureResource(materialData->diffuseRes);
+				if (unit == -1)
+				{
+					auto texture = std::make_shared<Texture>();
+					texture->init(renderable.materials.back()->diffuseRes);
+					unit = linkTexture(texture);
+				}
+				material["diffuseTextureId"].setInt(unit);
 			}
+
+			{
+				uint32_t unit = getEnabledTextureResource(materialData->specularRes);
+				if (unit == -1)
+				{
+					auto texture = std::make_shared<Texture>();
+					texture->init(materialData->specularRes);
+					unit = linkTexture(texture);
+				}
+				material["specularTextureId"].setInt(unit);
+			}
+
+			material["ambientStrength"].setVec3(materialData->ambient);
+			material["shininess"].setFloat(materialData->shininess);
+		}
+		else
+		{
+			uint32_t unit = getEnabledTexture(emptyTexture);
 			material["diffuseTextureId"].setInt(unit);
-		}
-
-		{
-			uint32_t unit = getEnabledTexture(renderable.materials.back()->specularRes);
-			if (unit == -1)
-			{
-				auto texture = std::make_shared<Texture>();
-				texture->init(renderable.materials.back()->specularRes);
-				unit = linkTexture(texture);
-			}
 			material["specularTextureId"].setInt(unit);
-		}
 
-		material["ambientStrength"].setVec3(renderable.materials.back()->ambient);
-		material["shininess"].setFloat(renderable.materials.back()->shininess);
+			material["ambientStrength"].setVec3(defaultMaterial.ambient);
+			material["shininess"].setFloat(defaultMaterial.shininess);
+		}
 
 		vertex.setData(reinterpret_cast<float*>(renderable.mesh->data), renderable.mesh->size);
-		for (uint8_t i = 0; i < enabledTextures; ++i)
+		for (uint8_t i = 0; i < textures.size(); ++i)
 		{
 			textures[i]->enable(i);
 		}
@@ -172,11 +199,24 @@ uint32_t ModelLayer::linkTexture(std::shared_ptr<Texture>& texture)
 	return prev;
 }
 
-uint32_t ModelLayer::getEnabledTexture(std::shared_ptr<Cache::Resource>& resource)
+uint32_t ModelLayer::getEnabledTextureResource(std::shared_ptr<Cache::Resource>& resource)
 {
-	for (uint8_t i = 0; i < textures.size() && textures[i]; ++i)
+	for (uint8_t i = 0; i < textures.size(); ++i)
 	{
 		if (textures[i]->getResource().get() == resource.get())
+		{
+			return i;
+		}
+	}
+
+	return -1;
+}
+
+uint32_t ModelLayer::getEnabledTexture(std::shared_ptr<Texture>& texture)
+{
+	for (uint8_t i = 0; i < textures.size(); ++i)
+	{
+		if (textures[i]->getTexHandle() == texture->getTexHandle())
 		{
 			return i;
 		}

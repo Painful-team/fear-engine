@@ -73,10 +73,31 @@ void FearEngine::Render::Texture::init(std::shared_ptr<Cache::Resource>& resourc
 	glGenerateMipmap(GL_TEXTURE_2D);
 }
 
+// Todo think about caching mipmap to reduce texture loading time
+void FearEngine::Render::Texture::initEmpty(uint8_t textureColor[3])
+{
+	glGenTextures(1, &textureId);
+	glBindTexture(GL_TEXTURE_2D, textureId);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	GLint format;
+
+	format = GL_RGB;
+
+	glTexImage2D(GL_TEXTURE_2D, 0, format, 1, 1, 0, format, GL_UNSIGNED_BYTE, textureColor);
+	glGenerateMipmap(GL_TEXTURE_2D);
+}
+
+bool FearEngine::Render::Texture::isEmpty() const { return texRes.get() == nullptr; }
+
 uint32_t FearEngine::Render::Texture::getTexHandle() const { return textureId; }
 const std::shared_ptr<FearEngine::Cache::Resource>& FearEngine::Render::Texture::getResource() const { return texRes; };
 
-#include <core/Engine.hpp>
 void FearEngine::Render::Texture::enable(uint8_t slot)
 {
 	glBindTextureUnit(slot, textureId);

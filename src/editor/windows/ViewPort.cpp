@@ -61,7 +61,7 @@ void FearEngine::EditorUI::windows::ViewPort::showWindow()
 			Engine::getDispatcher()->notify(&evnt);
 		}
 	}
-	
+	//std::cout << &cam->getProjection() << std::endl;
 	if (enabledGizmo)
 	{
 		auto& entity = Engine::getEditor()->windows.inspectorWindow.chosenEntity;
