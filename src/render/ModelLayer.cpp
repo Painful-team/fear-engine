@@ -1,5 +1,5 @@
 #include <glad/glad.h>
-#include "ObjLayer.hpp"
+#include "ModelLayer.hpp"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -18,6 +18,8 @@
 #include <core/Scene.hpp>
 #include <core/Entity.hpp>
 
+#include "Draws.hpp"
+
 namespace FearEngine::Render
 {
 ModelLayer::ModelLayer()
@@ -27,13 +29,13 @@ ModelLayer::ModelLayer()
 
 errorCode ModelLayer::init()
 {
-	auto result = shader.readShader("resources/shaders/Vertex.vert", Shaders::ShaderType::Vertex);
+	auto result = shader.readShader("resources/shaders/objects/Vertex.vert", Shaders::ShaderType::Vertex);
 	if (result != errorCodes::OK)
 	{
 		return result;
 	}
 
-	result = shader.readShader("resources/shaders/Fragment.frag", Shaders::ShaderType::Fragment);
+	result = shader.readShader("resources/shaders/objects/Fragment.frag", Shaders::ShaderType::Fragment);
 	if (result != errorCodes::OK)
 	{
 		return result;
@@ -106,28 +108,19 @@ void ModelLayer::preUpdate(Component::Camera& cam)
 {
 	shader.use();
 	arr.bind();
-	cam.setUniforms(projUniform, viewUniform);
+	viewUniform.setMat4(cam.getView());
+	projUniform.setMat4(cam.getProjection());
 	cam.beginView();
 }
 
 void ModelLayer::update(Component::Camera& cam)
 {
-
-	//frame.setFloat(1);
-	//
-	//shader.updateBuffers();
-	//
-	//// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	//glPolygonOffset(1, 0.1);
-	//glDrawArrays(GL_TRIANGLES, 0, model->vertices.size());
-	// glDrawElements(GL_TRIANGLES, chunk.triangles.size(), GL_UNSIGNED_INT, 0);
-	auto view = Engine::getScene()->view<Component::Renderable, Component::Transform>();
+	static auto& view = Engine::getScene()->view<Component::Renderable, Component::Transform>();
 	for (auto entity: view)
 	{
 		auto& [renderable, tranform] = view.get<Component::Renderable, Component::Transform>(entity);
 		modelUniform.setMat4(tranform.getTransformMatrix());
-		entityIndex.setInt((uint32_t)entity);
+		entityIndex.setInt(entity);
 		
 		if (!renderable.materials.empty())
 		{
@@ -177,15 +170,13 @@ void ModelLayer::update(Component::Camera& cam)
 
 		// glDrawElements(GL_TRIANGLES, chunk.triangles.size(), GL_UNSIGNED_INT, 0);
 
-		glDrawArrays(GL_TRIANGLES, 0, renderable.mesh->size / sizeof(float));
-		Engine::getRender()->stats.polygons += renderable.mesh->size / sizeof(float);
-		++Engine::getRender()->stats.drawCalls;
+		auto extra = utils::reinterpret_pointer_cast<Cache::ObjData>(renderable.mesh->extra);
+		Draws::draw(arr, extra->count);
 	}
 }
 
 void ModelLayer::postUpdate(Component::Camera& cam)
 {
-	vertex.unbind();
 	arr.unBind();
 	cam.end();
 }

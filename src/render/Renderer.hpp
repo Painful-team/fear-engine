@@ -2,7 +2,9 @@
 #define FEARENGINE_RENDER_RENDERER_H__
 
 #include <list>
+#include <string>
 #include <unordered_map>
+#include <array>
 #include <memory>
 
 #include <event/WindowEvent.hpp>
@@ -21,7 +23,8 @@ namespace debugProperties
 enum : short
 {
 	None = 0,
-	Normals = 1 << 0
+	Normals = 1 << 0,
+	SceneObjects = 1 << 1
 };
 };
 
@@ -30,8 +33,6 @@ struct RenderStats
 	uint32_t polygons;
 	uint32_t drawCalls;
 };
-
-class ModelLayer;
 };
 
 class Renderer
@@ -44,24 +45,24 @@ public:
 	void update();
 	void postUpdate();
 
-	const Render::RenderStats& getStats() const;
-
 	void onResize(Events::WindowResize* event, const int x = 0, const int y = 0);
 
 	~Renderer();
+
+	Render::RenderStats stats;
 
 	Render::debugProperty enabledDebugProperties;
 private:
 	int initGraphicData();
 
-	Render::RenderStats stats;
-
 	std::list<Render::Layer*> m_layers;
 
 	std::unordered_map<int, int> graphicsData;
 
+	static constexpr const uint16_t maxLayouts = 512;
+	std::array <std::shared_ptr<Render::Shaders::Shader::ShaderBufferData>*, maxLayouts> shaderBuffers;
+
 	friend class Render::Shaders::Shader;
-	friend class Render::ModelLayer;
 };
 }  // namespace FearEngine
 

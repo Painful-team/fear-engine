@@ -14,8 +14,9 @@
 #include "shader/Shader.hpp"
 
 #include <Editor/Editor.hpp>
-#include "ObjLayer.hpp"
+#include "ModelLayer.hpp"
 #include "DebugNormalLayer.hpp"
+#include "EditorModelLayer.hpp"
 
 #include <core/Engine.hpp>
 #include <event/CoreEvent.hpp>
@@ -24,8 +25,14 @@ namespace FearEngine
 {
 void MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
 {
-	fprintf(stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n", (type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
-		 type, severity, message);
+	if (type == GL_DEBUG_TYPE_ERROR)
+	{
+		Engine::logs()->error("Render", "GL ERROR: type = {0}, severity = {1}, message = \"{2}\"", type, severity, message);
+	}
+	else
+	{
+		Engine::logs()->log("Render", "GL CALLBACK: type = {0}, severity = {1}, message = \"{2}\"", type, severity, message);
+	}
 }
 
 int Renderer::init()
@@ -48,9 +55,9 @@ int Renderer::init()
 	auto evnt = Events::RenderInitialized();
 	Engine::getDispatcher()->notify(&evnt);
 
-	//Todo fix order
 	m_layers.emplace_back(new Render::DebugNormalsLayer);
 	m_layers.emplace_back(new Render::ModelLayer);
+	m_layers.emplace_back(new Render::EditorModelLayer);
 
 	for (auto it = m_layers.rbegin(); it != m_layers.rend(); ++it)
 	{
@@ -58,15 +65,12 @@ int Renderer::init()
 		assert(result == Render::errorCodes::OK);
 	}
 
-	enabledDebugProperties = Render::debugProperties::Normals;
+	enabledDebugProperties = Render::debugProperties::None;
 
 	return 0;
 }
 
-void Renderer::postUpdate()
-{}
-
-const Render::RenderStats& Renderer::getStats() const { return stats; }
+void Renderer::postUpdate() {}
 
 void Renderer::preUpdate()
 {
@@ -84,8 +88,9 @@ void Renderer::update()
 	for (auto& entity : cameraView)
 	{
 		auto& camera = cameraView.get<Component::Camera>(entity);
+		camera.updateCameraPos();
 		camera.getFrameBuffer().clear();
-		for (auto it = m_layers.begin(); it != m_layers.end(); ++it)
+		for (auto it = m_layers.rbegin(); it != m_layers.rend(); ++it)
 		{
 			if ((*it)->debugProperty() == Render::debugProperties::None || ((*it)->debugProperty() & enabledDebugProperties))
 			{
@@ -134,6 +139,11 @@ int Renderer::initGraphicData()
 	GLint maxTextureSlots = 0;
 	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &maxTextureSlots);
 	graphicsData.emplace(GL_MAX_TEXTURE_IMAGE_UNITS, maxTextureSlots);
+
+	GLint maxShaderLayouts = 0;
+	glGetIntegerv(GL_MAX_VARYING_COMPONENTS, &maxShaderLayouts);
+	graphicsData.emplace(GL_MAX_VARYING_COMPONENTS, maxShaderLayouts);
+
 	return 0;
 }
-}  // namespace FearEngine
+} // namespace FearEngine
