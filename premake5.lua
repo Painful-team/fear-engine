@@ -29,7 +29,7 @@ project "Engine"
 	
 	files 
 	{
-		"resources/shaders/*.*",
+		"resources/shaders/**.*",
 		".editorconfig",
 		".clang-format",
 		"src/**.hpp",
