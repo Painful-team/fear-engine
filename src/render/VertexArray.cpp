@@ -6,7 +6,7 @@
 namespace FearEngine::Render
 {
 VertexArray::VertexArray()
- : VAO(0)
+ : VAO(-1)
  , attribIndex(0)
 {}
 
@@ -16,16 +16,18 @@ void VertexArray::bind() { glBindVertexArray(VAO); }
 
 void VertexArray::unBind() { glBindVertexArray(0); }
 
-void VertexArray::addVertexBuffer(const VertexBuffer& buffer)
+void VertexArray::addVertexBuffer(const Buffer& buffer, VertexArrayUpdateType updateType)
 {
-	int offset = 0;
 	int stride = buffer.getStride();
+	buffer.bind();
 	for (const auto& element : buffer.GetElements())
 	{
 		glVertexAttribPointer(attribIndex, element.count, static_cast<GLenum>(element.type), element.normalized, stride,
 			 reinterpret_cast<void*>(element.offset));
-		glEnableVertexAttribArray(attribIndex++);
+		glEnableVertexAttribArray(attribIndex);
+		glVertexAttribDivisor(attribIndex++, updateType);
 	}
+	buffer.unbind();
 }
 
 VertexArray::~VertexArray() { glDeleteVertexArrays(1, &VAO); }

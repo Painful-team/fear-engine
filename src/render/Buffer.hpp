@@ -14,7 +14,8 @@ enum class BufferType
 	Float = GL_FLOAT,
 	Short = GL_SHORT,
 	Int = GL_INT,
-	Char = GL_BYTE
+	Char = GL_BYTE,
+	Mat4,
 };
 
 struct BufferElement
@@ -30,12 +31,13 @@ struct BufferElement
 	static int getSize(const BufferType type);
 };
 
-class VertexBuffer
+class Buffer
 {
 public:
-	VertexBuffer(std::initializer_list<BufferElement> element);
+	Buffer(std::initializer_list<BufferElement> element);
 
 	void genBuffer();
+	void bind() const;
 
 	void bindData(const uint32_t size);
 	void bindData(float* vertices, const uint32_t size);
@@ -44,9 +46,9 @@ public:
 	const std::vector<BufferElement>& GetElements() const;
 	int getStride() const;
 
-	void unbind();
+	void unbind() const;
 
-	~VertexBuffer();
+	~Buffer();
 
 private:
 	uint32_t VBO;

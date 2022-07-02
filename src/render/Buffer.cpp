@@ -1,10 +1,10 @@
 #include <glad/glad.h>
 
-#include "VertexBuffer.hpp"
+#include "Buffer.hpp"
 
 namespace FearEngine::Render
 {
-VertexBuffer::VertexBuffer(std::initializer_list<BufferElement> element)
+Buffer::Buffer(std::initializer_list<BufferElement> element)
  : elements(element)
  , VBO(0)
 {
@@ -16,36 +16,37 @@ VertexBuffer::VertexBuffer(std::initializer_list<BufferElement> element)
 	}
 }
 
-void VertexBuffer::genBuffer() { glGenBuffers(1, &VBO); }
+void Buffer::genBuffer() { glGenBuffers(1, &VBO); }
 
-void VertexBuffer::bindData(const uint32_t size)
+void Buffer::bindData(const uint32_t size)
 {
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
 }
 
-void VertexBuffer::bindData(float* vertices, const uint32_t size)
+void Buffer::bindData(float* vertices, const uint32_t size)
 {
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_STATIC_DRAW);
 }
 
-void VertexBuffer::setData(float* vertices, const uint32_t size)
+void Buffer::setData(float* vertices, const uint32_t size)
 {
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, size, vertices);
 }
 
-const std::vector<BufferElement>& VertexBuffer::GetElements() const { return elements; }
+const std::vector<BufferElement>& Buffer::GetElements() const { return elements; }
 
-int VertexBuffer::getStride() const
+int Buffer::getStride() const
 {
 	return elements.back().offset + BufferElement::getSize(elements.back().type) * elements.back().count;
 }
 
-void VertexBuffer::unbind() { glBindBuffer(GL_ARRAY_BUFFER, 0); }
+void Buffer::unbind() const { glBindBuffer(GL_ARRAY_BUFFER, 0); }
+void Buffer::bind() const { glBindBuffer(GL_ARRAY_BUFFER, VBO); }
 
-VertexBuffer::~VertexBuffer() { glDeleteBuffers(1, &VBO); }
+Buffer::~Buffer() { glDeleteBuffers(1, &VBO); }
 
 BufferElement::BufferElement(const BufferType type, const int count, bool normalized)
  : type(type)
