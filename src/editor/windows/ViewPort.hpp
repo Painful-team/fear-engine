@@ -4,7 +4,6 @@
 #include "GuiWindow.hpp"
 
 #include <components/CameraComponent.hpp>
-
 #include <string>
 
 #include <memory>
@@ -24,8 +23,8 @@ public:
 	ViewPort();
 	void init();
 
-	void setCamera(Component::Camera* camera);
-	Component::Camera* getCamera() const;
+	void setCamera(Component::Camera* cam);
+	const Component::Camera& getCamera() const;
 
 	void showWindow() final;
 	bool isWindowOpen() const;

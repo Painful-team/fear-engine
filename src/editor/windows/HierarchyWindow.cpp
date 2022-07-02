@@ -1,6 +1,7 @@
 #include "HierarchyWindow.hpp"
 
 #include <core/Engine.hpp>
+#include <editor/Editor.hpp>
 #include <core/Input.hpp>
 
 namespace FearEngine::EditorUI::windows
@@ -10,7 +11,7 @@ HierarchyWindow::HierarchyWindow():
 	filterItemEnabled(true)
 {}
 
-void HierarchyWindow::init() {}
+void HierarchyWindow::init() { scene = Engine::getScene().get(); }
 
 void HierarchyWindow::showWindow()
 {
@@ -52,96 +53,45 @@ void HierarchyWindow::showWindow()
 
 		if (ImGui::BeginChild("Hierarchy area", childSize, false, ImGuiWindowFlags_NoScrollbar))
 		{
-			const int nCubes = 200;
-
 			ImGui::PushStyleColor(ImGuiCol_Header, IM_COL32(67, 67, 67, 100));
 
-			if (ImGui::CollapsingHeader("Scene name"))
+			
+			if (ImGui::CollapsingHeader(Engine::getScene()->name.c_str()))
 			{
-				static int selection_mask = (1 << 2);
+				static int selectedNode = -1;
 				int nodeClicked = -1;
 
-				for (int i = 0; i < nCubes; ++i)
+				uint32_t i = 0;
+				Engine::getScene()->entities.each([&](const auto entity)
 				{
+					auto& tag = scene->entities.get<Component::Tag>(entity);
 					ImGuiTreeNodeFlags nodeFlags = treeFlags;
-					const bool isSelected = (selection_mask & (1 << i)) != 0;
-					bool nodeOpen = false;
+					ImGui::SetCursorPosX(ImGui::GetCursorPosX() + nextNodeOffsetX);
 
-					if (isSelected)
+					if (selectedNode != -1)
 					{
 						nodeFlags |= ImGuiTreeNodeFlags_Selected;
 					}
 
-					if (i < nCubes - 1)
+					nodeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_SpanFullWidth;
+					ImGui::TreeNodeEx(&i, nodeFlags, tag.tag.c_str());
+					if (ImGui::IsItemClicked())
 					{
-						nodeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
-						ImGui::TreeNodeEx(static_cast<void*>(&i), nodeFlags, "Cube - %d", i + 1);
-						if (ImGui::IsItemClicked())
-						{
-							nodeClicked = i;
-						}
-						if (ImGui::BeginDragDropSource())
-						{
-							ImGui::SetDragDropPayload("_TREENODE", NULL, 0);
-							ImGui::Text("drag and drop");
-							ImGui::EndDragDropSource();
-						}
+						nodeClicked = entity;
 					}
-					else
+					if (ImGui::BeginDragDropSource())
 					{
-						ImGui::SetCursorPosX(ImGui::GetCursorPosX() + nextNodeOffsetX);
-
-						nodeFlags |= ImGuiTreeNodeFlags_SpanFullWidth;
-
-						nodeOpen = ImGui::TreeNodeEx(static_cast<void*>(&i), nodeFlags, "Collection");
-						if (ImGui::IsItemClicked())
-						{
-							nodeClicked = i;
-						}
-						if (ImGui::BeginDragDropSource())
-						{
-							ImGui::SetDragDropPayload("_TREENODE", NULL, 0);
-							ImGui::Text("drag and drop");
-							ImGui::EndDragDropSource();
-						}
-						if (nodeOpen)
-						{
-							if ((selection_mask & (1 << ++i)) != 0)
-							{
-								nodeFlags |= ImGuiTreeNodeFlags_Selected;
-							}
-
-							nodeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
-							ImGui::TreeNodeEx(static_cast<void*>(&i), nodeFlags, "Cube - %d", i);
-							if (ImGui::IsItemClicked())
-							{
-								nodeClicked = i;
-							}
-							if (ImGui::BeginDragDropSource())
-							{
-								ImGui::SetDragDropPayload("_TREENODE", NULL, 0);
-								ImGui::Text("drag and drop");
-								ImGui::EndDragDropSource();
-							}
-							ImGui::TreePop();
-						}
+						ImGui::SetDragDropPayload("_TREENODE", NULL, 0);
+						ImGui::Text("drag and drop");
+						ImGui::EndDragDropSource();
 					}
-				}
-				if (nodeClicked != -1)
+					++i;
+				});
+
+				if (nodeClicked != -1 && selectedNode != nodeClicked)
 				{
-					
-					if (FearEngine::Input::isKeyPressed(FearEngine::Events::Key::LEFT_CONTROL))
-					{
-						selection_mask ^= (1 << nodeClicked);
-					}
-					else
-					{
-						selection_mask = (1 << nodeClicked);
-					}
-				}
-				else if (FearEngine::Input::isMousePressed(FearEngine::Events::Mouse::BUTTON_LEFT))
-				{
-					selection_mask = (1 << 8);
+					Engine::getEditor()->windows.inspectorWindow.chosenEntity = Engine::getScene()->getEntity(nodeClicked);
+					selectedNode = nodeClicked;
 				}
 			}
 			ImGui::PopStyleColor();

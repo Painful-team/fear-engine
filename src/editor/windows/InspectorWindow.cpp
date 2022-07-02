@@ -4,6 +4,8 @@
 
 #include <core/Engine.hpp>
 
+#include <cmath>
+
 namespace FearEngine::EditorUI::windows
 {
 	InspectorWindow::InspectorWindow() :
@@ -123,7 +125,7 @@ namespace FearEngine::EditorUI::windows
 					{
 						ImGui::PushItemWidth(inputFloatCustomWidth);
 
-						glm::vec3 rot = glm::degrees(tranforms.rotation);
+						auto& rot = tranforms.rotation;
 
 						ImGui::InputFloat("X##RotateInspectorX", &rot.x, 0.0f, 0.0f, "%.2f");
 						ImGui::SameLine();
@@ -131,8 +133,12 @@ namespace FearEngine::EditorUI::windows
 						ImGui::SameLine();
 						ImGui::InputFloat("Z##RotateInspectorZ", &rot.z, 0.0f, 0.0f, "%.2f");
 						ImGui::PopItemWidth();
+						
+						rot.x = fmod(rot.x, 360);
+						rot.y = fmod(rot.y, 360);
+						rot.z = fmod(rot.z, 360);
 
-						tranforms.rotation = glm::radians(rot);
+						tranforms.rotation = rot;
 					}
 
 					ImGui::SetCursorPosX(ImGui::GetCursorPosX() + childObjectOffsetLeftX);

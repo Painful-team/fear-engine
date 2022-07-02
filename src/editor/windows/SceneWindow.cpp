@@ -145,10 +145,9 @@ void SceneWindow::showWindow()
 			{
 				ImGui::BeginChild("DebugChild", ImVec2(260.0f, 150.0f), false, ImGuiWindowFlags_NoBackground);
 				{
-					static bool debugProperty = true;
+					static bool debugProperty = false;
 					bool normals = debugProperty;
 					ImGui::Checkbox("Normals", &normals);
-
 					if (debugProperty != normals)
 					{
 						debugProperty = normals;
@@ -159,6 +158,22 @@ void SceneWindow::showWindow()
 						else
 						{
 							Engine::getRender()->enabledDebugProperties -= Render::debugProperties::Normals;
+						}
+					}
+
+					static bool sceneOnlyObjects = false;
+					bool sceneObjects = sceneOnlyObjects;
+					ImGui::Checkbox("Scene onlyObjects", &sceneObjects);
+					if (sceneOnlyObjects != sceneObjects)
+					{
+						sceneOnlyObjects = sceneObjects;
+						if (sceneOnlyObjects)
+						{
+							Engine::getRender()->enabledDebugProperties |= Render::debugProperties::SceneObjects;
+						}
+						else
+						{
+							Engine::getRender()->enabledDebugProperties -= Render::debugProperties::SceneObjects;
 						}
 					}
 				}
@@ -184,7 +199,7 @@ void SceneWindow::showWindow()
 			auto& [cam, tag] = view.get<Component::Camera, Component::Tag>(entity);
 			for (uint32_t i = 0; i < maxViewPorts; ++i)
 			{
-				if (viewPorts[i].getCamera() == &cam)
+				if (&viewPorts[i].getCamera() == &cam)
 				{
 					break;
 				}
@@ -229,8 +244,8 @@ void SceneWindow::showStatsDialog()
 {
 	ImGui::BeginChild("child", statsItemSize, false, ImGuiWindowFlags_NoBackground);
 	{
-		ImGui::Text("Polygons: %d", Engine::getRender()->getStats().polygons);
-		ImGui::Text("DrawCalls: %d", Engine::getRender()->getStats().drawCalls);
+		ImGui::Text("Polygons: %d", Engine::getRender()->stats.polygons);
+		ImGui::Text("DrawCalls: %d", Engine::getRender()->stats.drawCalls);
 		ImGui::Text("Objects: %d", Engine::getScene()->view<Component::Renderable>().size());
 	}
 	ImGui::EndChild();

@@ -17,13 +17,13 @@ FearEngine::EditorUI::windows::ViewPort::ViewPort()
 
 void FearEngine::EditorUI::windows::ViewPort::init() {}
 
-void FearEngine::EditorUI::windows::ViewPort::setCamera(Component::Camera* camera)
+void FearEngine::EditorUI::windows::ViewPort::setCamera(Component::Camera* camComponent)
 {
-	cam = camera;
+	cam = camComponent;
 	enabled = true;
 }
 
-FearEngine::Component::Camera* FearEngine::EditorUI::windows::ViewPort::getCamera() const { return cam; }
+const FearEngine::Component::Camera& FearEngine::EditorUI::windows::ViewPort::getCamera() const { return *cam; }
 
 void FearEngine::EditorUI::windows::ViewPort::showWindow()
 {
@@ -43,7 +43,7 @@ void FearEngine::EditorUI::windows::ViewPort::showWindow()
 		auto imSize = ImGui::GetContentRegionAvail();
 		if (cam->getFrameBuffer().isInitialized())
 		{
-			ImGui::Image((void*)cam->getFrameBuffer().getColorAttachment(), imSize, {0, 1}, {1, 0});
+			ImGui::Image(reinterpret_cast<ImTextureID>(cam->getFrameBuffer().getColorAttachment()), imSize, {0, 1}, {1, 0});
 		}
 		hovered |= ImGui::IsItemHovered();
 
@@ -61,7 +61,7 @@ void FearEngine::EditorUI::windows::ViewPort::showWindow()
 			Engine::getDispatcher()->notify(&evnt);
 		}
 	}
-	//std::cout << &cam->getProjection() << std::endl;
+
 	if (enabledGizmo)
 	{
 		auto& entity = Engine::getEditor()->windows.inspectorWindow.chosenEntity;
@@ -82,7 +82,7 @@ void FearEngine::EditorUI::windows::ViewPort::showWindow()
 				 contentRegion[1].y - contentRegion[0].y);
 
 			ImGuizmo::Manipulate(glm::value_ptr(comp.getView()), glm::value_ptr(comp.getProjection()),
-				 static_cast<ImGuizmo::OPERATION>(Engine::getEditor()->windows.sceneWindow.gizmoOperation), ImGuizmo::MODE::LOCAL, glm::value_ptr(transform));
+				 static_cast<ImGuizmo::OPERATION>(Engine::getEditor()->windows.sceneWindow.gizmoOperation), ImGuizmo::MODE::WORLD, glm::value_ptr(transform));
 			if (ImGuizmo::IsUsing())
 			{
 				glm::vec3 pos;
@@ -92,8 +92,7 @@ void FearEngine::EditorUI::windows::ViewPort::showWindow()
 					 glm::value_ptr(transform), glm::value_ptr(pos), glm::value_ptr(rotation), glm::value_ptr(scale));
 
 				trans.pos = pos;
-				glm::vec3 deltaRotation = rotation - trans.rotation;
-				trans.rotation += deltaRotation;
+				trans.rotation = glm::degrees(rotation);
 				trans.scale = scale;
 			}
 		}

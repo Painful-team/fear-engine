@@ -2,6 +2,7 @@
 #define FEARENGINE_GUI_WINDOWS_HIERARCHYWINDOW_H__
 
 #include "GuiWindow.hpp"
+#include <core/Scene.hpp>
 
 namespace FearEngine::EditorUI::windows
 {
@@ -25,7 +26,7 @@ private:
 	bool filterItemEnabled;
 
 	void showFilterMenuItem() const;
-
+	Scene* scene;
 };
 }
 #endif
