@@ -10017,7 +10017,7 @@ template<typename>
 class basic_continuous_loader;
 
 /*! @brief Default entity identifier. */
-enum class entity : id_type {};
+using entity = id_type;
 
 /*! @brief Alias declaration for the most common use case. */
 using sparse_set = basic_sparse_set<entity>;
