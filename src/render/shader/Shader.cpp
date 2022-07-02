@@ -9,29 +9,23 @@
 #include <vector>
 
 #include <core/Engine.hpp>
+#include <render/Renderer.hpp>
 
 namespace FearEngine::Render::Shaders
 {
 Shader::Shader()
  : shaderId(0)
-{
-	BlockData blockData;
-	blockData.blockIndex = -1;
-
-	auto res = buffers.emplace(baseBufferName, std::move(blockData));
-
-	res.first->second.name = res.first->first;
-}
+{}
 
 errorCode Shader::readShader(const char* path, GLenum shaderType)
 {
-	Engine::logs()->log("Render", "[Shader System] {0} read has begun.");
+	Engine::logs()->log("Render", "[Shader System] \"{0}\" read has begun.", path);
 
 	std::string result;
 	std::ifstream in(path, std::ios::in);
 	if (!in)
 	{
-		Engine::logs()->error("Render", "[Shader System] Read of {0} has failed with error \"No such file.\"");
+		Engine::logs()->error("Render", "[Shader System] Read of \"{0}\" has failed with error \"No such file.\"", path);
 		return errorCodes::SHADER_FILE_NOT_EXIST;
 	}
 
@@ -39,7 +33,7 @@ errorCode Shader::readShader(const char* path, GLenum shaderType)
 	size_t size = in.tellg();
 	if (size == 0)
 	{
-		Engine::logs()->error("Render", "[Shader System] Read of {0} has failed with error \"File is empty.\"");
+		Engine::logs()->error("Render", "[Shader System] Read of \"{0}\" has failed with error \"File is empty.\"", path);
 		return errorCodes::SHADER_FILE_EMPTY;
 	}
 
@@ -49,7 +43,7 @@ errorCode Shader::readShader(const char* path, GLenum shaderType)
 
 	sources.emplace(shaderType, std::move(result));
 
-	Engine::logs()->log("Render", "[Shader System] {0} read has ended successfully.");
+	Engine::logs()->log("Render", "[Shader System] \"{0}\" read has ended successfully.", path);
 
 	return errorCodes::OK;
 }
@@ -58,10 +52,16 @@ std::string& Shader::getSource(ShaderType shaderType) { return sources[shaderTyp
 
 Uniform& Shader::findUniform(const std::string& name)
 {
+	auto& baseIt = defaultBuffer.uniforms.find(name);
+	if (baseIt != defaultBuffer.uniforms.end())
+	{
+		return baseIt->second;
+	}
+
 	for (auto& buf : buffers)
 	{
-		auto& it = buf.second.uniforms.find(name);
-		if (it != buf.second.uniforms.end())
+		auto& it = buf.second->uniforms.find(name);
+		if (it != buf.second->uniforms.end())
 		{
 			return it->second;
 		}
@@ -78,23 +78,15 @@ Shader::UniformStorage& Shader::findBuffer(const std::string& name)
 		return Shader::UniformStorage{};
 	}
 
-	return buffers.at(name).uniforms;
+	return buffers.at(name)->uniforms;
 }
 
-void Shader::linkBuffer(const std::string& bufferName, Shader& shader)
-{
-	assert(bufferName == Shader::baseBufferName && "Can't link " && Shader::baseBufferName);
-	if (buffers.find(bufferName) == buffers.end())
-	{
-		buffers.emplace(bufferName, shader.buffers.find(bufferName)->second);
-	}
-}
 
 std::vector<std::string_view> Shader::getBufferNames() const
 {
 	std::vector<std::string_view> names;
 	names.resize(buffers.size());
-	for (auto& buf: buffers)
+	for (auto& buf : buffers)
 	{
 		names.emplace_back(buf.first);
 	}
@@ -106,20 +98,15 @@ void Shader::updateBuffers()
 {
 	for (auto& buf : buffers)
 	{
-		if (buf.first == baseBufferName)
-		{
-			continue;
-		}
-
 		// Todo build dynamic memory update function, to decrease number of unnecessary copies
-		glBindBuffer(GL_UNIFORM_BUFFER, buf.second.bufferBlockId);
+		glBindBuffer(GL_UNIFORM_BUFFER, buf.second->bufferBlockId);
 
 		// for (auto& un : buf.second.uniforms)
 		//{
 		//	glBufferSubData(GL_UNIFORM_BUFFER, un.second.offset, sizeof(glm::mat4), buf.second.bufferMemory.get() + un.second.offset);
 		// }
 
-		glBufferData(GL_UNIFORM_BUFFER, buf.second.blockSize, buf.second.bufferMemory.get(), GL_DYNAMIC_DRAW);
+		glBufferData(GL_UNIFORM_BUFFER, buf.second->blockSize, buf.second->bufferMemory, GL_DYNAMIC_DRAW);
 
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	}
@@ -148,7 +135,7 @@ errorCode Shader::compile()
 			Engine::logs()->error("Render", "[Shader System] Compilation has failed with error \"{0}\"", infoLog);
 #endif	// _DEBUG
 
-			for (uint8_t i = 0 ; i < index; ++i)
+			for (uint8_t i = 0; i < index; ++i)
 			{
 				glDeleteShader(shaders[i]);
 			}
@@ -213,9 +200,55 @@ void Shader::initUniforms()
 
 	constexpr uint16_t nameMaxSize = 128;
 
-	bool copied = buffers.size() != 1;
-	uint32_t copiedCount = 0;
 	int startStride = -1;
+	{
+		uint8_t* busyBinding = (uint8_t*)alloca(sizeof(uint8_t) * Engine::getRender()->graphicsData[GL_MAX_UNIFORM_BUFFER_BINDINGS] - 1);
+		char blockname[nameMaxSize];
+		for (int i = 0; i < activeBlocks; ++i)
+		{
+			GLsizei blockNameLength = 0;
+			glGetActiveUniformBlockName(shaderId, i, nameMaxSize, &blockNameLength, blockname);
+
+			uint32_t blockIndex = glGetUniformBlockIndex(shaderId, blockname);
+			GLint binding;
+			glGetActiveUniformBlockiv(shaderId, blockIndex, GL_UNIFORM_BLOCK_BINDING, &binding);
+
+			glUniformBlockBinding(shaderId, blockIndex, binding);
+			
+			auto it = Engine::getRender()->shaderBuffers[binding];
+			if (it != nullptr)
+			{
+				buffers.emplace(blockname, *it);
+				continue;
+			}
+
+			GLint blockSize;
+			glGetActiveUniformBlockiv(shaderId, blockIndex, GL_UNIFORM_BLOCK_DATA_SIZE, &blockSize);
+
+			ShaderBufferData blockData;
+			blockData.blockIndex = blockIndex;
+			blockData.blockSize = blockSize;
+			blockData.binding = binding;
+
+			blockData.bufferMemory = new int8_t[blockData.blockSize];
+
+			glGenBuffers(1, &blockData.bufferBlockId);
+
+			glBindBuffer(GL_UNIFORM_BUFFER, blockData.bufferBlockId);
+			glBufferData(GL_UNIFORM_BUFFER, blockData.blockSize, 0, GL_DYNAMIC_DRAW);
+			glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+			glBindBufferRange(GL_UNIFORM_BUFFER, blockData.binding, blockData.bufferBlockId, 0, blockData.blockSize);
+
+			auto [pair, _] = buffers.emplace(blockname, std::make_shared<ShaderBufferData>(std::move(blockData)));
+
+			Engine::getRender()->shaderBuffers[binding] = &pair->second;
+
+			pair->second->name = pair->first;
+		}
+	}
+
+	uint32_t copiedCount = 0;
 
 	char name[nameMaxSize];
 	char** names = (char**)alloca(sizeof(char*) * (activeUniforms));
@@ -228,32 +261,30 @@ void Shader::initUniforms()
 		GLenum uniformType = 0;
 
 		glGetActiveUniform(shaderId, (GLuint)i, nameMaxSize, &nameLength, &uniformSize, &uniformType, name);
+		//Todo add ability to have different shader uniform names in buffers
+		bool copied = false;
+		for (auto& buf : buffers)
+		{
+			if (buf.second->uniforms.find(name) != buf.second->uniforms.end())
+			{
+				copied = true;
+				break;
+			}
+		}
+
 		if (copied)
 		{
-			bool inCopiedBuffer = false;
-			for (auto& buf : buffers)
+			++copiedCount;
+			if (i == 0 || startStride > -1)
 			{
-				if (buf.second.uniforms.find(name) != buf.second.uniforms.end())
-				{
-					inCopiedBuffer = true;
-					break;
-				}
+				++startStride;
+			}
+			else
+			{
+				names[i] = names[i - 1];
 			}
 
-			if (inCopiedBuffer)
-			{
-				++copiedCount;
-				if (i == 0 || startStride > -1)
-				{
-					++startStride;
-				}
-				else
-				{
-					names[i] = names[i - 1];
-				}
-
-				continue;
-			}
+			continue;
 		}
 
 		// Remove brackets from uniform name to simplify access
@@ -265,7 +296,7 @@ void Shader::initUniforms()
 			name[nameLength] = '\0';
 		}
 
-		auto [pair, _] = buffers[baseBufferName].uniforms.emplace(name, Uniform{});
+		auto [pair, _] = defaultBuffer.uniforms.emplace(name, Uniform{});
 		names[i] = const_cast<char*>(pair->first.data());
 
 		if (startStride != -1)
@@ -289,112 +320,85 @@ void Shader::initUniforms()
 		glGetActiveUniformsiv(shaderId, activeUniforms, uniformIndices, GL_UNIFORM_OFFSET, offsets);
 	}
 
+	for (auto& buf: buffers)
 	{
-		uint8_t* busyBinding = (uint8_t*)alloca(sizeof(uint8_t) * Engine::getRender()->graphicsData[GL_MAX_UNIFORM_BUFFER_BINDINGS] - 1);
-		char blockname[nameMaxSize];
-		for (int i = 0; i < activeBlocks; ++i)
+		GLint uniforms;
+		glGetActiveUniformBlockiv(shaderId, buf.second->blockIndex, GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS, &uniforms);
+
+		GLint* indices = (GLint*)alloca(sizeof(GLint*) * uniforms);
+		glGetActiveUniformBlockiv(shaderId, buf.second->blockIndex, GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES, &*indices);
+
+		// Todo think about reducing looping
+		for (uint16_t j = 0; j < uniforms; ++j)
 		{
-			GLsizei blockNameLength = 0;
-			glGetActiveUniformBlockName(shaderId, i, nameMaxSize, &blockNameLength, blockname);
-			uint32_t blockIndex = glGetUniformBlockIndex(shaderId, blockname);
-			GLint binding;
-			glGetActiveUniformBlockiv(shaderId, blockIndex, GL_UNIFORM_BLOCK_BINDING, &binding);
-
-			glUniformBlockBinding(shaderId, blockIndex, binding);
-
-			if (buffers.find(blockname) != buffers.end())
+			for (uint16_t k = 0; k < activeUniforms; ++k)
 			{
-				continue;
-			}
-
-			GLint uniforms;
-			glGetActiveUniformBlockiv(shaderId, blockIndex, GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS, &uniforms);
-
-			GLint blockSize;
-			glGetActiveUniformBlockiv(shaderId, blockIndex, GL_UNIFORM_BLOCK_DATA_SIZE, &blockSize);
-
-			GLint* indices = (GLint*)alloca(sizeof(GLint*) * uniforms);
-			glGetActiveUniformBlockiv(shaderId, blockIndex, GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES, &*indices);
-
-			BlockData blockData;
-			blockData.blockIndex = blockIndex;
-			blockData.blockSize = blockSize;
-			blockData.binding = binding;
-
-			blockData.bufferMemory = std::shared_ptr<int8_t[]>(new int8_t[blockData.blockSize]);
-
-			glGenBuffers(1, &blockData.bufferBlockId);
-
-			glBindBuffer(GL_UNIFORM_BUFFER, blockData.bufferBlockId);
-			glBufferData(GL_UNIFORM_BUFFER, blockData.blockSize, 0, GL_DYNAMIC_DRAW);
-			glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
-			glBindBufferRange(GL_UNIFORM_BUFFER, blockData.binding, blockData.bufferBlockId, 0, blockData.blockSize);
-			auto res = buffers.emplace(blockname, std::move(blockData));
-
-			//Todo think about reducing looping
-			for (uint16_t j = 0; j < uniforms; ++j)
-			{
-				for (uint16_t k = 0; k < activeUniforms; ++k)
+				if (indices[j] == uniformIndices[k])
 				{
-					if (indices[j] == uniformIndices[k])
+					auto node = defaultBuffer.uniforms.extract(names[k]);
+					if (node.empty())
 					{
-						//Todo Remove buf.find
-						auto inserted = res.first->second.uniforms.insert(buffers[baseBufferName].uniforms.extract(names[k]));
-
-						auto& uniform = inserted.position->second;
-						uniform.index = uniformIndices[k];
-						uniform.offset = offsets[k];
-						uniform.buffer = res.first->second.bufferMemory.get();
-						break;
+						continue;
 					}
+
+					auto inserted = buf.second->uniforms.insert(std::move(node));
+		
+					auto& uniform = inserted.position->second;
+					uniform.index = uniformIndices[k];
+					uniform.offset = offsets[k];
+					uniform.buffer = buf.second->bufferMemory;
+					break;
 				}
 			}
-
-			res.first->second.name = res.first->first;
 		}
 
-		//Todo think about reducing that loop too
-		for (uint16_t i = 0; i < activeUniforms; ++i)
+		if (uniforms != buf.second->uniforms.size())
 		{
-			auto& it = buffers[baseBufferName].uniforms.find(names[i]);
-			if (it != buffers[baseBufferName].uniforms.end())
-			{
-				it->second.location = glGetUniformLocation(shaderId, names[i]);
-			}
+			Engine::logs()->error("Render", "[Shader System] Uniform count is different in buffer binding {0}", buf.second->binding);
 		}
+	}
 
-#ifdef _DEBUG
+	// Todo think about reducing that loop too
+	for (uint16_t i = 0; i < activeUniforms; ++i)
+	{
+		auto& it = defaultBuffer.uniforms.find(names[i]);
+		if (it != defaultBuffer.uniforms.end())
+		{
+			it->second.location = glGetUniformLocation(shaderId, names[i]);
+		}
+	}
+
+	#ifdef _DEBUG
 		for (auto& buf : buffers)
 		{
-			Engine::logs()->log("Render", fmt::format(fmt::fg(fmt::color::green), "[Shader System] buffer: {0}, buffer index: {1}, buffer binding: {2}, buffer size: {3}",
-				 buf.first, buf.second.blockIndex, buf.second.binding, buf.second.blockSize));
+			Engine::logs()->log("Render", fmt::format(fmt::fg(fmt::color::green),
+											   "[Shader System] buffer: {0}, buffer index: {1}, buffer binding: {2}, buffer size: {3}",
+											   buf.first, buf.second->blockIndex, buf.second->binding, buf.second->blockSize));
 
-			for (auto& uniform : buf.second.uniforms)
+			for (auto& uniform : buf.second->uniforms)
 			{
-				Engine::logs()->log("Render", fmt::format(fmt::fg(fmt::color::blue), "[Shader System] Uniform: {0}, uniform index: {1}, uniform offset: {2}, uniform location: {3}",
-					 uniform.first, uniform.second.index, uniform.second.offset, uniform.second.location));
+				Engine::logs()->log(
+					 "Render", fmt::format(fmt::fg(fmt::color::blue),
+									"[Shader System] Uniform: {0}, uniform index: {1}, uniform offset: {2}, uniform location: {3}",
+									uniform.first, uniform.second.index, uniform.second.offset, uniform.second.location));
 			}
 		}
-#endif	// DEBUG
-	}
+#endif	// DEBUGyyz
 }
 
-Shader::BlockData::BlockData()
+Shader::ShaderBufferData::ShaderBufferData()
  : blockIndex(-1)
  , blockSize(-1)
  , binding(-1)
  , bufferBlockId(-1)
+ , bufferMemory(nullptr)
 {}
 
-Shader::BlockData::BlockData(BlockData& other)
-{ *this = other; }
+Shader::ShaderBufferData::ShaderBufferData(ShaderBufferData& other) { *this = other; }
 
-Shader::BlockData::BlockData(BlockData&& other) noexcept
-{
-	*this = std::move(other); }
+Shader::ShaderBufferData::ShaderBufferData(ShaderBufferData&& other) noexcept { *this = std::move(other); }
 
-Shader::BlockData& Shader::BlockData::operator=(BlockData& other) noexcept
+Shader::ShaderBufferData& Shader::ShaderBufferData::operator=(ShaderBufferData& other) noexcept
 {
 	name = other.name;
 	blockIndex = other.blockIndex;
@@ -402,7 +406,6 @@ Shader::BlockData& Shader::BlockData::operator=(BlockData& other) noexcept
 	blockSize = other.blockSize;
 	bufferBlockId = other.bufferBlockId;
 
-	// Todo could be replaced with shared_ptr<string>
 	for (auto& un : other.uniforms)
 	{
 		auto res = uniforms.emplace(un.first, un.second);
@@ -414,24 +417,35 @@ Shader::BlockData& Shader::BlockData::operator=(BlockData& other) noexcept
 	return *this;
 }
 
-Shader::BlockData& Shader::BlockData::operator=(BlockData&& other) noexcept
+Shader::ShaderBufferData& Shader::ShaderBufferData::operator=(ShaderBufferData&& other) noexcept
 {
 	name = std::move(other.name);
-
 	blockIndex = other.blockIndex;
-
 	binding = other.binding;
-
 	blockSize = other.blockSize;
-
 	uniforms = std::move(other.uniforms);
-
 	bufferBlockId = other.bufferBlockId;
+	bufferMemory = other.bufferMemory;
 
-	bufferMemory.swap(other.bufferMemory);
-	other.bufferMemory.reset();
+	other.bufferMemory = nullptr;
+
+	other.blockIndex = -1;
+	other.blockSize = -1;
+	other.binding = -1;
+	other.bufferBlockId = -1;
 
 	return *this;
 }
-Shader::BlockData::~BlockData() {}
+Shader::ShaderBufferData::~ShaderBufferData()
+{
+	if (bufferBlockId != -1)
+	{
+		glDeleteBuffers(1, &bufferBlockId);
+	}
+
+	if (bufferMemory != nullptr)
+	{
+		delete[] bufferMemory;
+	}
+}
 }  // namespace FearEngine::Render::Shaders

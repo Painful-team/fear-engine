@@ -14,6 +14,11 @@
 
 #include <render/Texture.hpp>
 
+namespace FearEngine
+{
+class Renderer;
+}
+
 namespace FearEngine::Render::Shaders
 {
 enum ShaderType
@@ -26,11 +31,8 @@ enum ShaderType
 
 class Shader
 {
-private:
-	//Todo think about replacing it on dynamic value even in the shaders
-	static constexpr const char* baseBufferName = "base";
-
-	struct BlockData
+public:
+	struct ShaderBufferData
 	{
 		std::string_view name;
 
@@ -42,20 +44,19 @@ private:
 
 		uint32_t bufferBlockId;
 
-		std::shared_ptr<int8_t[]> bufferMemory;
+		int8_t* bufferMemory;
 
 		std::unordered_map<std::string, Uniform> uniforms;
 
-		BlockData();
-		BlockData(BlockData& other);
-		BlockData(BlockData&& other) noexcept;
-		BlockData& operator=(BlockData& other) noexcept;
-		BlockData& operator=(BlockData&& other) noexcept;
+		ShaderBufferData();
+		ShaderBufferData(ShaderBufferData& other);
+		ShaderBufferData(ShaderBufferData&& other) noexcept;
+		ShaderBufferData& operator=(ShaderBufferData& other) noexcept;
+		ShaderBufferData& operator=(ShaderBufferData&& other) noexcept;
 
-		~BlockData();
+		~ShaderBufferData();
 	};
 
-public:
 	static constexpr uint32_t maxTextureSlots = 32;
 	using UniformStorage = std::unordered_map<std::string, Uniform>;
 
@@ -67,8 +68,6 @@ public:
 	Uniform& findUniform(const std::string& name);
 	UniformStorage& findBuffer(const std::string& name);
 
-	void linkBuffer(const std::string& bufferName, Shader& shader);
-
 	std::vector<std::string_view> getBufferNames() const;
 
 	void updateBuffers();
@@ -79,13 +78,17 @@ public:
 
 	~Shader();
 
+private:
 	void initUniforms();
 
-private:
 	std::unordered_map<GLenum, std::string> sources;
 	uint32_t shaderId;
 
-	std::unordered_map<std::string, BlockData> buffers;
+	ShaderBufferData defaultBuffer;
+
+	std::unordered_map<std::string, std::shared_ptr<ShaderBufferData>> buffers;
+
+	friend class Renderer;
 };
 }  // namespace FearEngine::Render::Shaders
 #endif
