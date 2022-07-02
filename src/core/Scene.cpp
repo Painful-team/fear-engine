@@ -6,11 +6,15 @@
 
 #include <components/Base.hpp>
 
+FearEngine::Scene::Scene()
+ : name("Scene name")
+{}
+
 FearEngine::Entity FearEngine::Scene::createEntity(const std::string& name)
 {
 	Entity entity(entities.create(), this);
 
-	Engine::logs()->log("Entity", "Entity {0} was created with name: {1}.", (uint32_t)entity.entity, name);
+	Engine::logs()->log("Entity", "Entity {0} was created with name: {1}.", entity.entity, name);
 
 	entity.addComponent<Component::Transform>();
 	entity.addComponent<Component::Tag>(name);
@@ -27,7 +31,7 @@ void FearEngine::Scene::removeEntity(Entity& entity)
 
 	auto evnt = Events::EntityRemoved(entity);
 	Engine::getDispatcher()->notify(&evnt);
-	Engine::logs()->log("Entity", "Entity {0} was removed.", (uint32_t)entity.entity);
+	Engine::logs()->log("Entity", "Entity {0} was removed.", entity.entity);
 
 	entity.entity = entt::null;
 	entity.scene = nullptr;

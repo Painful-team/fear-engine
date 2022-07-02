@@ -18,6 +18,8 @@ Camera::Camera(Transform* camTransform,
  , orthographic(isOrthograpic)
 {
 	frameBuffer.init(params);
+
+	aspect = static_cast<float>(params.width) / static_cast<float>(params.height);
 	setFOV(fov);
 	updateCameraPos();
 }
@@ -27,48 +29,39 @@ Camera::Camera(Camera&& other) noexcept { *this = std::move(other); }
 void Camera::beginView()
 {
 	frameBuffer.enable();
-	updateUniformData();
 }
 
 void Camera::end() { frameBuffer.disable(); }
-
-void Camera::setUniforms(const Render::Shaders::Uniform& uniform, const Render::Shaders::Uniform& view)
-{
-	cameraUn = uniform;
-	viewUn = view;
-	setFOV(fov);
-	updateCameraPos();
-}
 
 float Camera::getFOV() const { return fov; }
 
 void Camera::setFOV(const float fove)
 {
-	auto params = frameBuffer.getParams();
 	if (orthographic)
 	{
-		auto aspectRation = (float)params.width / (float)params.height;
-		projection = glm::ortho(-aspectRation, aspectRation, -0.1f, 0.1f, -1.0f, 1.0f);
+		projection = glm::ortho(-aspect, aspect, -0.1f, 0.1f, -1.0f, 1.0f);
 	}
 	else
 	{
-		projection = glm::perspective(glm::radians(fove), (float)params.width / (float)params.height, nearPlane, farPlane);
+		projection = glm::perspective(glm::radians(fove), aspect, nearPlane, farPlane);
 	}
 
 	fov = fove;
 }
 
-inline float Camera::getNear() const { return nearPlane; }
+float Camera::getNear() const { return nearPlane; }
 
-inline float Camera::getFar() const { return farPlane; }
+float Camera::getFar() const { return farPlane; }
 
-inline void Camera::setNear(float camNearPlane)
+float Camera::getAspect() const { return aspect; }
+
+void Camera::setNear(float camNearPlane)
 {
 	nearPlane = camNearPlane;
 	setFOV(fov);
 }
 
-inline void Camera::setFar(float camFarPlane)
+void Camera::setFar(float camFarPlane)
 {
 	farPlane = camFarPlane;
 	setFOV(fov);
@@ -234,7 +227,6 @@ void EditorCamera::onResize(int width, int height)
 
 Camera& Camera::operator=(Camera&& other) noexcept
 {
-	cameraUn = std::move(other.cameraUn);
 	farPlane = other.farPlane;
 	fov = other.fov;
 	frameBuffer = std::move(other.frameBuffer);
@@ -243,23 +235,20 @@ Camera& Camera::operator=(Camera&& other) noexcept
 	orthographic = other.orthographic;
 	projection = other.projection;
 	transform = other.transform;
-	viewUn = std::move(other.viewUn);
+
+	aspect = other.aspect;
 
 	//other.transform = nullptr;
 
 	return *this;
 }
 
-void Camera::updateUniformData()
-{
-	viewUn.setMat4(glm::lookAt(transform->pos, transform->pos + front, cameraUp));
-	cameraUn.setMat4(projection);
-}
-
 void Camera::onResize(int width, int height)
 {
 	if (width > 1 && height > 1)
 	{
+		aspect = static_cast<float>(width) / static_cast<float>(height);
+		
 		auto params = frameBuffer.getParams();
 		params.width = width;
 		params.height = height;

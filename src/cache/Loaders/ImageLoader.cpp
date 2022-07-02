@@ -55,7 +55,7 @@ FearEngine::Cache::errorCode FearEngine::Cache::Loaders::ImageLoader::load(const
 
 	resource->extra = extra;
 
-	Engine::logs()->log("Cache", "Loading of {0} with flags {1} has ended successfully.\n Filename:{0}\nwidth:{2}\nheigth:{3}\nchannels:{4}", filename, flags, width, height, channels);
+	Engine::logs()->log("Cache", "Loading of {0} with flags {1} has ended successfully.\nFilename:{0}\nwidth:{2}\nheigth:{3}\nchannels:{4}", filename, flags, width, height, channels);
 
 	return Cache::errorCodes::OK;
 }

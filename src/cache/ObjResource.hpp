@@ -10,10 +10,12 @@
 
 namespace FearEngine::Cache
 {
-class ObjData: public ResourceExtra
+struct ObjData: public ResourceExtra
 {
-public:
+	static constexpr const uint8_t VertexSize = 11 * sizeof(float);
 	std::vector<float> vertices;
+	uint32_t count;
+	
 	std::vector<std::shared_ptr<Material>> materials;
 
 	GENRESOURCECLASSESSETIALS(OBJ);

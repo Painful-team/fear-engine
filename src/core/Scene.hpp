@@ -8,11 +8,15 @@
 namespace FearEngine
 {
 class Entity;
+namespace EditorUI::windows
+{
+class HierarchyWindow;
+};
 
 class Scene
 {
 public:
-	Scene() = default;
+	Scene();
 
 	Entity createEntity(const std::string& name);
 	void removeEntity(Entity& entity);
@@ -31,12 +35,14 @@ public:
 		return entities.group<Component, Compss...>();
 	}
 
+	std::string name;
 private:
 	entt::registry entities;
 
 private:
 	friend class Entity;
 	friend class Engine;
+	friend class EditorUI::windows::HierarchyWindow;
 };
 }  // namespace FearEngine
 #endif

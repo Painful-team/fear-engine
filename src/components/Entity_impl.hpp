@@ -38,6 +38,12 @@ public:
 		return scene->entities.all_of<Component>(entity);
 	}
 
+	bool operator==(uint32_t entityNum) const;
+	bool operator==(const Entity& ent) const;
+
+	bool operator!=(uint32_t entityNum) const;
+	bool operator!=(const Entity& ent) const;
+
 	template<class Component, typename...Args>
 	decltype(auto) addComponent(Args&&... args)
 	{
@@ -45,7 +51,7 @@ public:
 		auto evnt = Events::EntityOnAttached(*this, component.type());
 		Engine::getDispatcher()->notify(&evnt);
 
-		Engine::logs()->log("Entity", "{0} component was added to entity {1}.", component.name(), (uint32_t)entity);
+		Engine::logs()->log("Entity", "{0} component was added to entity {1}.", component.name(), entity);
 		return component;
 	}
 
@@ -66,7 +72,7 @@ public:
 		Engine::getDispatcher()->notify(&evnt);
 		auto&& component = scene->entities.remove<Component>(entity);
 
-		Engine::logs()->log("Entity", "{0} component was removed from entity {1}.", component.name(), (uint32_t)entity);
+		Engine::logs()->log("Entity", "{0} component was removed from entity {1}.", component.name(), entity);
 
 		return component;
 	}

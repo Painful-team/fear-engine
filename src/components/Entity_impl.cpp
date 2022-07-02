@@ -30,6 +30,14 @@ FearEngine::Entity& FearEngine::Entity::operator=(Entity&& other) noexcept
 
 bool FearEngine::Entity::isValid() const { return scene != nullptr && scene->entities.valid(entity); }
 
+bool FearEngine::Entity::operator==(uint32_t entityNum) const { return static_cast<uint32_t>(entity) == entityNum; }
+
+bool FearEngine::Entity::operator==(const Entity& ent) const { return entity == ent.entity; }
+
+bool FearEngine::Entity::operator!=(uint32_t entityNum) const { return !(*this == entityNum); }
+
+bool FearEngine::Entity::operator!=(const Entity& ent) const { return !(*this == ent); }
+
 FearEngine::Entity::Entity(entt::entity ent, Scene* scn)
  : entity(ent)
  , scene(scn)

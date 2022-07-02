@@ -37,13 +37,13 @@ public:
 	void beginView();
 	void end();
 
-	void setUniforms(const Render::Shaders::Uniform& uniform, const Render::Shaders::Uniform& view);
-
 	float getFOV() const;
 	void setFOV(const float fov);
 
 	float getNear() const;
 	float getFar() const;
+
+	float getAspect() const;
 
 	void setNear(float camNearPlane);
 	void setFar(float camFarPlane);
@@ -58,7 +58,6 @@ public:
 	glm::mat4 getView() const;
 
 	void updateCameraPos();
-	void updateUniformData();
 
 	void onResize(int width, int height);
 
@@ -66,15 +65,12 @@ public:
 private:
 	Transform* transform;
 
-	// Todo think about moving it out of the CameraComponent
-	Render::Shaders::Uniform cameraUn;
-	Render::Shaders::Uniform viewUn;
-
 	Render::FrameBuffer frameBuffer;
 
 	float fov;
 	float nearPlane;
 	float farPlane;
+	float aspect;
 
 	glm::vec3 front = glm::vec3(0.0f, 0.0f, -1.0f);
 

@@ -26,6 +26,7 @@ struct has_call_operator
 template <typename T>
 class Delegate;
 
+//Todo Fix buf with passing object as reference
 template <typename Return, typename... Params>
 class Delegate<Return(Params...)>
 {

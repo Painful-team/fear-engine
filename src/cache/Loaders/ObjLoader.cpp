@@ -184,7 +184,7 @@ FearEngine::Cache::errorCode FearEngine::Cache::Loaders::ObjLoader::load(const s
 	constexpr const uint8_t vertices = 3;
 
 	auto& vb = extra->vertices;	 // pos(3float), normal(3float), color(3float), texCoord(2float)
-	vb.reserve(attrib.face_num_verts.size() * vertices * posVertices * normals * colors * texCoords);
+	vb.reserve(attrib.face_num_verts.size() * vertices * ObjData::VertexSize);
 	for (size_t v = 0, face_offset = 0; v < attrib.face_num_verts.size(); ++v)
 	{
 		assert(attrib.face_num_verts[v] % vertices == 0);  // assume all triangle face(multiple of 3).
@@ -294,9 +294,10 @@ FearEngine::Cache::errorCode FearEngine::Cache::Loaders::ObjLoader::load(const s
 	resource->extra = utils::reinterpret_pointer_cast<ResourceExtra>(extra);
 	resource->data = reinterpret_cast<int8_t*>(vb.data());
 	resource->size = vb.size() * sizeof(vb[0]);
+	extra->count = resource->size / ObjData::VertexSize;
 
-	Engine::logs()->log("Cache", "Loading of {0} with flags {1} has ended successfully.\nFilename:{0}\nFlags:{1}\nSize:{2}\nVertices:{3}\nMaterials:{4}",
-		filename, flags, resource->size,vb.size(), extra->materials.size());
+	Engine::logs()->log("Cache", "Loading of {0} with flags {1} has ended successfully.\nFilename:{0}\nFlags:{1}\nSize:{2}\nVertices:{3}\nMaterials:{4}", filename,
+		 flags, resource->size, vb.size(), extra->materials.size());
 
 
 	return materialLoadResult;

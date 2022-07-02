@@ -5,7 +5,7 @@
 
 #include "Layer.hpp"
 #include "VertexArray.hpp"
-#include "VertexBuffer.hpp"
+#include "Buffer.hpp"
 #include "shader/Shader.hpp"
 
 #include <cache/ObjResource.hpp>
@@ -26,7 +26,7 @@ public:
 	Render::debugProperty debugProperty() const override;
 
 private:
-	Render::VertexBuffer vertex;
+	Render::Buffer vertex;
 	Render::Shaders::Shader shader;
 	Render::VertexArray arr;
 

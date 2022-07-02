@@ -3,6 +3,9 @@
 #include <core/Engine.hpp>
 
 #include <components/MaterialComponent.hpp>
+#include <utils/PointerCasts.hpp>
+
+#include "Draws.hpp"
 
 #include <vector>
 
@@ -14,19 +17,19 @@ DebugNormalsLayer::DebugNormalsLayer()
 
 errorCode DebugNormalsLayer::init()
 {
-	auto result = shader.readShader("resources/shaders/VertexLine.vert", Shaders::ShaderType::Vertex);
+	auto result = shader.readShader("resources/shaders/normals/VertexLine.vert", Shaders::ShaderType::Vertex);
 	if (result != errorCodes::OK)
 	{
 		return result;
 	}
 
-	result = shader.readShader("resources/shaders/FragmentLine.frag", Shaders::ShaderType::Fragment);
+	result = shader.readShader("resources/shaders/normals/FragmentLine.frag", Shaders::ShaderType::Fragment);
 	if (result != errorCodes::OK)
 	{
 		return result;
 	}
 
-	result = shader.readShader("resources/shaders/Geometry.geom", Shaders::ShaderType::Geometry);
+	result = shader.readShader("resources/shaders/normals/Geometry.geom", Shaders::ShaderType::Geometry);
 	if (result != errorCodes::OK)
 	{
 		return result;
@@ -72,10 +75,9 @@ void DebugNormalsLayer::resize(int width, int height) {}
 void DebugNormalsLayer::preUpdate(Component::Camera& cam)
 {
 	shader.use();
-	arr.bind();
-	cam.setUniforms(projUniform, viewUniform);
+	viewUniform.setMat4(cam.getView());
+	projUniform.setMat4(cam.getProjection());
 	cam.beginView();
-
 }
 
 void DebugNormalsLayer::update(Component::Camera& cam)
@@ -89,15 +91,13 @@ void DebugNormalsLayer::update(Component::Camera& cam)
 		vertex.setData(reinterpret_cast<float*>(renderable.mesh->data), renderable.mesh->size);
 		shader.updateBuffers();
 
-		// glDrawElements(GL_TRIANGLES, chunk.triangles.size(), GL_UNSIGNED_INT, 0);
-		glDrawArrays(GL_TRIANGLES, 0, renderable.mesh->size / sizeof(float));
+		auto extra = utils::reinterpret_pointer_cast<Cache::ObjData>(renderable.mesh->extra);
+		Draws::draw(arr, extra->count);
 	}
 }
 
 void DebugNormalsLayer::postUpdate(Component::Camera& cam)
 {
-	vertex.unbind();
-	arr.unBind();
 	cam.end();
 }
 Render::debugProperty DebugNormalsLayer::debugProperty() const { return Render::debugProperties::Normals; }
