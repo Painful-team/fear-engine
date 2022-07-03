@@ -68,4 +68,5 @@ BraceWrapping: {
     SplitEmptyRecord : 'false',
     SplitEmptyNamespace : 'true'
 }
+SortIncludes: false
 ...
