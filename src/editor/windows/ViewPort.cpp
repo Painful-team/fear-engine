@@ -71,14 +71,19 @@ void FearEngine::EditorUI::windows::ViewPort::showWindow()
 			auto& comp = Engine::getEditor()->windows.sceneWindow.editorCamera.getComponent<Component::Camera>();
 			auto& trans = entity.getComponent<Component::Transform>();
 
+			if (entity.hasComponent<Component::Camera>() && ImGuizmo::IsUsing())
+			{
+				trans.rotation = -trans.rotation;
+				std::swap(trans.rotation.x, trans.rotation.z);
+			}
 			auto transform = trans.getTransformMatrix();
-
 			// Todo add ability to change perspective on orthographic
 			ImGuizmo::SetOrthographic(false);
 			ImGuizmo::SetDrawlist();
 
 			ImGuizmo::SetRect(
 				 contentRegion[0].x, contentRegion[0].y, contentRegion[1].x - contentRegion[0].x, contentRegion[1].y - contentRegion[0].y);
+
 
 			ImGuizmo::Manipulate(glm::value_ptr(comp.getView()), glm::value_ptr(comp.getProjection()),
 				 static_cast<ImGuizmo::OPERATION>(Engine::getEditor()->windows.sceneWindow.gizmoOperation), ImGuizmo::MODE::WORLD,
@@ -92,7 +97,16 @@ void FearEngine::EditorUI::windows::ViewPort::showWindow()
 					 glm::value_ptr(transform), glm::value_ptr(pos), glm::value_ptr(rotation), glm::value_ptr(scale));
 
 				trans.pos = pos;
-				trans.rotation = glm::degrees(rotation);
+
+				rotation = glm::degrees(rotation);
+				if (entity.hasComponent<Component::Camera>() && ImGuizmo::IsUsing())
+				{
+					rotation = -rotation;
+					std::swap(rotation.x, rotation.z);
+				}
+
+				trans.rotation = rotation;
+
 				trans.scale = scale;
 			}
 		}

@@ -22,8 +22,16 @@ void VertexArray::addVertexBuffer(const Buffer& buffer, VertexArrayUpdateType up
 	buffer.bind();
 	for (const auto& element : buffer.GetElements())
 	{
-		glVertexAttribPointer(attribIndex, element.count, static_cast<GLenum>(element.type), element.normalized, stride,
-			 reinterpret_cast<void*>(element.offset));
+		if (element.type != BufferType::Int)
+		{
+			glVertexAttribPointer(attribIndex, element.count, static_cast<GLenum>(element.type), element.normalized, stride,
+				 reinterpret_cast<void*>(element.offset));
+		}
+		else
+		{
+			glVertexAttribIPointer(
+				 attribIndex, element.count, static_cast<GLenum>(element.type), stride, reinterpret_cast<void*>(element.offset));
+		}
 		glEnableVertexAttribArray(attribIndex);
 		glVertexAttribDivisor(attribIndex++, updateType);
 	}

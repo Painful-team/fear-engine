@@ -31,8 +31,8 @@ public:
 #pragma pack(push, 1)
 	struct InstancedData
 	{
+		int entityNum;
 		glm::mat4 transform;
-		uint32_t entityNum;
 	};
 #pragma pack(pop, 1)
 private:

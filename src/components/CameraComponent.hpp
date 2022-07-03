@@ -25,7 +25,7 @@ public:
 		 Render::FrameBufferParams& params,
 		 float fieldOfView = 90,
 		 float near = 0.1,
-		 float far = 100,
+		 float far = 10,
 		 bool orthographic = false);
 
 	Camera(const Camera& other) = delete;
