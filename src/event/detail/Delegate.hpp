@@ -1,5 +1,8 @@
 #ifndef FEARENGINE_EVENT_DETAIL_DELEGATE_H__
 #define FEARENGINE_EVENT_DETAIL_DELEGATE_H__
+#include <type_traits>
+#include <utility>
+
 namespace FearEngine::Events::detail
 {
 namespace detail
@@ -26,7 +29,6 @@ struct has_call_operator
 template <typename T>
 class Delegate;
 
-//Todo Fix buf with passing object as reference
 template <typename Return, typename... Params>
 class Delegate<Return(Params...)>
 {
