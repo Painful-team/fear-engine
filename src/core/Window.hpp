@@ -7,8 +7,12 @@
 #include <event/Event.hpp>
 #include <event/detail/Delegate.hpp>
 
+#include <core/Input.hpp>
+
 namespace FearEngine
 {
+class Editor;
+
 class Window
 {
 public:
@@ -49,12 +53,21 @@ public:
 
 	void onUpdate();
 
-	GLFWwindow* window;
-
 private:
 	WindowData data;
+	GLFWwindow* window;
 
 	int blocked;
+
+	friend bool Input::isKeyPressed(const Events::keys key);
+	friend bool Input::isKeyReleased(const Events::keys key);
+
+	friend bool Input::isMousePressed(const Events::mouseCode button);
+	friend bool Input::isMouseReleased(const Events::mouseCode button);
+
+	friend glm::vec2 Input::getMousePos();
+
+	friend class Editor;
 };
 }  // namespace FearEngine
 

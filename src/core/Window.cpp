@@ -44,8 +44,7 @@ void Window::setVsync(const bool vsync)
 	data.vsync = true;
 }
 
-bool Window::isCursorBlocked()
-{ return blocked; }
+bool Window::isCursorBlocked() { return blocked; }
 
 void Window::blockCursor()
 {
@@ -59,7 +58,11 @@ void Window::unblockCursor()
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 }
 
-void glfwCallbackFunction(int glfwErrorCode, const char* description) { Engine::logs()->error("Core", fmt::format(fmt::fg(fmt::color::red), "Window API error occured with Error code {0} it means \"{1}\".", glfwErrorCode, description)); }
+void glfwCallbackFunction(int glfwErrorCode, const char* description)
+{
+	Engine::logs()->error("Core", fmt::format(fmt::fg(fmt::color::red), "Window API error occured with Error code {0} it means \"{1}\".",
+									   glfwErrorCode, description));
+}
 
 int Window::init(const bool resizeAble)
 {
@@ -86,104 +89,100 @@ int Window::init(const bool resizeAble)
 	glfwSetWindowUserPointer(window, &data);
 
 	glfwSetWindowSizeCallback(window, [](GLFWwindow* window, int width, int height) {
-		WindowData* data = reinterpret_cast<WindowData*>(glfwGetWindowUserPointer(window));
+		WindowData* windowData = reinterpret_cast<WindowData*>(glfwGetWindowUserPointer(window));
 
-		data->height = height;
-		data->width = width;
+		windowData->height = height;
+		windowData->width = width;
 
 		auto evnt = Events::WindowResize(width, height);
-		data->eventHandler(&evnt);
+		windowData->eventHandler(&evnt);
 	});
 
 	glfwSetWindowCloseCallback(window, [](GLFWwindow* window) {
-		WindowData* data = reinterpret_cast<WindowData*>(glfwGetWindowUserPointer(window));
+		WindowData* windowData = reinterpret_cast<WindowData*>(glfwGetWindowUserPointer(window));
 
 		auto evnt = Events::WindowClose();
-		data->eventHandler(&evnt);
+		windowData->eventHandler(&evnt);
 	});
 
 	glfwSetWindowPosCallback(window, [](GLFWwindow* window, int x, int y) {
-		WindowData* data = reinterpret_cast<WindowData*>(glfwGetWindowUserPointer(window));
+		WindowData* windowData = reinterpret_cast<WindowData*>(glfwGetWindowUserPointer(window));
 
 		auto evnt = Events::WindowMoved(x, y);
-		data->eventHandler(&evnt);
+		windowData->eventHandler(&evnt);
 	});
 
 	glfwSetWindowFocusCallback(window, [](GLFWwindow* window, int focused) {
-		WindowData* data = reinterpret_cast<WindowData*>(glfwGetWindowUserPointer(window));
+		WindowData* windowData = reinterpret_cast<WindowData*>(glfwGetWindowUserPointer(window));
 
 		if (focused)
 		{
 			auto evnt = Events::WindowFocus();
-			data->eventHandler(&evnt);
+			windowData->eventHandler(&evnt);
 		}
 		else
 		{
 			auto evnt = Events::WindowLostFocus();
-			data->eventHandler(&evnt);
+			windowData->eventHandler(&evnt);
 		}
 	});
 
 	glfwSetKeyCallback(window, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
-		WindowData* data = reinterpret_cast<WindowData*>(glfwGetWindowUserPointer(window));
+		WindowData* windowData = reinterpret_cast<WindowData*>(glfwGetWindowUserPointer(window));
 
 		switch (action)
 		{
-		case GLFW_PRESS: {
+		case GLFW_PRESS:
+		case GLFW_REPEAT: {
 			auto evnt = Events::KeyPressed(key);
-			data->eventHandler(&evnt);
+			windowData->eventHandler(&evnt);
 			break;
 		}
 		case GLFW_RELEASE: {
 			auto evnt = Events::KeyReleased(key);
-			data->eventHandler(&evnt);
-			break;
+			windowData->eventHandler(&evnt);
 		}
-		case GLFW_REPEAT: {
-			auto evnt = Events::KeyPressed(key);
-			data->eventHandler(&evnt);
-			break;
-		}
+		break;
 		}
 	});
 
 	glfwSetCharCallback(window, [](GLFWwindow* window, uint32_t keycode) {
-		WindowData* data = reinterpret_cast<WindowData*>(glfwGetWindowUserPointer(window));
+		WindowData* windowData = reinterpret_cast<WindowData*>(glfwGetWindowUserPointer(window));
 
 		auto evnt = Events::KeyTyped(keycode);
-		data->eventHandler(&evnt);
+		windowData->eventHandler(&evnt);
 	});
 
 	glfwSetMouseButtonCallback(window, [](GLFWwindow* window, int button, int action, int mods) {
-		WindowData* data = reinterpret_cast<WindowData*>(glfwGetWindowUserPointer(window));
+		WindowData* windowData = reinterpret_cast<WindowData*>(glfwGetWindowUserPointer(window));
 
 		switch (action)
 		{
 		case GLFW_PRESS: {
 			auto evnt = Events::MouseButtonPressed(button);
-			data->eventHandler(&evnt);
+			windowData->eventHandler(&evnt);
 			break;
 		}
 		case GLFW_RELEASE: {
 			auto evnt = Events::MouseButtonReleased(button);
-			data->eventHandler(&evnt);
+			windowData->eventHandler(&evnt);
 			break;
 		}
 		}
 	});
 
 	glfwSetScrollCallback(window, [](GLFWwindow* window, double offsetX, double offsetY) {
-		WindowData* data = reinterpret_cast<WindowData*>(glfwGetWindowUserPointer(window));
+		WindowData* windowData = reinterpret_cast<WindowData*>(glfwGetWindowUserPointer(window));
 
 		auto evnt = Events::MouseScrolled(offsetX, offsetY);
-		data->eventHandler(&evnt);
+		windowData->eventHandler(&evnt);
 	});
 
 	glfwSetCursorPosCallback(window, [](GLFWwindow* window, double x, double y) {
-		WindowData* data = reinterpret_cast<WindowData*>(glfwGetWindowUserPointer(window));
+		WindowData* windowData = reinterpret_cast<WindowData*>(glfwGetWindowUserPointer(window));
 
 		auto evnt = Events::MouseMoved(x, y);
-		data->eventHandler(&evnt);
+		windowData->eventHandler(&evnt);
 	});
 
 	glfwMakeContextCurrent(window);

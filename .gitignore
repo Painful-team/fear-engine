@@ -21,3 +21,6 @@ out/
 
 #Idea
 .idea
+
+#PVS-Studio files
+*.PVS-Studio*
