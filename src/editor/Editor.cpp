@@ -98,9 +98,9 @@ bool Editor::onMousePressed(Events::MouseButtonPressed* e)
 
 	ImGuiIO& io = ImGui::GetIO();
 	io.AddMouseButtonEvent(e->getButton(), true);
-	if (windows.sceneWindow.isFocused() && !ImGuizmo::IsOver())
+	if (windows.sceneWindow.isFocused())
 	{
-		if (e->getButton() == Events::Mouse::BUTTON_LEFT)
+		if (e->getButton() == Events::Mouse::BUTTON_LEFT && !ImGuizmo::IsOver())
 		{
 			auto pos = Input::getMousePos();
 
@@ -122,9 +122,9 @@ bool Editor::onMousePressed(Events::MouseButtonPressed* e)
 			{
 				windows.inspectorWindow.chosenEntity = Entity{};
 			}
-
-			return true;
 		}
+
+		return true;
 	}
 
 	return false;
@@ -193,19 +193,22 @@ bool Editor::onKeyPressed(Events::KeyPressed* e)
 			return true;
 		}
 
-		if (e->keyCode() == Events::Key::E)
+		if (!ImGuizmo::IsUsing())
 		{
-			windows.sceneWindow.gizmoOperation = ImGuizmo::OPERATION::SCALE;
-		}
+			if (e->keyCode() == Events::Key::E)
+			{
+				windows.sceneWindow.gizmoOperation = ImGuizmo::OPERATION::SCALE;
+			}
 
-		if (e->keyCode() == Events::Key::R)
-		{
-			windows.sceneWindow.gizmoOperation = ImGuizmo::OPERATION::ROTATE;
-		}
+			if (e->keyCode() == Events::Key::R)
+			{
+				windows.sceneWindow.gizmoOperation = ImGuizmo::OPERATION::ROTATE;
+			}
 
-		if (e->keyCode() == Events::Key::T)
-		{
-			windows.sceneWindow.gizmoOperation = ImGuizmo::OPERATION::TRANSLATE;
+			if (e->keyCode() == Events::Key::T)
+			{
+				windows.sceneWindow.gizmoOperation = ImGuizmo::OPERATION::TRANSLATE;
+			}
 		}
 
 		return true;
@@ -218,12 +221,17 @@ bool Editor::onKeyPressed(Events::KeyPressed* e)
 
 bool Editor::onKeyReleased(Events::KeyReleased* e)
 {
+	ImGuiIO& io = ImGui::GetIO();
+	if (ImGuizmo::IsUsing())
+	{
+		io.AddKeyEvent(translateKeyToImGui(e->keyCode()), false);
+	}
+
 	if (mouseReq)
 	{
 		return true;
 	}
 
-	ImGuiIO& io = ImGui::GetIO();
 	if (windows.sceneWindow.isFocused() && !io.WantTextInput)
 	{
 		return true;
