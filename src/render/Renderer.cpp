@@ -21,6 +21,8 @@
 #include <core/Engine.hpp>
 #include <event/CoreEvent.hpp>
 
+#include "Draws.hpp"
+
 namespace FearEngine
 {
 void MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
@@ -65,6 +67,9 @@ int Renderer::init()
 		assert(result == Render::errorCodes::OK);
 	}
 
+	auto result = Render::Draws::initOutlines();
+	assert(result == Render::errorCodes::OK);
+
 	enabledDebugProperties = Render::debugProperties::None;
 
 	return 0;
@@ -88,17 +93,36 @@ void Renderer::update()
 	for (auto& entity : cameraView)
 	{
 		auto& camera = cameraView.get<Component::Camera>(entity);
+
 		camera.updateCameraPos();
 		camera.getFrameBuffer().clear();
+		Render::Draws::clearOutlines();
+
 		for (auto it = m_layers.rbegin(); it != m_layers.rend(); ++it)
 		{
 			if ((*it)->debugProperty() == Render::debugProperties::None || ((*it)->debugProperty() & enabledDebugProperties))
 			{
 				(*it)->preUpdate(camera);
+			}
+		}
+
+		for (auto it = m_layers.rbegin(); it != m_layers.rend(); ++it)
+		{
+			if ((*it)->debugProperty() == Render::debugProperties::None || ((*it)->debugProperty() & enabledDebugProperties))
+			{
 				(*it)->update(camera);
+			}
+		}
+
+		for (auto it = m_layers.rbegin(); it != m_layers.rend(); ++it)
+		{
+			if ((*it)->debugProperty() == Render::debugProperties::None || ((*it)->debugProperty() & enabledDebugProperties))
+			{
 				(*it)->postUpdate(camera);
 			}
 		}
+
+		Render::Draws::submitOutlines(camera);
 	}
 }
 
@@ -150,4 +174,4 @@ int Renderer::initGraphicData()
 
 	return 0;
 }
-} // namespace FearEngine
+}  // namespace FearEngine

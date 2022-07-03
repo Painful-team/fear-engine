@@ -21,8 +21,6 @@ Editor::Editor()
 {}
 int Editor::init()
 {
-	windows.init();
-
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 
@@ -39,6 +37,8 @@ int Editor::init()
 	ImGui_ImplOpenGL3_Init();
 
 	applyInitialSettings();
+
+	windows.init();
 
 	return 0;
 }
@@ -98,10 +98,9 @@ bool Editor::onMousePressed(Events::MouseButtonPressed* e)
 
 	ImGuiIO& io = ImGui::GetIO();
 	io.AddMouseButtonEvent(e->getButton(), true);
-
-	if (windows.sceneWindow.viewPorts[0].isFocused())
+	if (windows.sceneWindow.isFocused() && !ImGuizmo::IsOver())
 	{
-		if (e->getButton() == Events::Mouse::BUTTON_LEFT && !ImGuizmo::IsOver())
+		if (e->getButton() == Events::Mouse::BUTTON_LEFT)
 		{
 			auto pos = Input::getMousePos();
 
@@ -113,7 +112,7 @@ bool Editor::onMousePressed(Events::MouseButtonPressed* e)
 
 			auto data = comp.getFrameBuffer().getPixel(Render::FrameBufferType::ColorAttachment1, pos);
 			char udata[4]{static_cast<char>(data.x), static_cast<char>(data.y), static_cast<char>(data.z), static_cast<char>(data.w)};
-			int EntityNum = *reinterpret_cast<uint32_t*>(udata);
+			int EntityNum = *reinterpret_cast<int*>(udata);
 
 			if (EntityNum != -1)
 			{
@@ -123,9 +122,9 @@ bool Editor::onMousePressed(Events::MouseButtonPressed* e)
 			{
 				windows.inspectorWindow.chosenEntity = Entity{};
 			}
-		}
 
-		return true;
+			return true;
+		}
 	}
 
 	return false;
@@ -140,7 +139,6 @@ bool Editor::onMouseReleased(Events::MouseButtonReleased* e)
 
 	ImGuiIO& io = ImGui::GetIO();
 	io.AddMouseButtonEvent(e->getButton(), false);
-
 	if (windows.sceneWindow.isFocused())
 	{
 		return true;
@@ -168,12 +166,12 @@ bool Editor::onScroll(Events::MouseScrolled* e)
 	}
 
 	ImGuiIO& io = ImGui::GetIO();
-	io.AddMouseWheelEvent(e->getXoffset(), e->getYoffset());
-
 	if (windows.sceneWindow.isFocused())
 	{
 		return true;
 	}
+
+	io.AddMouseWheelEvent(e->getXoffset(), e->getYoffset());
 
 	return false;
 }
@@ -188,9 +186,7 @@ bool Editor::onKeyPressed(Events::KeyPressed* e)
 	}
 
 	ImGuiIO& io = ImGui::GetIO();
-	io.AddKeyEvent(translateKeyToImGui(e->keyCode()), true);
-
-	if (windows.sceneWindow.isFocused())
+	if (windows.sceneWindow.isFocused() && !io.WantTextInput)
 	{
 		if (!windows.inspectorWindow.chosenEntity.isValid())
 		{
@@ -215,6 +211,8 @@ bool Editor::onKeyPressed(Events::KeyPressed* e)
 		return true;
 	}
 
+	io.AddKeyEvent(translateKeyToImGui(e->keyCode()), true);
+
 	return false;
 }
 
@@ -226,12 +224,12 @@ bool Editor::onKeyReleased(Events::KeyReleased* e)
 	}
 
 	ImGuiIO& io = ImGui::GetIO();
-	io.AddKeyEvent(translateKeyToImGui(e->keyCode()), false);
-
-	if (windows.sceneWindow.isFocused())
+	if (windows.sceneWindow.isFocused() && !io.WantTextInput)
 	{
 		return true;
 	}
+
+	io.AddKeyEvent(translateKeyToImGui(e->keyCode()), false);
 
 	return false;
 }
@@ -244,8 +242,7 @@ bool Editor::onKeyTyped(Events::KeyTyped* e)
 	}
 
 	ImGuiIO& io = ImGui::GetIO();
-
-	if (windows.sceneWindow.isFocused())
+	if (windows.sceneWindow.isFocused() && !io.WantTextInput)
 	{
 		return true;
 	}

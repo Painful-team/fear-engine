@@ -6,9 +6,10 @@
 
 namespace FearEngine::EditorUI::windows
 {
-HierarchyWindow::HierarchyWindow():
-	windowOpen(true),
-	filterItemEnabled(true)
+HierarchyWindow::HierarchyWindow()
+ : windowOpen(true)
+ , filterItemEnabled(true)
+ , scene(nullptr)
 {}
 
 void HierarchyWindow::init() { scene = Engine::getScene().get(); }
@@ -16,8 +17,8 @@ void HierarchyWindow::init() { scene = Engine::getScene().get(); }
 void HierarchyWindow::showWindow()
 {
 	const ImVec2 minWindowSize = ImVec2(200.0f, 200.0f);
-	const ImVec2 maxWindowSize = ImVec2(static_cast<float>(Engine::getWindow()->getWidth()),
-			static_cast<float>(Engine::getWindow()->getHeight()));
+	const ImVec2 maxWindowSize
+		 = ImVec2(static_cast<float>(Engine::getWindow()->getWidth()), static_cast<float>(Engine::getWindow()->getHeight()));
 
 	ImGui::SetNextWindowSizeConstraints(minWindowSize, maxWindowSize);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
@@ -41,10 +42,9 @@ void HierarchyWindow::showWindow()
 			ImGui::EndMenuBar();
 		}
 
-		const ImVec2 childSize = ImVec2(ImGui::GetWindowWidth() - childOffsetX,
-				ImGui::GetWindowHeight() - childOffsetBottomY);
-		const ImGuiTreeNodeFlags treeFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick
-				| ImGuiTreeNodeFlags_SpanAvailWidth;
+		const ImVec2 childSize = ImVec2(ImGui::GetWindowWidth() - childOffsetX, ImGui::GetWindowHeight() - childOffsetBottomY);
+		const ImGuiTreeNodeFlags treeFlags
+			 = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
 
 		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + childOffsetX);
 		ImGui::SetCursorPosY(ImGui::GetCursorPosY() + childOffsetTopY);
@@ -55,15 +55,14 @@ void HierarchyWindow::showWindow()
 		{
 			ImGui::PushStyleColor(ImGuiCol_Header, IM_COL32(67, 67, 67, 100));
 
-			
+
 			if (ImGui::CollapsingHeader(Engine::getScene()->name.c_str()))
 			{
 				static int selectedNode = -1;
 				int nodeClicked = -1;
 
 				uint32_t i = 0;
-				Engine::getScene()->entities.each([&](const auto entity)
-				{
+				Engine::getScene()->entities.each([&](const auto entity) {
 					auto& tag = scene->entities.get<Component::Tag>(entity);
 					ImGuiTreeNodeFlags nodeFlags = treeFlags;
 					ImGui::SetCursorPosX(ImGui::GetCursorPosX() + nextNodeOffsetX);
@@ -106,25 +105,13 @@ void HierarchyWindow::showWindow()
 	ImGui::PopStyleVar();
 }
 
-bool HierarchyWindow::isWindowOpen() const
-{
-	return windowOpen;
-}
+bool HierarchyWindow::isWindowOpen() const { return windowOpen; }
 
-void HierarchyWindow::toggleWindow(const bool openWindow)
-{
-	windowOpen = openWindow;
-}
+void HierarchyWindow::toggleWindow(const bool openWindow) { windowOpen = openWindow; }
 
-bool HierarchyWindow::isFilterEnabled() const
-{
-	return filterItemEnabled;
-}
+bool HierarchyWindow::isFilterEnabled() const { return filterItemEnabled; }
 
-void HierarchyWindow::toggleFilterItem(const bool enableFilter)
-{
-	filterItemEnabled = enableFilter;
-}
+void HierarchyWindow::toggleFilterItem(const bool enableFilter) { filterItemEnabled = enableFilter; }
 
 void HierarchyWindow::showFilterMenuItem() const
 {
@@ -145,4 +132,4 @@ void HierarchyWindow::showFilterMenuItem() const
 		ImGui::PopStyleVar();
 	}
 }
-}
+}  // namespace FearEngine::EditorUI::windows

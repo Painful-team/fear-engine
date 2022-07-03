@@ -25,7 +25,7 @@ public:
 	using func_handle = detail::Delegate<Return(Params...)>;
 
 	template <typename... Args, typename = std::enable_if_t<std::is_invocable_v<Return (*)(Params...), Args...>>>
-	void notify(Args... arg) const
+	void notify(Args&&... arg) const
 	{
 		for (const auto& it : subscribers)
 		{

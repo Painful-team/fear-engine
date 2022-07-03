@@ -40,19 +40,7 @@ enum : FrameBufferTypes
 	ColorAttachment17 = 1 << 19,
 	ColorAttachment18 = 1 << 20,
 	ColorAttachment19 = 1 << 21,
-	ColorAttachment20 = 1 << 22,
-	ColorAttachment21 = 1 << 23,
-	ColorAttachment22 = 1 << 24,
-	ColorAttachment23 = 1 << 25,
-	ColorAttachment24 = 1 << 26,
-	ColorAttachment25 = 1 << 27,
-	ColorAttachment26 = 1 << 28,
-	ColorAttachment27 = 1 << 29,
-	ColorAttachment28 = 1 << 30,
-	ColorAttachment29 = 1 << 31,
-	ColorAttachment30 = 1 << 32,
-	ColorAttachment31 = 1 << 33,
-	ColorAttachment32 = 1 << 34
+	ColorAttachment20 = 1 << 22
 };
 }
 

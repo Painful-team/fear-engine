@@ -10,6 +10,7 @@ FearEngine::Render::FrameBuffer::FrameBuffer()
  , depthId(-1)
  , stencilId(-1)
  , initialized(false)
+ , enabled(0)
 {
 	for (int i = 0; i < maxColorAttachments; ++i)
 	{
