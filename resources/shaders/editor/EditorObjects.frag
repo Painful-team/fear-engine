@@ -28,7 +28,7 @@ layout(location = 1) out int entityMap;
 
 uniform sampler2D textureId;
 
-flat in int oEntityNum;
+in flat int oEntityNum;
 
 in vec3 normal;
 in vec2 otexCord;
@@ -46,5 +46,5 @@ void main()
 
 	FragColor = (diffuse + 0.1) *  mix(texture(textureId, otexCord), vec4(color, 1.0f), disableTexture);
 
-	entityMap = oEntityNum;
+	entityMap = int(oEntityNum);
 }

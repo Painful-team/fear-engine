@@ -1,7 +1,7 @@
 #ifndef FEARENGINE_RENDER_FRAMEBUFFER_H__
 #define FEARENGINE_RENDER_FRAMEBUFFER_H__
 
-#include <stdint.h>
+#include <array>
 #include <unordered_map>
 
 #include <glad/glad.h>
@@ -12,16 +12,47 @@
 
 namespace FearEngine::Render
 {
-using FrameBufferTypes = short;
+using FrameBufferTypes = uint64_t;
 namespace FrameBufferType
 {
-enum : short
+enum : FrameBufferTypes
 {
 	None = 0,
-	Color = 1 << 0,
-	Depth = 1 << 1,
-	Stencil = 1 << 2,
-	Additional = 1 << 3
+	Depth = 1 << 0,
+	Stencil = 1 << 1,
+	ColorAttachment0 = 1 << 2,
+	ColorAttachment1 = 1 << 3,
+	ColorAttachment2 = 1 << 4,
+	ColorAttachment3 = 1 << 5,
+	ColorAttachment4 = 1 << 6,
+	ColorAttachment5 = 1 << 7,
+	ColorAttachment6 = 1 << 8,
+	ColorAttachment7 = 1 << 9,
+	ColorAttachment8 = 1 << 10,
+	ColorAttachment9 = 1 << 11,
+	ColorAttachment10 = 1 << 12,
+	ColorAttachment11 = 1 << 13,
+	ColorAttachment12 = 1 << 14,
+	ColorAttachment13 = 1 << 15,
+	ColorAttachment14 = 1 << 16,
+	ColorAttachment15 = 1 << 17,
+	ColorAttachment16 = 1 << 18,
+	ColorAttachment17 = 1 << 19,
+	ColorAttachment18 = 1 << 20,
+	ColorAttachment19 = 1 << 21,
+	ColorAttachment20 = 1 << 22,
+	ColorAttachment21 = 1 << 23,
+	ColorAttachment22 = 1 << 24,
+	ColorAttachment23 = 1 << 25,
+	ColorAttachment24 = 1 << 26,
+	ColorAttachment25 = 1 << 27,
+	ColorAttachment26 = 1 << 28,
+	ColorAttachment27 = 1 << 29,
+	ColorAttachment28 = 1 << 30,
+	ColorAttachment29 = 1 << 31,
+	ColorAttachment30 = 1 << 32,
+	ColorAttachment31 = 1 << 33,
+	ColorAttachment32 = 1 << 34
 };
 }
 
@@ -80,11 +111,9 @@ struct FrameBufferParams
 
 	FrameBufferTypes bufferTypes;
 
-	ColorFormats colorFormat;
+	std::array<ColorFormats, 8> colorFormat;
 	DepthFormats depthFormat;
 	StencilFormats stencilFormat;
-
-	ColorFormats additionalBufferFormat;
 };
 
 class FrameBuffer
@@ -96,20 +125,20 @@ public:
 	FrameBuffer& operator=(const FrameBuffer& other) = delete;
 	FrameBuffer& operator=(FrameBuffer&& other) noexcept;
 
+	// Supports only one buffer at the time
 	glm::vec4 getPixel(FrameBufferTypes type, glm::vec2& pos);
 
 	void init(const FrameBufferParams& params);
-	uint32_t getColorAttachment() const;
+	uint32_t getColorAttachment(uint8_t attachNum) const;
 	uint32_t getDepthAttachment() const;
 	uint32_t getStencilAttachment() const;
-	uint32_t getAdditionalAttachment() const;
 
 	const FrameBufferParams& getParams() const;
 	void setParams(const FrameBufferParams& params);
 
 	void onResize();
 
-	void enable(bool clear = false);
+	void enable(uint32_t* colorAttachmentNum = nullptr, uint8_t size = 0, bool clear = false);
 	void disable();
 	void clear();
 
@@ -120,17 +149,20 @@ public:
 private:
 	FrameBufferParams data;
 
-	uint32_t colorId;
+	static constexpr const uint32_t maxColorAttachments = 8;
+	std::array<uint32_t, maxColorAttachments> colors;
+
 	uint32_t depthId;
 	uint32_t stencilId;
-	uint32_t additionalId;
 
 	uint32_t frameBufferId;
 
 	FrameBufferTypes enabled;
 
 	int initialized;
+
+	friend class FrameBufferParams;
 };
-}  // namespace FearEngine::Renderer
+}  // namespace FearEngine::Render
 
 #endif

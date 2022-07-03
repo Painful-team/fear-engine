@@ -76,11 +76,10 @@ errorCode ModelLayer::init()
 	shader.findUniform("dirLight.dir").setVec3(-1.8, -1.8, -1);
 	shader.findUniform("dirLight.lightColor").setVec3(1, 1, 1);
 
-	//TODO Get Texture Slots from GPU
+	// TODO Get Texture Slots from GPU
 	int32_t samplers[Shaders::Shader::maxTextureSlots];
 	for (uint8_t i = 0; i < Shaders::Shader::maxTextureSlots; ++i)
 	{
-		//Todo disable warning about empty sampler with enabling empty textures
 		samplers[i] = i;
 	}
 
@@ -101,27 +100,24 @@ errorCode ModelLayer::init()
 	return Render::errorCodes::OK;
 }
 
-void ModelLayer::resize(int width, int height)
-{}
+void ModelLayer::resize(int width, int height) {}
 
-void ModelLayer::preUpdate(Component::Camera& cam)
-{
-	shader.use();
-	arr.bind();
-	viewUniform.setMat4(cam.getView());
-	projUniform.setMat4(cam.getProjection());
-	cam.beginView();
-}
+void ModelLayer::preUpdate(Component::Camera& cam) {}
 
 void ModelLayer::update(Component::Camera& cam)
 {
-	static auto& view = Engine::getScene()->view<Component::Renderable, Component::Transform>();
-	for (auto entity: view)
+	shader.use();
+	viewUniform.setMat4(cam.getView());
+	projUniform.setMat4(cam.getProjection());
+	cam.beginView();
+
+	auto& view = Engine::getScene()->view<Component::Renderable, Component::Transform>();
+	for (auto entity : view)
 	{
 		auto& [renderable, tranform] = view.get<Component::Renderable, Component::Transform>(entity);
 		modelUniform.setMat4(tranform.getTransformMatrix());
 		entityIndex.setInt(entity);
-		
+
 		if (!renderable.materials.empty())
 		{
 			auto& materialData = renderable.materials.back();
@@ -173,13 +169,11 @@ void ModelLayer::update(Component::Camera& cam)
 		auto extra = utils::reinterpret_pointer_cast<Cache::ObjData>(renderable.mesh->extra);
 		Draws::draw(arr, extra->count);
 	}
-}
 
-void ModelLayer::postUpdate(Component::Camera& cam)
-{
-	arr.unBind();
 	cam.end();
 }
+
+void ModelLayer::postUpdate(Component::Camera& cam) {}
 
 uint32_t ModelLayer::linkTexture(std::shared_ptr<Texture>& texture)
 {

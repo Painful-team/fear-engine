@@ -72,16 +72,17 @@ errorCode DebugNormalsLayer::init()
 
 void DebugNormalsLayer::resize(int width, int height) {}
 
-void DebugNormalsLayer::preUpdate(Component::Camera& cam)
+void DebugNormalsLayer::preUpdate(Component::Camera& cam) {}
+
+void DebugNormalsLayer::update(Component::Camera& cam)
 {
 	shader.use();
 	viewUniform.setMat4(cam.getView());
 	projUniform.setMat4(cam.getProjection());
-	cam.beginView();
-}
 
-void DebugNormalsLayer::update(Component::Camera& cam)
-{
+	uint32_t skipAttachment = 1;
+	cam.beginView(&skipAttachment, 1);
+
 	auto view = Engine::getScene()->view<Component::Renderable, Component::Transform>();
 	for (auto entity : view)
 	{
@@ -94,11 +95,11 @@ void DebugNormalsLayer::update(Component::Camera& cam)
 		auto extra = utils::reinterpret_pointer_cast<Cache::ObjData>(renderable.mesh->extra);
 		Draws::draw(arr, extra->count);
 	}
-}
 
-void DebugNormalsLayer::postUpdate(Component::Camera& cam)
-{
 	cam.end();
 }
+
+void DebugNormalsLayer::postUpdate(Component::Camera& cam) {}
+
 Render::debugProperty DebugNormalsLayer::debugProperty() const { return Render::debugProperties::Normals; }
 }  // namespace FearEngine::Render

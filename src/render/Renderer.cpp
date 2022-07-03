@@ -144,6 +144,10 @@ int Renderer::initGraphicData()
 	glGetIntegerv(GL_MAX_VARYING_COMPONENTS, &maxShaderLayouts);
 	graphicsData.emplace(GL_MAX_VARYING_COMPONENTS, maxShaderLayouts);
 
+	GLint maxColorAttachments = 0;
+	glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &maxColorAttachments);
+	graphicsData.emplace(GL_MAX_COLOR_ATTACHMENTS, maxColorAttachments);
+
 	return 0;
 }
 } // namespace FearEngine

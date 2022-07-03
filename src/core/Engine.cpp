@@ -156,8 +156,8 @@ void Engine::run()
 	Render::FrameBufferParams params;
 	params.width = Engine::getWindow()->getWidth();
 	params.height = Engine::getWindow()->getHeight();
-	params.bufferTypes = Render::FrameBufferType::Color | Render::FrameBufferType::Depth | Render::FrameBufferType::Stencil;
-	params.colorFormat = Render::ColorFormat::RGBA8;
+	params.bufferTypes = Render::FrameBufferType::ColorAttachment0 | Render::FrameBufferType::Depth | Render::FrameBufferType::Stencil;
+	params.colorFormat[0] = Render::ColorFormat::RGBA8;
 	params.depthFormat = Render::DepthFormat::Depth24;
 	params.stencilFormat = Render::StencilFormat::Stencil8;
 

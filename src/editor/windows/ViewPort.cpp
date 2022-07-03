@@ -43,7 +43,7 @@ void FearEngine::EditorUI::windows::ViewPort::showWindow()
 		auto imSize = ImGui::GetContentRegionAvail();
 		if (cam->getFrameBuffer().isInitialized())
 		{
-			ImGui::Image(reinterpret_cast<ImTextureID>(cam->getFrameBuffer().getColorAttachment()), imSize, {0, 1}, {1, 0});
+			ImGui::Image(reinterpret_cast<ImTextureID>(cam->getFrameBuffer().getColorAttachment(0)), imSize, {0, 1}, {1, 0});
 		}
 		hovered |= ImGui::IsItemHovered();
 
@@ -77,12 +77,12 @@ void FearEngine::EditorUI::windows::ViewPort::showWindow()
 			ImGuizmo::SetOrthographic(false);
 			ImGuizmo::SetDrawlist();
 
-			ImGuizmo::SetRect(contentRegion[0].x, contentRegion[0].y,
-				 contentRegion[1].x - contentRegion[0].x,
-				 contentRegion[1].y - contentRegion[0].y);
+			ImGuizmo::SetRect(
+				 contentRegion[0].x, contentRegion[0].y, contentRegion[1].x - contentRegion[0].x, contentRegion[1].y - contentRegion[0].y);
 
 			ImGuizmo::Manipulate(glm::value_ptr(comp.getView()), glm::value_ptr(comp.getProjection()),
-				 static_cast<ImGuizmo::OPERATION>(Engine::getEditor()->windows.sceneWindow.gizmoOperation), ImGuizmo::MODE::WORLD, glm::value_ptr(transform));
+				 static_cast<ImGuizmo::OPERATION>(Engine::getEditor()->windows.sceneWindow.gizmoOperation), ImGuizmo::MODE::WORLD,
+				 glm::value_ptr(transform));
 			if (ImGuizmo::IsUsing())
 			{
 				glm::vec3 pos;
@@ -107,6 +107,4 @@ bool FearEngine::EditorUI::windows::ViewPort::isPanelEnabled() const { return en
 
 bool FearEngine::EditorUI::windows::ViewPort::isFocused() const { return hovered; }
 
-void FearEngine::EditorUI::windows::ViewPort::togglePanel(const bool showPanel) {
-
-}
+void FearEngine::EditorUI::windows::ViewPort::togglePanel(const bool showPanel) {}

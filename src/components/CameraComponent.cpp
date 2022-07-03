@@ -6,11 +6,7 @@
 
 namespace FearEngine::Component
 {
-Camera::Camera(Transform* camTransform,
-	 Render::FrameBufferParams& params,
-	 float fieldOfView,
-	 float near,
-	 float far, bool isOrthograpic)
+Camera::Camera(Transform* camTransform, Render::FrameBufferParams& params, float fieldOfView, float near, float far, bool isOrthograpic)
  : transform(camTransform)
  , fov(fieldOfView)
  , nearPlane(near)
@@ -26,10 +22,7 @@ Camera::Camera(Transform* camTransform,
 
 Camera::Camera(Camera&& other) noexcept { *this = std::move(other); }
 
-void Camera::beginView()
-{
-	frameBuffer.enable();
-}
+void Camera::beginView(uint32_t* skipAttachments, uint32_t count) { frameBuffer.enable(skipAttachments, count); }
 
 void Camera::end() { frameBuffer.disable(); }
 
@@ -77,7 +70,7 @@ void Camera::updateCameraPos()
 }
 
 Render::FrameBuffer& Camera::getFrameBuffer() { return frameBuffer; };
-//void Camera::setFrameBuffer(Render::FrameBuffer& buffer) {}	 // frameBuffer = buffer; }
+// void Camera::setFrameBuffer(Render::FrameBuffer& buffer) {}	 // frameBuffer = buffer; }
 
 bool Camera::isOrthograpic() { return orthographic; }
 
@@ -169,7 +162,7 @@ bool EditorCamera::onMouseReleased(Events::MouseButtonReleased* evnt)
 bool EditorCamera::onMouseScrolled(Events::MouseScrolled* evnt) { return true; }
 
 bool EditorCamera::onKeyPressed(Events::KeyPressed* evnt)
-{ 
+{
 	if (camera == nullptr || !isInputEnabled)
 	{
 		return true;
@@ -198,17 +191,14 @@ bool EditorCamera::onKeyPressed(Events::KeyPressed* evnt)
 	}
 
 	camera->updateCameraPos();
-	
+
 	return true;
 }
 
 bool EditorCamera::onKeyReleased(Events::KeyReleased* evnt) { return true; }
 
 // Todo add timebased movement to be able to stop relying on frames
-bool EditorCamera::onKeyTyped(Events::KeyTyped* evnt)
-{
-	return true;
-}
+bool EditorCamera::onKeyTyped(Events::KeyTyped* evnt) { return true; }
 
 bool EditorCamera::onActiveCamera(Events::ActiveViewport* ent)
 {
@@ -238,7 +228,7 @@ Camera& Camera::operator=(Camera&& other) noexcept
 
 	aspect = other.aspect;
 
-	//other.transform = nullptr;
+	// other.transform = nullptr;
 
 	return *this;
 }
@@ -248,7 +238,6 @@ void Camera::onResize(int width, int height)
 	if (width > 1 && height > 1)
 	{
 		aspect = static_cast<float>(width) / static_cast<float>(height);
-		
 		auto params = frameBuffer.getParams();
 		params.width = width;
 		params.height = height;
@@ -264,10 +253,9 @@ EditorCamera::EditorCamera(Camera* cam, float camSpeed, const glm::vec2& camSens
  , sensivity(camSensivity)
 {}
 
-EditorCamera::EditorCamera(EditorCamera&& other) noexcept
-{ *this = std::move(other); }
+EditorCamera::EditorCamera(EditorCamera&& other) noexcept { *this = std::move(other); }
 
-EditorCamera& EditorCamera::operator=(EditorCamera && other) noexcept
+EditorCamera& EditorCamera::operator=(EditorCamera&& other) noexcept
 {
 	camera = other.camera;
 	flyInitialized = other.flyInitialized;
@@ -316,7 +304,6 @@ void EditorCamera::detachEvents()
 	Engine::getDispatcher()->get<Events::ActiveViewport>()->detach(attachedEventHandles[7]);
 }
 
-EditorCamera::~EditorCamera()
-{ detachEvents(); }
+EditorCamera::~EditorCamera() { detachEvents(); }
 
 }  // namespace FearEngine::Component

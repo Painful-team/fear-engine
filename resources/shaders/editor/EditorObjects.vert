@@ -4,11 +4,11 @@ layout (location = 1) in vec3 aNormals;
 layout (location = 2) in vec3 aColor;
 layout (location = 3) in vec2 texCord;
 
-layout (location = 4) in vec4 tranformRow1;
-layout (location = 5) in vec4 tranformRow2;
-layout (location = 6) in vec4 tranformRow3;
-layout (location = 7) in vec4 tranformRow4;
-layout (location = 8) in int entityNum;
+layout (location = 4) in int entityNum;
+layout (location = 5) in vec4 tranformRow1;
+layout (location = 6) in vec4 tranformRow2;
+layout (location = 7) in vec4 tranformRow3;
+layout (location = 8) in vec4 tranformRow4;
 
 layout(std140, binding = 1) uniform Camera
 {
@@ -19,7 +19,7 @@ layout(std140, binding = 1) uniform Camera
 out vec2 otexCord;
 out vec3 normal;
 
-flat out int oEntityNum;
+out flat int oEntityNum;
 
 void main()
 {

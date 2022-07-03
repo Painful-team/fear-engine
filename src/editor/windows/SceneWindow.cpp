@@ -33,11 +33,12 @@ void SceneWindow::init()
 	Render::FrameBufferParams params;
 	params.width = Engine::getWindow()->getWidth();
 	params.height = Engine::getWindow()->getHeight();
-	params.bufferTypes = Render::FrameBufferType::Color | Render::FrameBufferType::Depth | Render::FrameBufferType::Stencil | Render::FrameBufferType::Additional;
-	params.colorFormat = Render::ColorFormat::RGBA8;
+	params.bufferTypes = Render::FrameBufferType::ColorAttachment0 | Render::FrameBufferType::Depth | Render::FrameBufferType::Stencil
+						 | Render::FrameBufferType::ColorAttachment1;
+	params.colorFormat[0] = Render::ColorFormat::RGBA8;
 	params.depthFormat = Render::DepthFormat::Depth24;
 	params.stencilFormat = Render::StencilFormat::Stencil8;
-	params.additionalBufferFormat = Render::ColorFormat::R32;
+	params.colorFormat[1] = Render::ColorFormat::R32;
 
 	editorCamera = Engine::getScene()->createEntity("Scene Camera");
 	auto& transform = editorCamera.getComponent<Component::Transform>();
@@ -139,7 +140,6 @@ void SceneWindow::showWindow()
 				ImGui::PopItemFlag();
 			}
 
-			//Todo a
 			ImGui::SameLine(ImGui::GetWindowWidth() - ImGui::CalcTextSize("Debug").x - 10);
 			if (ImGui::BeginMenu("Debug"))
 			{
@@ -250,4 +250,4 @@ void SceneWindow::showStatsDialog()
 	}
 	ImGui::EndChild();
 }
-}  // namespace FearEngine::UI::windows
+}  // namespace FearEngine::EditorUI::windows

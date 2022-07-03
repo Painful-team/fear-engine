@@ -214,7 +214,7 @@ void Shader::initUniforms()
 			glGetActiveUniformBlockiv(shaderId, blockIndex, GL_UNIFORM_BLOCK_BINDING, &binding);
 
 			glUniformBlockBinding(shaderId, blockIndex, binding);
-			
+
 			auto it = Engine::getRender()->shaderBuffers[binding];
 			if (it != nullptr)
 			{
@@ -261,7 +261,7 @@ void Shader::initUniforms()
 		GLenum uniformType = 0;
 
 		glGetActiveUniform(shaderId, (GLuint)i, nameMaxSize, &nameLength, &uniformSize, &uniformType, name);
-		//Todo add ability to have different shader uniform names in buffers
+		// Todo add ability to have different shader uniform names in buffers
 		bool copied = false;
 		for (auto& buf : buffers)
 		{
@@ -320,7 +320,7 @@ void Shader::initUniforms()
 		glGetActiveUniformsiv(shaderId, activeUniforms, uniformIndices, GL_UNIFORM_OFFSET, offsets);
 	}
 
-	for (auto& buf: buffers)
+	for (auto& buf : buffers)
 	{
 		GLint uniforms;
 		glGetActiveUniformBlockiv(shaderId, buf.second->blockIndex, GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS, &uniforms);
@@ -342,7 +342,7 @@ void Shader::initUniforms()
 					}
 
 					auto inserted = buf.second->uniforms.insert(std::move(node));
-		
+
 					auto& uniform = inserted.position->second;
 					uniform.index = uniformIndices[k];
 					uniform.offset = offsets[k];
@@ -359,30 +359,33 @@ void Shader::initUniforms()
 	}
 
 	// Todo think about reducing that loop too
-	for (uint16_t i = 0; i < activeUniforms; ++i)
+	if (activeUniforms > copiedCount)
 	{
-		auto& it = defaultBuffer.uniforms.find(names[i]);
-		if (it != defaultBuffer.uniforms.end())
+		for (uint16_t i = 0; i < activeUniforms; ++i)
 		{
-			it->second.location = glGetUniformLocation(shaderId, names[i]);
+			auto& it = defaultBuffer.uniforms.find(names[i]);
+			if (it != defaultBuffer.uniforms.end())
+			{
+				it->second.location = glGetUniformLocation(shaderId, names[i]);
+			}
 		}
 	}
 
-	#ifdef _DEBUG
-		for (auto& buf : buffers)
-		{
-			Engine::logs()->log("Render", fmt::format(fmt::fg(fmt::color::green),
-											   "[Shader System] buffer: {0}, buffer index: {1}, buffer binding: {2}, buffer size: {3}",
-											   buf.first, buf.second->blockIndex, buf.second->binding, buf.second->blockSize));
+#ifdef _DEBUG
+	for (auto& buf : buffers)
+	{
+		Engine::logs()->log("Render", fmt::format(fmt::fg(fmt::color::green),
+										   "[Shader System] buffer: {0}, buffer index: {1}, buffer binding: {2}, buffer size: {3}",
+										   buf.first, buf.second->blockIndex, buf.second->binding, buf.second->blockSize));
 
-			for (auto& uniform : buf.second->uniforms)
-			{
-				Engine::logs()->log(
-					 "Render", fmt::format(fmt::fg(fmt::color::blue),
-									"[Shader System] Uniform: {0}, uniform index: {1}, uniform offset: {2}, uniform location: {3}",
-									uniform.first, uniform.second.index, uniform.second.offset, uniform.second.location));
-			}
+		for (auto& uniform : buf.second->uniforms)
+		{
+			Engine::logs()->log(
+				 "Render", fmt::format(fmt::fg(fmt::color::blue),
+								"[Shader System] Uniform: {0}, uniform index: {1}, uniform offset: {2}, uniform location: {3}",
+								uniform.first, uniform.second.index, uniform.second.offset, uniform.second.location));
 		}
+	}
 #endif	// DEBUGyyz
 }
 
