@@ -94,12 +94,15 @@ enum : StencilFormats
 
 struct FrameBufferParams
 {
+	static constexpr const uint32_t maxColorAttachments = 8;
+
 	uint32_t width = Window::defaultWidth;
 	uint32_t height = Window::defaultHeight;
 
 	FrameBufferTypes bufferTypes;
 
-	std::array<ColorFormats, 8> colorFormat;
+	std::array<ColorFormats, maxColorAttachments> colorFormat;
+	std::array<float, maxColorAttachments> clearValues;
 	DepthFormats depthFormat;
 	StencilFormats stencilFormat;
 };
@@ -118,6 +121,7 @@ public:
 
 	void init(const FrameBufferParams& params);
 	uint32_t getColorAttachment(uint8_t attachNum) const;
+	void bindColorAttachment(uint8_t attachNum, uint8_t textureUnit);
 	uint32_t getDepthAttachment() const;
 	uint32_t getStencilAttachment() const;
 
@@ -126,7 +130,7 @@ public:
 
 	void onResize();
 
-	void enable(uint32_t* colorAttachmentNum = nullptr, uint8_t size = 0, bool clear = false);
+	void enable(uint32_t* colorAttachmentNum = nullptr, uint8_t size = 0, bool disableDepth = false, bool clear = false);
 	void disable();
 	void clear();
 
@@ -137,8 +141,9 @@ public:
 private:
 	FrameBufferParams data;
 
-	static constexpr const uint32_t maxColorAttachments = 8;
-	std::array<uint32_t, maxColorAttachments> colors;
+	static constexpr const float defaultClear = 0;
+
+	std::array<uint32_t, FrameBufferParams::maxColorAttachments> colors;
 
 	uint32_t depthId;
 	uint32_t stencilId;

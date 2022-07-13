@@ -82,7 +82,7 @@ void DebugNormalsLayer::update(Component::Camera& cam)
 	viewUniform.setMat4(&cam.getView());
 	projUniform.setMat4(&cam.getProjection());
 
-	uint32_t skipAttachment = 7;
+	uint32_t skipAttachment = 5;
 	cam.beginView(&skipAttachment, 1);
 
 	auto view = Engine::getScene()->view<Component::Renderable, Component::Transform>();

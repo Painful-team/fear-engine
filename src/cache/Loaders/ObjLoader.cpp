@@ -275,7 +275,7 @@ FearEngine::Cache::errorCode FearEngine::Cache::Loaders::ObjLoader::load(const s
 	materialRefs.resize(materials.size());
 	for (uint8_t i = 0; i < materials.size(); ++i)
 	{
-		errorCode result = Material::create(materials[i], materialRefs[i]);
+		errorCode result = Material::create(materials[i], materialRefs[i], flags);
 		if (result != errorCodes::OK)
 		{
 			materialLoadResult = result;

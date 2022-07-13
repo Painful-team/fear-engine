@@ -167,14 +167,14 @@ void Engine::run()
 	params.depthFormat = Render::DepthFormat::Depth24;
 	params.stencilFormat = Render::StencilFormat::Stencil8;
 
-	Entity cameraA = Engine::getScene()->createEntity("Camera A");
-	{
-		auto& transformA = cameraA.getComponent<Component::Transform>();
-		transformA.pos = {-0.00355635, -0.164256, 2.49057};
-		auto& cameraComponentA = cameraA.addComponent<Component::Camera>(&transformA, params);
-		cameraA.addComponent<Component::EditorCamera>(&cameraComponentA).initEvents();
-		cameraComponentA.setFar(5);
-	}
+	//Entity cameraA = Engine::getScene()->createEntity("Camera A");
+	//{
+	//	auto& transformA = cameraA.getComponent<Component::Transform>();
+	//	transformA.pos = {-0.00355635, -0.164256, 2.49057};
+	//	auto& cameraComponentA = cameraA.addComponent<Component::Camera>(&transformA, params);
+	//	cameraA.addComponent<Component::EditorCamera>(&cameraComponentA).initEvents();
+	//	cameraComponentA.setFar(5);
+	//}
 
 	//Entity dirLight = Engine::getScene()->createEntity("dirLight");
 	//{
@@ -193,7 +193,8 @@ void Engine::run()
 		auto& light = pLight.addComponent<Component::Light>();
 
 		light.isPoint = true;
-		light.distance = 5;
+		light.distance = 25;
+		light.intensity = 5;
 
 		light.lightColor = glm::vec3(1);
 	}

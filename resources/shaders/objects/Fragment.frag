@@ -6,7 +6,7 @@ layout(location = 1) out vec4 geometry;
 layout(location = 2) out vec3 normals;
 layout(location = 3) out vec4 albedo;
 layout(location = 4) out vec3 ambient;
-layout(location = 7) out int entityMap;
+layout(location = 5) out int entityMap;
 
 in vec4 pos;
 in vec3 normal;
@@ -24,7 +24,7 @@ layout(std140, binding = 2) uniform Material
 
 layout(binding = 10) uniform sampler2D textures[MaxTextureSamples];
 
-uniform int entityIndex;
+in flat int entityId;
 
 void main()
 {
@@ -34,6 +34,5 @@ void main()
 	ambient = ambientStrength;
 	albedo = vec4(texture(textures[diffuseTextureId], otexCord).rgb, texture(textures[specularTextureId], otexCord).x);
 
-	entityMap = entityIndex;
+	entityMap = entityId;
 }
-

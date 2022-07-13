@@ -39,13 +39,7 @@ struct Resource
 
 	decltype(&deleterFunc) deleter = deleterFunc;
 
-	~Resource()
-	{
-		if (deleter != nullptr)
-		{
-			deleterFunc(data);
-		}
-	};
+	~Resource();
 };
 
 #define GENRESOURCECLASSESSETIALS(classType)                                       \

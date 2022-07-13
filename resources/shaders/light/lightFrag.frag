@@ -1,30 +1,7 @@
 #version 460
-struct Light
-{
-	vec3 pos;
-	bool isPoint;
+#include "../include/light.frag"
 
-	vec3 dir;
-
-	float linear;
-	float quadratic;
-
-	float cutOff;
-	float outerCutOff;
-
-	vec3 lightColor;
-};
-
-struct DirLight
-{
-	vec3 dir;
-	vec3 lightColor;
-};
-
-
-#define MaxDirLights 1000
-
-layout(std140, binding = 5) uniform DirLightBuffer
+layout(std140, binding = 4) uniform DirLightBuffer
 {
 	vec3 dir[MaxDirLights];
 	vec3 lightColor[MaxDirLights];
@@ -37,7 +14,6 @@ vec3 calcLight(vec3 norm, vec3 viewDir, vec3 fragPos);
 vec3 calcDirLight(vec3 norm, vec3 viewDir, vec3 fragPos);
 
 layout(location = 0) out vec3 fragment;
-layout(location = 7) out int entityMap;
 
 uniform sampler2D geometry;
 uniform sampler2D normals;
@@ -57,25 +33,18 @@ void main()
 	vec4 fragPosD = texture(geometry, fIn.texCord);
 	if(fragPosD.w != 1)
 	{
-		fragment = vec3(0.1);
 		return;
 	}
 
 	vec3 norm = texture(normals, fIn.texCord).rgb;
-
 	vec3 viewDir = normalize(fIn.viewPos - fragPosD.xyz);
-	//
+
 	vec3 result = vec3(0);
 	result += calcLight(norm, viewDir, fragPosD.xyz);
 
-	if(dirLightCount > 0)
-	{
-		result += calcDirLight(norm, viewDir, fragPosD.xyz);
-	}
+	result += calcDirLight(norm, viewDir, fragPosD.xyz);
 
 	fragment = result;
-
-	entityMap = int(texelFetch(lights, 1).x);
 }
 
 
@@ -130,22 +99,24 @@ Light unpackLight(int lightNum)
 {
 	Light light;
 
-	const int lightSize = 13;
-	vec4 temp = texelFetch(lights, lightNum);
-	light.dir = vec3(0);
-	light.isPoint = true;
+	const int lightSize = 4;
+	vec4 temp = texelFetch(lights, (lightNum * lightSize));
+	light.dir = temp.xyz;
+	light.isPoint = temp.w != 0;
 
-	temp = texelFetch(lights, lightNum + 1);
-	light.pos = vec3(0, 0, 5);
-	light.linear = getLinear(25);
+	temp = texelFetch(lights, (lightNum * lightSize) + 1);
+	light.pos = temp.xyz;
+	light.linear = getLinear(temp.w);
 
-	light.quadratic = getQuadratic(25);
+	light.quadratic = getQuadratic(temp.w);
 
-	temp = texelFetch(lights, lightNum + 2);
-	light.lightColor = vec3(1);
+	temp = texelFetch(lights, (lightNum * lightSize) + 2);
+	light.lightColor = temp.xyz;
 	light.outerCutOff = temp.w;
 
-	light.cutOff = texelFetch(lights, lightNum + 3).x;
+	temp = texelFetch(lights, (lightNum * lightSize) + 3);
+	light.cutOff = temp.x;
+	light.intensity = temp.y;
 
 	return light;
 }
@@ -172,13 +143,13 @@ vec3 calcLight(vec3 norm, vec3 viewDir, vec3 fragPos)
 		vec3 diffuse = diff * light.lightColor * texture(albedo, fIn.texCord).rgb;
 		vec3 specular = spec * light.lightColor * texture(albedo, fIn.texCord).a;
 
-		float intensity = 5;
+		float intensity = light.intensity;
 		if(!light.isPoint)
 		{
 			// spotlight intensity
 			float theta = dot(lightDir, normalize(-light.dir));
 			float epsilon = light.cutOff - light.outerCutOff;
-			intensity = clamp((theta - light.outerCutOff) / epsilon, 0.0, 1.0);
+			intensity += clamp((theta - light.outerCutOff) / epsilon, 0.0, 1.0);
 		}
 
 		result += (diffuse + specular + ambient) * attenuation * intensity;
@@ -190,14 +161,20 @@ vec3 calcLight(vec3 norm, vec3 viewDir, vec3 fragPos)
 
 vec3 calcDirLight(vec3 norm, vec3 viewDir, vec3 fragPos)
 {
-	vec3 ambient = texture(ambients, fIn.texCord).rgb * lightColor[0] * texture(albedo, fIn.texCord).rgb;
-	// diffuse
-	vec3 lightDir = normalize(-dir[0]);
-	float diff = max(dot(norm, lightDir), 0.0);
-	vec3 diffuse = diff * lightColor[0] * texture(albedo, fIn.texCord).rgb;
+	vec3 result = vec3(0);
+	for(int i = 0; i < dirLightCount; ++i)
+	{
+		vec3 ambient = texture(ambients, fIn.texCord).rgb * lightColor[i] * texture(albedo, fIn.texCord).rgb;
+		// diffuse
+		vec3 lightDir = normalize(-dir[i]);
+		float diff = max(dot(norm, lightDir), 0.0);
+		vec3 diffuse = diff * lightColor[i] * texture(albedo, fIn.texCord).rgb;
 
-	vec3 reflectDir = reflect(-lightDir, norm);
-	float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32) * texture(albedo, fIn.texCord).a;
+		vec3 reflectDir = reflect(-lightDir, norm);
+		float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32) * texture(albedo, fIn.texCord).a;
 
-	return ambient + diffuse + spec;
+		result += ambient + diffuse + spec;
+	}
+
+	return result;
 }

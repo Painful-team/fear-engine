@@ -46,6 +46,8 @@ private:
 	Render::Shaders::Uniform projUniform;
 	Render::Shaders::Uniform viewUniform;
 
+	Render::Shaders::Uniform eTexture;
+
 	std::array<InstancedData, MaxInstancedObjectCount> instancedObjects;
 };
 }  // namespace FearEngine::Render

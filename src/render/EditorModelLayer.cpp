@@ -63,8 +63,8 @@ FearEngine::Render::errorCode FearEngine::Render::EditorModelLayer::init()
 	viewUniform = shader.findUniform("view");
 
 	shader.findUniform("color").setVec3(0.3, 0.3, 0.3);
-	shader.findUniform("disableTexture").setInt(1);
 	shader.findUniform("textureId").setInt(0);
+	eTexture = shader.findUniform("disableTexture");
 
 	return errorCodes::OK;
 }
@@ -81,6 +81,7 @@ void FearEngine::Render::EditorModelLayer::update(Component::Camera& cam)
 	cam.beginView();
 
 	{
+		eTexture.setInt(1);
 		static std::shared_ptr<Cache::Resource> resource;
 		static auto loadedModel = Engine::getCache()->getResource("resources/models/editor/Camera.obj", resource);
 		assert(loadedModel == Render::errorCodes::OK && "Default model for editor not found.");
@@ -96,8 +97,13 @@ void FearEngine::Render::EditorModelLayer::update(Component::Camera& cam)
 				break;
 			}
 
-			auto trans = view.get<Component::Transform>(entity);
 			auto& camData = view.get<Component::Camera>(entity);
+			if (&camData == &cam)
+			{
+				continue;
+			}
+
+			auto trans = view.get<Component::Transform>(entity);
 
 			trans.rotation = -trans.rotation;
 			std::swap(trans.rotation.x, trans.rotation.z);
@@ -167,11 +173,21 @@ void FearEngine::Render::EditorModelLayer::update(Component::Camera& cam)
 	}
 
 	{
-		static std::shared_ptr<Cache::Resource> resource;
-		static auto loadedModel = Engine::getCache()->getResource("resources/models/editor/cube.obj", resource);
-		assert(loadedModel == Render::errorCodes::OK && "Default model for editor not found.");
+		eTexture.setInt(0);
 
+		static std::shared_ptr<Cache::Resource> resource;
+		static auto loadedModel = Engine::getCache()->getResource("resources/models/editor/cube.obj", resource, FearEngine::Cache::ResourceFlag::FlipImageVertically);
+		assert(loadedModel == Render::errorCodes::OK && "Default model for editor not found.");
 		auto extra = utils::reinterpret_pointer_cast<Cache::ObjData>(resource->extra);
+		auto& materialData = extra->materials.back();
+		static std::shared_ptr<Texture> texture = std::make_shared<Texture>();
+		if (texture->isEmpty())
+		{
+			texture->init(materialData->diffuseRes);
+		}
+
+		texture->enable(0);
+
 		auto view = Engine::getScene()->view<Component::Light, Component::Transform>();
 		uint32_t size = view.size_hint();
 		uint32_t i = 0;
@@ -192,7 +208,7 @@ void FearEngine::Render::EditorModelLayer::update(Component::Camera& cam)
 
 		arr.bind();
 		vertex.setData(resource->data, resource->size);
-		instanceBuffer.setData(instancedObjects.data(), sizeof(InstancedData) * i);
+		instanceBuffer.setData(instancedObjects.data(), sizeof(InstancedData ) * i);
 
 		Draws::drawIndexed(arr, extra->count, i);
 	}

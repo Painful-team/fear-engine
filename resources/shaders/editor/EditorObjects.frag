@@ -1,8 +1,7 @@
 #version 460
-#include "../include/light.frag"
 
 layout(location = 0) out vec3 FragColor;
-layout(location = 7) out int entityMap;
+layout(location = 5) out int entityMap;
 
 uniform sampler2D textureId;
 
@@ -13,17 +12,15 @@ in vec2 otexCord;
 uniform vec3 color;
 uniform bool disableTexture;
 
-layout(std140, binding = 4) uniform DirLightBuffer
-{
-	DirLight dirLight;
-	int dirLightCount;
-};
-
 void main()
 {
-	float diffuse = max(dot(dirLight.dir, normal), 0.0);
+	vec3 result = vec3(0);
 
-	FragColor = ((diffuse + 0.1) *  mix(texture(textureId, otexCord), vec4(color, 1.0f), disableTexture)).rgb;
+	vec3 textureColor = mix(texture(textureId, otexCord), vec4(color, 1.0f), disableTexture).rgb;
 
+	vec3 lightDir = normalize(glm::vec3(-1.8, -1.8, -1));
+	float diffuse = max(dot(normal, lightDir), 0.0);
+
+	FragColor = (diffuse + 0.3) * textureColor;
 	entityMap = oEntityNum;
 }

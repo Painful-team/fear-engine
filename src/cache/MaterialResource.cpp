@@ -4,19 +4,19 @@
 #include <core/Engine.hpp>
 #include <cache/CacheManager.hpp>
 
-FearEngine::Cache::errorCode loadMaterialMap(const std::string& fileName, std::shared_ptr<FearEngine::Cache::Resource>& resource)
+FearEngine::Cache::errorCode loadMaterialMap(const std::string& fileName, std::shared_ptr<FearEngine::Cache::Resource>& resource, FearEngine::Cache::ResourceFlags flags)
 {
 	if (fileName.empty())
 	{
 		return FearEngine::Cache::errorCodes::OK;
 	};
 
-	return FearEngine::Engine::getCache()->getResource(fileName, resource);
+	return FearEngine::Engine::getCache()->getResource(fileName, resource, flags);
 }
 
 
 FearEngine::Cache::errorCode FearEngine::Cache::Material::create(const tinyobj_opt::material_t& material,
-	 std::shared_ptr<FearEngine::Cache::Material>& materialRef)
+	 std::shared_ptr<FearEngine::Cache::Material>& materialRef, FearEngine::Cache::ResourceFlags flags)
 {
 	errorCode createResultCode = errorCodes::OK;
 
@@ -33,49 +33,49 @@ FearEngine::Cache::errorCode FearEngine::Cache::Material::create(const tinyobj_o
 	materialObj.dissolve = material.dissolve;
 	materialObj.illum = material.illum;
 
-	auto result = loadMaterialMap(material.ambient_texname, materialObj.ambientRes);
+	auto result = loadMaterialMap(material.ambient_texname, materialObj.ambientRes, flags);
 	if (result != errorCodes::OK)
 	{
 		Engine::logs()->error("Cache", "Failed to load material {0} ambient map.", material.name);
 		createResultCode = errorCodes::AMBIENT_LOAD_FAILED;
 	}
 
-	result = loadMaterialMap(material.diffuse_texname, materialObj.diffuseRes);
+	result = loadMaterialMap(material.diffuse_texname, materialObj.diffuseRes, flags);
 	if (result != errorCodes::OK)
 	{
 		Engine::logs()->error("Cache", "Failed to load material {0} diffuse map.", material.name);
 		createResultCode = errorCodes::DIFFUSE_LOAD_FAILED;
 	}
 
-	result = loadMaterialMap(material.specular_texname, materialObj.specularRes);
+	result = loadMaterialMap(material.specular_texname, materialObj.specularRes, flags);
 	if (result != errorCodes::OK)
 	{
 		Engine::logs()->error("Cache", "Failed to load material {0} specular map.", material.name);
 		createResultCode = errorCodes::SPECULAR_LOAD_FAILED;
 	}
 
-	result = loadMaterialMap(material.specular_highlight_texname, materialObj.specularHighlightRes);
+	result = loadMaterialMap(material.specular_highlight_texname, materialObj.specularHighlightRes, flags);
 	if (result != errorCodes::OK)
 	{
 		Engine::logs()->error("Cache", "Failed to load material {0} specular highlight map.", material.name);
 		createResultCode = errorCodes::SPECULAR_HIGHLIGHTS_LOAD_FAILED;
 	}
 
-	result = loadMaterialMap(material.bump_texname, materialObj.bumpRes);
+	result = loadMaterialMap(material.bump_texname, materialObj.bumpRes, flags);
 	if (result != errorCodes::OK)
 	{
 		Engine::logs()->error("Cache", "Failed to load material {0} bump map.", material.name);
 		createResultCode = errorCodes::BUMP_LOAD_FAILED;
 	}
 
-	result = loadMaterialMap(material.displacement_texname, materialObj.displacementRes);
+	result = loadMaterialMap(material.displacement_texname, materialObj.displacementRes, flags);
 	if (result != errorCodes::OK)
 	{
 		Engine::logs()->error("Cache", "Failed to load material {0} displacement map.", material.name);
 		createResultCode = errorCodes::DISPLACEMENT_LOAD_FAILED;
 	}
 
-	result = loadMaterialMap(material.alpha_texname, materialObj.alphaRes);
+	result = loadMaterialMap(material.alpha_texname, materialObj.alphaRes, flags);
 	if (result != errorCodes::OK)
 	{
 		Engine::logs()->error("Cache", "Failed to load material {0} alpha map.", material.name);

@@ -12,9 +12,10 @@ FearEngine::Render::FrameBuffer::FrameBuffer()
  , initialized(false)
  , enabled(0)
 {
-	for (int i = 0; i < maxColorAttachments; ++i)
+	for (int i = 0; i < colors.size(); ++i)
 	{
 		colors[i] = -1;
+		data.clearValues[i] = defaultClear;
 	}
 }
 
@@ -35,7 +36,7 @@ FearEngine::Render::FrameBuffer& FearEngine::Render::FrameBuffer::operator=(Fram
 
 	colors = other.colors;
 
-	for (int i = 0; i < maxColorAttachments; ++i)
+	for (int i = 0; i < colors.size(); ++i)
 	{
 		other.colors[i] = -1;
 	}
@@ -67,10 +68,15 @@ uint32_t FearEngine::Render::FrameBuffer::getStencilAttachment() const
 
 uint32_t FearEngine::Render::FrameBuffer::getColorAttachment(uint8_t attachNum) const
 {
-	assert(attachNum < maxColorAttachments);
+	assert(attachNum < FrameBufferParams::maxColorAttachments);
 	assert(colors[attachNum] != -1);
 
 	return colors[attachNum];
+}
+
+void FearEngine::Render::FrameBuffer::bindColorAttachment(uint8_t attachNum, uint8_t textureUnit)
+{
+	glBindTextureUnit(textureUnit, getColorAttachment(attachNum));
 }
 
 const FearEngine::Render::FrameBufferParams& FearEngine::Render::FrameBuffer::getParams() const { return data; }
@@ -132,8 +138,8 @@ glm::vec4 FearEngine::Render::FrameBuffer::getPixel(FrameBufferTypes bufferType,
 	else
 	{
 		int16_t pos = log2(bufferType) - log2(static_cast<uint64_t>(FrameBufferType::ColorAttachment0));
-		// assert(pos >= (int)log2(static_cast<uint64_t>(FrameBufferType::ColorAttachment0) && pos < maxColorAttachments && "Undefined
-		// framebuffer type");
+		assert(pos >= log2(static_cast<uint64_t>(FrameBufferType::ColorAttachment0))
+			&& pos < FrameBufferParams::maxColorAttachments && "Undefined framebuffer type");
 
 		type = GL_COLOR_ATTACHMENT0 + pos;
 		format = data.colorFormat[pos];
@@ -168,7 +174,7 @@ void FearEngine::Render::FrameBuffer::onResize()
 	glBindFramebuffer(GL_FRAMEBUFFER, frameBufferId);
 
 	uint64_t colorAttachment = FrameBufferType::ColorAttachment0;
-	for (uint8_t i = 0; i < maxColorAttachments; ++i)
+	for (uint8_t i = 0; i < colors.size(); ++i)
 	{
 		if (data.bufferTypes & colorAttachment)
 		{
@@ -260,20 +266,9 @@ void FearEngine::Render::FrameBuffer::onResize()
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void FearEngine::Render::FrameBuffer::enable(uint32_t* colorAttachmentNum, uint8_t count, bool cl)
+void FearEngine::Render::FrameBuffer::enable(uint32_t* skipedColorAttachmentNum, uint8_t count, bool disableDepth, bool cl)
 {
 	glViewport(0, 0, data.width, data.height);
-
-	enabled = FrameBufferType::None;
-	if (glIsEnabled(GL_DEPTH_TEST))
-	{
-		enabled |= FrameBufferType::Depth;
-	}
-
-	if (glIsEnabled(GL_STENCIL_TEST))
-	{
-		enabled |= FrameBufferType::Stencil;
-	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, frameBufferId);
 	if (cl)
@@ -281,7 +276,7 @@ void FearEngine::Render::FrameBuffer::enable(uint32_t* colorAttachmentNum, uint8
 		clear();
 	}
 
-	if (depthId != -1)
+	if (!disableDepth && depthId != -1)
 	{
 		if (data.bufferTypes & FrameBufferType::Stencil)
 		{
@@ -296,22 +291,22 @@ void FearEngine::Render::FrameBuffer::enable(uint32_t* colorAttachmentNum, uint8
 		glEnable(GL_STENCIL_TEST);
 	}
 
-	std::array<uint32_t, maxColorAttachments> buffer;
+	std::array<uint32_t, FrameBufferParams::maxColorAttachments> buffer;
 	uint32_t enabledAttachments = 0;
-	for (uint8_t i = 0; i < maxColorAttachments; ++i)
+	for (uint8_t i = 0; i < colors.size(); ++i)
 	{
 		if (colors[i] == -1)
 		{
 			continue;
 		}
 
-		bool skip = colorAttachmentNum == nullptr;
+		bool skip = skipedColorAttachmentNum == nullptr;
 		for (uint8_t j = 0; j < count && !skip; ++j)
 		{
-			skip = colorAttachmentNum[j] == i;
+			skip = skipedColorAttachmentNum[j] == i;
 		}
 
-		if (colorAttachmentNum == nullptr || !skip)
+		if (skipedColorAttachmentNum == nullptr || !skip)
 		{
 			buffer[enabledAttachments] = GL_COLOR_ATTACHMENT0 + i;
 			++enabledAttachments;
@@ -323,12 +318,17 @@ void FearEngine::Render::FrameBuffer::enable(uint32_t* colorAttachmentNum, uint8
 
 void FearEngine::Render::FrameBuffer::disable()
 {
-	if (!(enabled & FrameBufferType::Depth))
+	if (depthId != -1)
 	{
+		if (data.bufferTypes & FrameBufferType::Stencil)
+		{
+			glDisable(GL_STENCIL_TEST);
+		}
+
 		glDisable(GL_DEPTH_TEST);
 	}
 
-	if (!(enabled & FrameBufferType::Stencil))
+	if (stencilId != -1)
 	{
 		glDisable(GL_STENCIL_TEST);
 	}
@@ -340,15 +340,21 @@ void FearEngine::Render::FrameBuffer::clear()
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, frameBufferId);
 
-	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | (GL_DEPTH_BUFFER_BIT * (depthId != -1)) | (GL_STENCIL_BUFFER_BIT * (stencilId != -1)));
 
-	int value = -1;
-	for (uint8_t i = 1; i < maxColorAttachments; ++i)
+	for (uint8_t i = 1; i < colors.size(); ++i)
 	{
 		if (colors[i] != -1)
 		{
-			glClearTexImage(colors[i], 0, getInternalFormat(data.colorFormat[i]), GL_INT, &value);
+			if (data.colorFormat[i] == ColorFormat::R32)
+			{
+				int value = data.clearValues[i];
+				glClearTexImage(colors[i], 0, getInternalFormat(data.colorFormat[i]), GL_INT, &value);
+			}
+			else
+			{
+				glClearTexImage(colors[i], 0, getInternalFormat(data.colorFormat[i]), GL_UNSIGNED_BYTE, &data.clearValues[i]);
+			}
 		}
 	}
 

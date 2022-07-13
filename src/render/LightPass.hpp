@@ -28,10 +28,10 @@ public:
 private:
 // Todo Think about sending whole component
 #pragma pack(push, 1)
-	struct Light  // connected to fragmentShader unpackLight
+	struct alignas(16) Light  // connected to fragmentShader unpackLight
 	{
 		glm::vec3 dir;
-		int isPoint;
+		float isPoint;
 
 		glm::vec3 pos;
 		float distance;
@@ -41,10 +41,12 @@ private:
 
 		float cutOff;
 
+		float intensity;
+
 		Light& operator=(const Component::Light& light);
 	};
 #pragma pack(pop)
-
+	static constexpr const uint8_t screenVertices = 4;
 	static constexpr const uint16_t maxLightCount = 1000;
 
 	// Todo add ability of shader read to modify constant inside shader files

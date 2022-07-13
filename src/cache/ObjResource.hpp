@@ -15,7 +15,7 @@ struct ObjData: public ResourceExtra
 	static constexpr const uint8_t VertexSize = 11 * sizeof(float);
 	std::vector<float> vertices;
 	uint32_t count;
-	
+
 	std::vector<std::shared_ptr<Material>> materials;
 
 	GENRESOURCECLASSESSETIALS(OBJ);

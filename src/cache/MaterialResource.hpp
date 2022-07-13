@@ -15,7 +15,8 @@ class Material: public ResourceExtra
 {
 public:
 	static errorCode create(const tinyobj_opt::material_t& material,
-		 std::shared_ptr<Material>& materialRef);
+		 std::shared_ptr<Material>& materialRef,
+		 FearEngine::Cache::ResourceFlags flags = FearEngine::Cache::ResourceFlag::None);
 
 	Material() = default;
 

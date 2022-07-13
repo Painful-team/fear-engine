@@ -12,8 +12,11 @@ struct Light
 	float outerCutOff;
 
 	vec3 lightColor;
+
+	float intensity;
 };
 
+#define MaxDirLights 1000
 struct DirLight
 {
 	vec3 dir;

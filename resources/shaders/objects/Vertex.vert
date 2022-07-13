@@ -12,9 +12,12 @@ layout(std140, binding = 1) uniform Camera1
 
 uniform mat4 model;
 
+uniform int entityIndex;
+
 out vec4 pos;
 out vec3 normal;
 out vec2 otexCord;
+out flat int entityId;
 
 void main()
 {
@@ -23,8 +26,10 @@ void main()
 	//Todo think about moving that calculation to the CPU side, it could be efficient to calculate it only once
 	normal = normalize(mat3(transpose(inverse(model))) * aNormals);
 
-	vec4 obJpos = model * vec4(aPos, 1.0);
-	gl_Position = projection * view * obJpos;
+	vec4 objPos = model * vec4(aPos, 1.0);
+	gl_Position = projection * view * objPos;
 
-	pos = obJpos;
+	pos = objPos;
+
+	entityId = entityIndex;
 }

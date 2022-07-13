@@ -23,8 +23,8 @@ struct VertexBufferElement
 	int size;
 	VertexBufferType type;
 	bool normalized;
-	uint32_t offset;
 	char count;
+	uint32_t offset;
 
 	VertexBufferElement(const VertexBufferType type, const int count, bool normalized = false);
 

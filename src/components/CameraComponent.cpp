@@ -22,7 +22,10 @@ Camera::Camera(Transform* camTransform, Render::FrameBufferParams& params, float
 
 Camera::Camera(Camera&& other) noexcept { *this = std::move(other); }
 
-void Camera::beginView(uint32_t* skipAttachments, uint32_t count) { frameBuffer.enable(skipAttachments, count); }
+void Camera::beginView(uint32_t* skipAttachments, uint32_t count, bool disableDepth)
+{
+	frameBuffer.enable(skipAttachments, count, disableDepth);
+}
 
 void Camera::end() { frameBuffer.disable(); }
 

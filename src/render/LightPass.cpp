@@ -76,7 +76,7 @@ FearEngine::Render::errorCode FearEngine::Render::LightPass::init()
 	arr.genArray();
 
 	arr.bind();
-	tempScreenPosBuf.bindData(texPos.data(), texPos.size() * sizeof(texPos.data()));
+	tempScreenPosBuf.bindData(texPos.data(), texPos.size() * sizeof(*texPos.data()));
 	arr.addVertexBuffer(tempScreenPosBuf);
 
 	tempScreenPosBuf.unbind();
@@ -87,7 +87,7 @@ FearEngine::Render::errorCode FearEngine::Render::LightPass::init()
 
 	lightData.genBuffer();
 
-	lightData.reserveData(lights.size() * sizeof(Light));
+	lightData.reserveData(lights.size() * sizeof(*lights.data()));
 
 	return errorCodes::OK;
 }
@@ -102,26 +102,27 @@ void FearEngine::Render::LightPass::update(Component::Camera& cam)
 	viewUniform.setMat4(&cam.getView());
 	projUniform.setMat4(&cam.getProjection());
 
-	uint32_t skipAttachment = 7;
-	cam.beginView(&skipAttachment, 1);
+	uint32_t skipAttachment = 5;
+	cam.beginView(&skipAttachment, 1, true);
 
-	glBindTextureUnit(1, cam.getFrameBuffer().getColorAttachment(1));
-	glBindTextureUnit(2, cam.getFrameBuffer().getColorAttachment(2));
-	glBindTextureUnit(3, cam.getFrameBuffer().getColorAttachment(3));
-	glBindTextureUnit(4, cam.getFrameBuffer().getColorAttachment(4));
+	auto& ref = cam.getFrameBuffer();
+	ref.bindColorAttachment(1, 1);
+	ref.bindColorAttachment(2, 2);
+	ref.bindColorAttachment(3, 3);
+	ref.bindColorAttachment(4, 4);
 
 	{
-		//auto view = Engine::getScene()->view<Component::DirectionalLight>();
-		//int lightCount = 0;
-		//for (auto entity : view)
-		//{
-		//	auto& dirl = view.get<Component::DirectionalLight>(entity);
-		//	dir.setVec3(&dirl.dir, 1, sizeof(glm::vec3) * lightCount);
-		//	lightColor.setVec3(&dirl.lightColor, 1, sizeof(glm::vec3) * lightCount);
-		//	++lightCount;
-		//}
-		//
-		//dirLightCount.setInt(&lightCount);
+		auto view = Engine::getScene()->view<Component::DirectionalLight>();
+		int lightCount = 0;
+		for (auto entity : view)
+		{
+			auto& dirl = view.get<Component::DirectionalLight>(entity);
+			dir.setVec3(&dirl.dir, 1, sizeof(dirl.dir) * lightCount);
+			lightColor.setVec3(&dirl.lightColor, 1, sizeof(dirl.lightColor) * lightCount);
+			++lightCount;
+		}
+
+		dirLightCount.setInt(&lightCount);
 	}
 
 	{
@@ -138,12 +139,12 @@ void FearEngine::Render::LightPass::update(Component::Camera& cam)
 		}
 
 		lightCountUniform.setInt(lightCount);
-		lightData.setData(lights.data(), lightCount * sizeof(Light));
+		lightData.setData(lights.data(), lightCount * sizeof(*lights.data()));
 
 		shader.updateBuffers();
 
 		assert(lightCount < maxLightCount);
-		Draws::drawStrip(arr, 4);
+		Draws::drawStrip(arr, screenVertices);
 	}
 
 	cam.end();
@@ -164,6 +165,8 @@ FearEngine::Render::LightPass::Light& FearEngine::Render::LightPass::Light::oper
 	outerCutOff = light.outerCutOff;
 
 	lightColor = light.lightColor;
+
+	intensity = light.intensity;
 
 	return *this;
 }

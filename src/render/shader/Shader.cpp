@@ -42,12 +42,12 @@ errorCode Shader::readShader(const std::string& path, GLenum shaderType)
 	in.read(result.data(), size);
 
 	uint64_t index = 0;
-	uint64_t pathPos = path.find_last_of("/") + 1;
+	uint64_t pathPos = path.find_last_of('/') + 1;
 	const std::string pattern("#include \"");
 	std::string includeFileData;
 	while ((index = result.find(pattern, index)) != -1)
 	{
-		uint64_t pos = result.find("\"", index + pattern.size());
+		uint64_t pos = result.find('\"', index + pattern.size());
 		if (pos == -1)
 		{
 			Engine::logs()->error("Render", "[Shader System] Read of \"{0}\" has failed with error \"Include path has errors.\"", path);
@@ -236,7 +236,6 @@ void Shader::initUniforms()
 
 	int startStride = -1;
 	{
-		uint8_t* busyBinding = (uint8_t*)alloca(sizeof(uint8_t) * Engine::getRender()->graphicsData[GL_MAX_UNIFORM_BUFFER_BINDINGS] - 1);
 		char blockname[nameMaxSize];
 		for (int i = 0; i < activeBlocks; ++i)
 		{
@@ -356,39 +355,41 @@ void Shader::initUniforms()
 
 	for (auto& buf : buffers)
 	{
-		GLint uniforms;
-		glGetActiveUniformBlockiv(shaderId, buf.second->blockIndex, GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS, &uniforms);
-
-		GLint* indices = (GLint*)alloca(sizeof(GLint*) * uniforms);
-		glGetActiveUniformBlockiv(shaderId, buf.second->blockIndex, GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES, &*indices);
-
-		// Todo think about reducing looping
-		for (uint16_t j = 0; j < uniforms; ++j)
 		{
-			for (uint16_t k = 0; k < activeUniforms; ++k)
+			GLint uniforms;
+			glGetActiveUniformBlockiv(shaderId, buf.second->blockIndex, GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS, &uniforms);
+
+			GLint* indices = (GLint*)alloca(sizeof(GLint) * uniforms);
+			glGetActiveUniformBlockiv(shaderId, buf.second->blockIndex, GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES, &*indices);
+
+			// Todo think about reducing looping
+			for (uint16_t j = 0; j < uniforms; ++j)
 			{
-				if (indices[j] == uniformIndices[k])
+				for (uint16_t k = 0; k < activeUniforms; ++k)
 				{
-					auto node = defaultBuffer.uniforms.extract(names[k]);
-					if (node.empty())
+					if (indices[j] == uniformIndices[k])
 					{
-						continue;
+						auto node = defaultBuffer.uniforms.extract(names[k]);
+						if (node.empty())
+						{
+							continue;
+						}
+
+						auto inserted = buf.second->uniforms.insert(std::move(node));
+
+						auto& uniform = inserted.position->second;
+						uniform.index = uniformIndices[k];
+						uniform.offset = offsets[k];
+						uniform.buffer = buf.second->bufferMemory;
+						break;
 					}
-
-					auto inserted = buf.second->uniforms.insert(std::move(node));
-
-					auto& uniform = inserted.position->second;
-					uniform.index = uniformIndices[k];
-					uniform.offset = offsets[k];
-					uniform.buffer = buf.second->bufferMemory;
-					break;
 				}
 			}
-		}
 
-		if (uniforms != buf.second->uniforms.size())
-		{
-			Engine::logs()->error("Render", "[Shader System] Uniform count is different in buffer binding {0}", buf.second->binding);
+			if (uniforms != buf.second->uniforms.size())
+			{
+				Engine::logs()->error("Render", "[Shader System] Uniform count is different in buffer binding {0}", buf.second->binding);
+			}
 		}
 	}
 

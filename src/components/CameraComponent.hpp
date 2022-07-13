@@ -34,7 +34,7 @@ public:
 	Camera& operator=(const Camera& other) = delete;
 	Camera& operator=(Camera&& other) noexcept;
 
-	void beginView(uint32_t* skipAttachments = nullptr, uint32_t count = 0);
+	void beginView(uint32_t* skipAttachments = nullptr, uint32_t count = 0, bool disableDepth = false);
 	void end();
 
 	float getFOV() const;

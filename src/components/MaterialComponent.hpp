@@ -32,6 +32,8 @@ struct Light
 	float cutOff;
 	float outerCutOff;
 
+	float intensity;
+
 	glm::vec3 lightColor;
 
 	GENCOMPONENTESSENTIALS(light)
