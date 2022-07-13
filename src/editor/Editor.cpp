@@ -110,7 +110,7 @@ bool Editor::onMousePressed(Events::MouseButtonPressed* e)
 			glm::vec2 viewportSize = windows.sceneWindow.viewPorts[0].contentRegion[1] - windows.sceneWindow.viewPorts[0].contentRegion[0];
 			pos.y = viewportSize.y - pos.y;
 
-			auto data = comp.getFrameBuffer().getPixel(Render::FrameBufferType::ColorAttachment1, pos);
+			auto data = comp.getFrameBuffer().getPixel(Render::FrameBufferType::ColorAttachment7, pos);
 			char udata[4]{static_cast<char>(data.x), static_cast<char>(data.y), static_cast<char>(data.z), static_cast<char>(data.w)};
 			int EntityNum = *reinterpret_cast<int*>(udata);
 

@@ -5,7 +5,7 @@
 
 #include "Layer.hpp"
 #include "VertexArray.hpp"
-#include "Buffer.hpp"
+#include "VertexBuffer.hpp"
 #include "shader/Shader.hpp"
 
 #include <cache/ObjResource.hpp>
@@ -26,7 +26,7 @@ public:
 	Render::debugProperty debugProperty() const override;
 
 private:
-	Render::Buffer vertex;
+	Render::VertexBuffer vertex;
 	Render::Shaders::Shader shader;
 	Render::VertexArray arr;
 
@@ -35,7 +35,6 @@ private:
 	Render::Shaders::Uniform modelUniform;
 
 	Render::Shaders::Uniform color;
-
 };
-}	// namespace FearEngine::Render
+}  // namespace FearEngine::Render
 #endif

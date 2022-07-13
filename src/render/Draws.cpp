@@ -4,7 +4,7 @@
 #include <core/Engine.hpp>
 
 #include "shader/Shader.hpp"
-#include "Buffer.hpp"
+#include "VertexBuffer.hpp"
 #include "VertexArray.hpp"
 
 #include <array>
@@ -18,7 +18,7 @@ uint32_t lineCount = 0;
 constexpr const uint32_t maxOutlineVertices = 1000;
 std::array<OutlineVertice, maxOutlineVertices> lines;
 
-Buffer vertex({{BufferType::Float, 3}, {BufferType::Float, 3}});
+VertexBuffer vertex({{VertexBufferType::Float, 3}, {VertexBufferType::Float, 3}});
 VertexArray arr;
 
 Shaders::Shader lineShader;
@@ -104,8 +104,8 @@ void submitOutlines(Component::Camera& cam)
 	}
 
 	lineShader.use();
-	view.setMat4(cam.getView());
-	projection.setMat4(cam.getProjection());
+	view.setMat4(&cam.getView());
+	projection.setMat4(&cam.getProjection());
 
 	uint32_t skipAttachment = 1;
 	cam.beginView(&skipAttachment, 1);
@@ -124,6 +124,15 @@ void draw(VertexArray& arr, uint32_t verticesCount)
 
 	++Engine::getRender()->stats.drawCalls;
 	Engine::getRender()->stats.polygons += verticesCount / 3;
+}
+
+void drawStrip(VertexArray& arr, uint32_t verticesCount)
+{
+	arr.bind();
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, verticesCount);
+
+	++Engine::getRender()->stats.drawCalls;
+	Engine::getRender()->stats.polygons += verticesCount * 2 / 3;
 }
 
 void drawIndexed(VertexArray& arr, uint32_t verticesCount, uint32_t objCount)

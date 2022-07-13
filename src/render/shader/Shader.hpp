@@ -31,7 +31,7 @@ enum ShaderType
 
 class Shader
 {
-public:
+private:
 	struct ShaderBufferData
 	{
 		std::string_view name;
@@ -57,12 +57,13 @@ public:
 		~ShaderBufferData();
 	};
 
+public:
 	static constexpr uint32_t maxTextureSlots = 32;
 	using UniformStorage = std::unordered_map<std::string, Uniform>;
 
 	Shader();
 
-	errorCode readShader(const char* path, GLenum shaderType);
+	errorCode readShader(const std::string& path, GLenum shaderType);
 	std::string& getSource(ShaderType shaderType);
 
 	Uniform& findUniform(const std::string& name);
@@ -77,6 +78,7 @@ public:
 	uint32_t getId();
 
 	~Shader();
+
 
 private:
 	void initUniforms();

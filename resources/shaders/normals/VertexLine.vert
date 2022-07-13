@@ -6,10 +6,10 @@ layout (location = 3) in vec2 texCord;
 
 out VS_OUT {
     vec3 normal;
-} vs_out;
+} vOut;
 
 void main()
 {
-	vs_out.normal = aNormals;
+	vOut.normal = aNormals;
 	gl_Position = vec4(aPos, 1.0);
 }

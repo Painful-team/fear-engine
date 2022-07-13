@@ -16,13 +16,13 @@ void VertexArray::bind() { glBindVertexArray(VAO); }
 
 void VertexArray::unBind() { glBindVertexArray(0); }
 
-void VertexArray::addVertexBuffer(const Buffer& buffer, VertexArrayUpdateType updateType)
+void VertexArray::addVertexBuffer(const VertexBuffer& buffer, VertexArrayUpdateType updateType)
 {
 	int stride = buffer.getStride();
 	buffer.bind();
 	for (const auto& element : buffer.GetElements())
 	{
-		if (element.type != BufferType::Int)
+		if (element.type != VertexBufferType::Int)
 		{
 			glVertexAttribPointer(attribIndex, element.count, static_cast<GLenum>(element.type), element.normalized, stride,
 				 reinterpret_cast<void*>(element.offset));

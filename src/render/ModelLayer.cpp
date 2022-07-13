@@ -23,7 +23,8 @@
 namespace FearEngine::Render
 {
 ModelLayer::ModelLayer()
- : vertex({{Render::BufferType::Float, 3}, {Render::BufferType::Float, 3}, {Render::BufferType::Float, 3}, {Render::BufferType::Float, 2}})
+ : vertex({{Render::VertexBufferType::Float, 3}, {Render::VertexBufferType::Float, 3}, {Render::VertexBufferType::Float, 3},
+	  {Render::VertexBufferType::Float, 2}})
  , enabledTextures(0)
 {}
 
@@ -67,14 +68,9 @@ errorCode ModelLayer::init()
 	viewUniform = shader.findUniform("view");
 	modelUniform = shader.findUniform("model");
 
-	frame = shader.findUniform("wireframe");
 	entityIndex = shader.findUniform("entityIndex");
-	frame.setFloat(0);
 
 	material = shader.findBuffer("Material");
-
-	shader.findUniform("dirLight.dir").setVec3(-1.8, -1.8, -1);
-	shader.findUniform("dirLight.lightColor").setVec3(1, 1, 1);
 
 	// TODO Get Texture Slots from GPU
 	int32_t samplers[Shaders::Shader::maxTextureSlots];
@@ -107,15 +103,15 @@ void ModelLayer::preUpdate(Component::Camera& cam) {}
 void ModelLayer::update(Component::Camera& cam)
 {
 	shader.use();
-	viewUniform.setMat4(cam.getView());
-	projUniform.setMat4(cam.getProjection());
+	viewUniform.setMat4(&cam.getView());
+	projUniform.setMat4(&cam.getProjection());
 	cam.beginView();
 
 	auto& view = Engine::getScene()->view<Component::Renderable, Component::Transform>();
 	for (auto entity : view)
 	{
 		auto& [renderable, tranform] = view.get<Component::Renderable, Component::Transform>(entity);
-		modelUniform.setMat4(tranform.getTransformMatrix());
+		modelUniform.setMat4(&tranform.getTransformMatrix());
 		entityIndex.setInt(entity);
 
 		if (!renderable.materials.empty())
@@ -143,8 +139,8 @@ void ModelLayer::update(Component::Camera& cam)
 				material["specularTextureId"].setInt(unit);
 			}
 
-			material["ambientStrength"].setVec3(materialData->ambient);
-			material["shininess"].setFloat(materialData->shininess);
+			material["ambientStrength"].setVec3(&materialData->ambient);
+			material["shininess"].setFloat(&materialData->shininess);
 		}
 		else
 		{
@@ -152,8 +148,8 @@ void ModelLayer::update(Component::Camera& cam)
 			material["diffuseTextureId"].setInt(unit);
 			material["specularTextureId"].setInt(unit);
 
-			material["ambientStrength"].setVec3(defaultMaterial.ambient);
-			material["shininess"].setFloat(defaultMaterial.shininess);
+			material["ambientStrength"].setVec3(&defaultMaterial.ambient);
+			material["shininess"].setFloat(&defaultMaterial.shininess);
 		}
 
 		vertex.setData(reinterpret_cast<float*>(renderable.mesh->data), renderable.mesh->size);

@@ -33,12 +33,18 @@ void SceneWindow::init()
 	Render::FrameBufferParams params;
 	params.width = Engine::getWindow()->getWidth();
 	params.height = Engine::getWindow()->getHeight();
-	params.bufferTypes = Render::FrameBufferType::ColorAttachment0 | Render::FrameBufferType::Depth | Render::FrameBufferType::Stencil
-						 | Render::FrameBufferType::ColorAttachment1;
-	params.colorFormat[0] = Render::ColorFormat::RGBA8;
+	params.bufferTypes = Render::FrameBufferType::ColorAttachment0 | Render::FrameBufferType::ColorAttachment1
+						 | Render::FrameBufferType::ColorAttachment2 | Render::FrameBufferType::ColorAttachment3
+						 | Render::FrameBufferType::ColorAttachment4 | Render::FrameBufferType::ColorAttachment7
+						 | Render::FrameBufferType::Depth | Render::FrameBufferType::Stencil;
 	params.depthFormat = Render::DepthFormat::Depth24;
 	params.stencilFormat = Render::StencilFormat::Stencil8;
-	params.colorFormat[1] = Render::ColorFormat::R32;
+	params.colorFormat[0] = Render::ColorFormat::RGB8;
+	params.colorFormat[1] = Render::ColorFormat::RGBA8;
+	params.colorFormat[2] = Render::ColorFormat::RGB8;
+	params.colorFormat[3] = Render::ColorFormat::RGBA8;
+	params.colorFormat[4] = Render::ColorFormat::RGB8;
+	params.colorFormat[7] = Render::ColorFormat::R32;
 
 	editorCamera = Engine::getScene()->createEntity("Scene Camera");
 	auto& transform = editorCamera.getComponent<Component::Transform>();

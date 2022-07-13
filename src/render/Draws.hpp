@@ -9,6 +9,7 @@ namespace FearEngine::Render::Draws
 {
 void draw(VertexArray& arr, uint32_t verticesCount);
 void drawIndexed(VertexArray& arr, uint32_t verticesCount, uint32_t objCount);
+void drawStrip(VertexArray& arr, uint32_t verticesCount);
 
 #pragma pack(push, 1)
 struct OutlineVertice

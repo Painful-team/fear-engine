@@ -149,7 +149,7 @@ private:
 
 	int initialized;
 
-	friend class FrameBufferParams;
+	friend struct FrameBufferParams;
 };
 }  // namespace FearEngine::Render
 

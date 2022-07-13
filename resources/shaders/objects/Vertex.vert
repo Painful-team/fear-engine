@@ -12,27 +12,19 @@ layout(std140, binding = 1) uniform Camera1
 
 uniform mat4 model;
 
-uniform float wireframe;
-
-out float frame;
+out vec4 pos;
 out vec3 normal;
-out vec3 color;
-out vec3 fragPos;
-out vec3 viewPos;
 out vec2 otexCord;
 
 void main()
 {
-	frame = wireframe;
-
 	otexCord = texCord;
 
 	//Todo think about moving that calculation to the CPU side, it could be efficient to calculate it only once
-	normal = mat3(transpose(inverse(model))) * aNormals;
+	normal = normalize(mat3(transpose(inverse(model))) * aNormals);
 
-	color = aColor;
+	vec4 obJpos = model * vec4(aPos, 1.0);
+	gl_Position = projection * view * obJpos;
 
-	viewPos = vec3(view[0][1], view[1][1], view[2][1]);
-	fragPos = vec3(model * vec4(aPos, 1.0));
-	gl_Position = projection * view * model * vec4(aPos, 1.0);
+	pos = obJpos;
 }

@@ -15,7 +15,7 @@ struct Renderable
 {
 	std::shared_ptr<Cache::Resource> mesh;
 
-	//Think about replacing vector on array for reducing allocation
+	// Think about replacing vector on array for reducing allocation
 	std::vector<std::shared_ptr<Cache::Material>> materials;
 
 	GENCOMPONENTESSENTIALS(renderable)
@@ -25,12 +25,9 @@ struct Light
 {
 	bool isPoint;
 
-	glm::vec3 pos;
 	glm::vec3 dir;
 
-	float constant;
-	float linear;
-	float quadratic;
+	float distance;
 
 	float cutOff;
 	float outerCutOff;
@@ -47,6 +44,6 @@ struct DirectionalLight
 
 	GENCOMPONENTESSENTIALS(directionalLight)
 };
-}
+}  // namespace FearEngine::Component
 
 #endif	// !FEARENGINE_COMPONENTS_MATERIALCOMPONENT_H__

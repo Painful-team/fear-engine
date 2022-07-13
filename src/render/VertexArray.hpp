@@ -1,7 +1,7 @@
 #ifndef FEARENGINE_RENDER_VERTEXARRAY_H__
 #define FEARENGINE_RENDER_VERTEXARRAY_H__
 
-#include "Buffer.hpp"
+#include "VertexBuffer.hpp"
 
 namespace FearEngine::Render
 {
@@ -25,7 +25,7 @@ public:
 	void bind();
 	void unBind();
 
-	void addVertexBuffer(const Buffer& buffer, VertexArrayUpdateType updateType = VertexArrayUpdateTypes::None);
+	void addVertexBuffer(const VertexBuffer& buffer, VertexArrayUpdateType updateType = VertexArrayUpdateTypes::None);
 
 	~VertexArray();
 

@@ -17,6 +17,7 @@
 #include "ModelLayer.hpp"
 #include "DebugNormalLayer.hpp"
 #include "EditorModelLayer.hpp"
+#include "LightPass.hpp"
 
 #include <core/Engine.hpp>
 #include <event/CoreEvent.hpp>
@@ -57,9 +58,10 @@ int Renderer::init()
 	auto evnt = Events::RenderInitialized();
 	Engine::getDispatcher()->notify(&evnt);
 
-	m_layers.emplace_back(new Render::DebugNormalsLayer);
+	m_layers.emplace_back(new Render::LightPass);
+	//m_layers.emplace_back(new Render::DebugNormalsLayer);
 	m_layers.emplace_back(new Render::ModelLayer);
-	m_layers.emplace_back(new Render::EditorModelLayer);
+	//m_layers.emplace_back(new Render::EditorModelLayer);
 
 	for (auto it = m_layers.rbegin(); it != m_layers.rend(); ++it)
 	{

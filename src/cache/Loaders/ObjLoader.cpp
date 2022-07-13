@@ -60,7 +60,7 @@ void CalcNormal(glm::vec3 normal[3], glm::vec3 v[3])
 	normal[2] = normal[0];
 }
 
-//Todo add destruction ability to be able to close file
+// Todo add destruction ability to be able to close file
 FearEngine::Cache::errorCode get_file_data(size_t& len, const char* filename, const char*& data)
 {
 	size_t data_len = 0;
@@ -116,7 +116,7 @@ FearEngine::Cache::errorCode get_file_data(size_t& len, const char* filename, co
 		CloseHandle(file);
 		CloseHandle(fileMapping);
 
-		#ifdef _DEBUG
+#ifdef _DEBUG
 		LPSTR messageBuffer = nullptr;
 
 		size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL,
@@ -173,7 +173,8 @@ FearEngine::Cache::errorCode FearEngine::Cache::Loaders::ObjLoader::load(const s
 	bool ret = parseObj(&attrib, &shapes, &materials, data, data_len, option);
 	if (!ret)
 	{
-		Engine::logs()->error("Cache", "Loading of {0} with flags {1} has failed with error \"Failed to parse obj file.\".", filename, flags);
+		Engine::logs()->error(
+			 "Cache", "Loading of {0} with flags {1} has failed with error \"Failed to parse obj file.\".", filename, flags);
 		return errorCodes::OBJECT_PARSE_FAILED;
 	}
 
@@ -287,16 +288,18 @@ FearEngine::Cache::errorCode FearEngine::Cache::Loaders::ObjLoader::load(const s
 	}
 	else
 	{
-		Engine::logs()->error("Cache", "Loading of {0} with flags {1} materials has ended with error {2}.", filename, flags, materialLoadResult);
+		Engine::logs()->error(
+			 "Cache", "Loading of {0} with flags {1} materials has ended with error {2}.", filename, flags, materialLoadResult);
 	}
 
 	extra->materials = std::move(materialRefs);
 	resource->extra = utils::reinterpret_pointer_cast<ResourceExtra>(extra);
 	resource->data = reinterpret_cast<int8_t*>(vb.data());
-	resource->size = vb.size() * sizeof(vb[0]);
+	resource->size = vb.size() * sizeof(vb.data());
 	extra->count = resource->size / ObjData::VertexSize;
 
-	Engine::logs()->log("Cache", "Loading of {0} with flags {1} has ended successfully.\nFilename:{0}\nFlags:{1}\nSize:{2}\nVertices:{3}\nMaterials:{4}", filename,
+	Engine::logs()->log("Cache",
+		 "Loading of {0} with flags {1} has ended successfully.\nFilename:{0}\nFlags:{1}\nSize:{2}\nVertices:{3}\nMaterials:{4}", filename,
 		 flags, resource->size, vb.size(), extra->materials.size());
 
 

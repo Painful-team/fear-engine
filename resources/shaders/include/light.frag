@@ -1,11 +1,10 @@
 struct Light
 {
+	vec3 pos;
 	bool isPoint;
 
-	vec3 pos;
 	vec3 dir;
 
-	float constant;
 	float linear;
 	float quadratic;
 

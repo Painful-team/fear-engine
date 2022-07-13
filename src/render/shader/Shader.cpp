@@ -17,7 +17,7 @@ Shader::Shader()
  : shaderId(0)
 {}
 
-errorCode Shader::readShader(const char* path, GLenum shaderType)
+errorCode Shader::readShader(const std::string& path, GLenum shaderType)
 {
 	Engine::logs()->log("Render", "[Shader System] \"{0}\" read has begun.", path);
 
@@ -40,6 +40,40 @@ errorCode Shader::readShader(const char* path, GLenum shaderType)
 	result.resize(size);
 	in.seekg(0, std::ios::beg);
 	in.read(result.data(), size);
+
+	uint64_t index = 0;
+	uint64_t pathPos = path.find_last_of("/") + 1;
+	const std::string pattern("#include \"");
+	std::string includeFileData;
+	while ((index = result.find(pattern, index)) != -1)
+	{
+		uint64_t pos = result.find("\"", index + pattern.size());
+		if (pos == -1)
+		{
+			Engine::logs()->error("Render", "[Shader System] Read of \"{0}\" has failed with error \"Include path has errors.\"", path);
+			return errorCodes::SHADER_INCLUDE_FILE_ERROR;
+		}
+
+		result[pos] = '\0';
+		std::string includePath = path.substr(0, pathPos) + (result.data() + index + pattern.size());
+		Engine::logs()->log("Render", "[Shader System] including \"{0}\" into \"{1}\".", includePath, path);
+		std::ifstream incude(includePath);
+		if (!incude)
+		{
+			Engine::logs()->error(
+				 "Render", "[Shader System] Read of \"{0}\" has failed with error \"Include file {1} not exist.\"", path, includePath);
+			return errorCodes::SHADER_FILE_NOT_EXIST;
+		}
+
+		incude.seekg(0, std::ios::end);
+		size_t includeSize = incude.tellg();
+		includeFileData.resize(includeSize);
+		incude.seekg(0, std::ios::beg);
+		incude.read(includeFileData.data(), includeSize);
+
+		memset(result.data() + index, ' ', pos - index + 1);
+		result.insert(index, includeFileData.data());
+	}
 
 	sources.emplace(shaderType, std::move(result));
 
@@ -386,7 +420,7 @@ void Shader::initUniforms()
 								uniform.first, uniform.second.index, uniform.second.offset, uniform.second.location));
 		}
 	}
-#endif	// DEBUGyyz
+#endif	// DEBUG
 }
 
 Shader::ShaderBufferData::ShaderBufferData()

@@ -13,9 +13,10 @@
 #include "Draws.hpp"
 
 FearEngine::Render::EditorModelLayer::EditorModelLayer()
- : vertex({{Render::BufferType::Float, 3}, {Render::BufferType::Float, 3}, {Render::BufferType::Float, 3}, {Render::BufferType::Float, 2}})
- , instanceBuffer({{Render::BufferType::Int, 1}, {Render::BufferType::Float, 4}, {Render::BufferType::Float, 4},
-		{Render::BufferType::Float, 4}, {Render::BufferType::Float, 4}})
+ : vertex({{Render::VertexBufferType::Float, 3}, {Render::VertexBufferType::Float, 3}, {Render::VertexBufferType::Float, 3},
+	  {Render::VertexBufferType::Float, 2}})
+ , instanceBuffer({{Render::VertexBufferType::Int, 1}, {Render::VertexBufferType::Float, 4}, {Render::VertexBufferType::Float, 4},
+		{Render::VertexBufferType::Float, 4}, {Render::VertexBufferType::Float, 4}})
 {}
 
 FearEngine::Render::errorCode FearEngine::Render::EditorModelLayer::init()
@@ -75,8 +76,8 @@ void FearEngine::Render::EditorModelLayer::preUpdate(Component::Camera& cam) {}
 void FearEngine::Render::EditorModelLayer::update(Component::Camera& cam)
 {
 	shader.use();
-	viewUniform.setMat4(cam.getView());
-	projUniform.setMat4(cam.getProjection());
+	viewUniform.setMat4(&cam.getView());
+	projUniform.setMat4(&cam.getProjection());
 	cam.beginView();
 
 	{
@@ -159,8 +160,39 @@ void FearEngine::Render::EditorModelLayer::update(Component::Camera& cam)
 		shader.updateBuffers();
 
 		arr.bind();
-		vertex.setData(reinterpret_cast<float*>(resource->data), resource->size);
-		instanceBuffer.setData(reinterpret_cast<float*>(instancedObjects.data()), sizeof(InstancedData) * i);
+		vertex.setData(resource->data, resource->size);
+		instanceBuffer.setData(instancedObjects.data(), sizeof(InstancedData) * i);
+
+		Draws::drawIndexed(arr, extra->count, i);
+	}
+
+	{
+		static std::shared_ptr<Cache::Resource> resource;
+		static auto loadedModel = Engine::getCache()->getResource("resources/models/editor/cube.obj", resource);
+		assert(loadedModel == Render::errorCodes::OK && "Default model for editor not found.");
+
+		auto extra = utils::reinterpret_pointer_cast<Cache::ObjData>(resource->extra);
+		auto view = Engine::getScene()->view<Component::Light, Component::Transform>();
+		uint32_t size = view.size_hint();
+		uint32_t i = 0;
+		for (auto entity : view)
+		{
+			if (i >= size)
+			{
+				break;
+			}
+
+			auto trans = view.get<Component::Transform>(entity);
+			instancedObjects[i].transform = trans.getTransformMatrix();
+			instancedObjects[i].entityNum = entity;
+			++i;
+		}
+
+		shader.updateBuffers();
+
+		arr.bind();
+		vertex.setData(resource->data, resource->size);
+		instanceBuffer.setData(instancedObjects.data(), sizeof(InstancedData) * i);
 
 		Draws::drawIndexed(arr, extra->count, i);
 	}

@@ -5,7 +5,7 @@
 
 #include "Layer.hpp"
 #include "VertexArray.hpp"
-#include "Buffer.hpp"
+#include "VertexBuffer.hpp"
 #include "shader/Shader.hpp"
 
 #include <cache/MaterialResource.hpp>
@@ -38,8 +38,8 @@ public:
 private:
 	static constexpr const uint32_t MaxInstancedObjectCount = 10000;
 
-	Render::Buffer vertex;
-	Render::Buffer instanceBuffer;
+	Render::VertexBuffer vertex;
+	Render::VertexBuffer instanceBuffer;
 	Render::Shaders::Shader shader;
 	Render::VertexArray arr;
 

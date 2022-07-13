@@ -12,7 +12,8 @@
 namespace FearEngine::Render
 {
 DebugNormalsLayer::DebugNormalsLayer()
- : vertex({{Render::BufferType::Float, 3}, {Render::BufferType::Float, 3}, {Render::BufferType::Float, 3}, {Render::BufferType::Float, 2}})
+ : vertex({{Render::VertexBufferType::Float, 3}, {Render::VertexBufferType::Float, 3}, {Render::VertexBufferType::Float, 3},
+	  {Render::VertexBufferType::Float, 2}})
 {}
 
 errorCode DebugNormalsLayer::init()
@@ -63,9 +64,10 @@ errorCode DebugNormalsLayer::init()
 	viewUniform = shader.findUniform("view");
 	modelUniform = shader.findUniform("model");
 
-	color.setVec3(0, 0.5, 0);
+	color.setVec3(0.0, 0.5, 0.0);
 
-	shader.findUniform("magnitude").setFloat(0.2);
+	float magnitude = 0.2;
+	shader.findUniform("magnitude").setFloat(&magnitude);
 
 	return errorCodes::OK;
 }
@@ -77,19 +79,19 @@ void DebugNormalsLayer::preUpdate(Component::Camera& cam) {}
 void DebugNormalsLayer::update(Component::Camera& cam)
 {
 	shader.use();
-	viewUniform.setMat4(cam.getView());
-	projUniform.setMat4(cam.getProjection());
+	viewUniform.setMat4(&cam.getView());
+	projUniform.setMat4(&cam.getProjection());
 
-	uint32_t skipAttachment = 1;
+	uint32_t skipAttachment = 7;
 	cam.beginView(&skipAttachment, 1);
 
 	auto view = Engine::getScene()->view<Component::Renderable, Component::Transform>();
 	for (auto entity : view)
 	{
 		auto& [renderable, tranform] = view.get<Component::Renderable, Component::Transform>(entity);
-		modelUniform.setMat4(tranform.getTransformMatrix());
+		modelUniform.setMat4(&tranform.getTransformMatrix());
 
-		vertex.setData(reinterpret_cast<float*>(renderable.mesh->data), renderable.mesh->size);
+		vertex.setData(renderable.mesh->data, renderable.mesh->size);
 		shader.updateBuffers();
 
 		auto extra = utils::reinterpret_pointer_cast<Cache::ObjData>(renderable.mesh->extra);

@@ -155,8 +155,15 @@ void Engine::run()
 	Render::FrameBufferParams params;
 	params.width = Engine::getWindow()->getWidth();
 	params.height = Engine::getWindow()->getHeight();
-	params.bufferTypes = Render::FrameBufferType::ColorAttachment0 | Render::FrameBufferType::Depth | Render::FrameBufferType::Stencil;
-	params.colorFormat[0] = Render::ColorFormat::RGBA8;
+
+	params.bufferTypes = Render::FrameBufferType::ColorAttachment0 | Render::FrameBufferType::ColorAttachment1
+						 | Render::FrameBufferType::ColorAttachment2 | Render::FrameBufferType::ColorAttachment3
+						 | Render::FrameBufferType::ColorAttachment4 | Render::FrameBufferType::Depth | Render::FrameBufferType::Stencil;
+	params.colorFormat[0] = Render::ColorFormat::RGB8;
+	params.colorFormat[1] = Render::ColorFormat::RGBA8;
+	params.colorFormat[2] = Render::ColorFormat::RGB8;
+	params.colorFormat[3] = Render::ColorFormat::RGBA8;
+	params.colorFormat[4] = Render::ColorFormat::RGB8;
 	params.depthFormat = Render::DepthFormat::Depth24;
 	params.stencilFormat = Render::StencilFormat::Stencil8;
 
@@ -168,6 +175,29 @@ void Engine::run()
 		cameraA.addComponent<Component::EditorCamera>(&cameraComponentA).initEvents();
 		cameraComponentA.setFar(5);
 	}
+
+	//Entity dirLight = Engine::getScene()->createEntity("dirLight");
+	//{
+	//	auto& transformA = dirLight.getComponent<Component::Transform>();
+	//	transformA.pos = {-0.00355635, -0.164256, 2.49057};
+	//	auto& light = dirLight.addComponent<Component::DirectionalLight>();
+	//
+	//	light.dir = glm::vec3(-1.8, -1.8, -1);
+	//	light.lightColor = glm::vec3(1);
+	//}
+
+	Entity pLight = Engine::getScene()->createEntity("Point Light");
+	{
+		auto& transformA = pLight.getComponent<Component::Transform>();
+		transformA.pos = {0, 0, 5};
+		auto& light = pLight.addComponent<Component::Light>();
+
+		light.isPoint = true;
+		light.distance = 5;
+
+		light.lightColor = glm::vec3(1);
+	}
+
 	// Entity cameraB = Engine::getScene()->createEntity("Camera B");
 	//{
 	//	auto& transformB = cameraB.getComponent<Component::Transform>();
